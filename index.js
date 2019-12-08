@@ -4,7 +4,7 @@ const db      = require('better-sqlite3')('mue.db');
 const log     = require('leekslazylogger');
 const cat     = require('./categories.json');
 
-///* Set Things 
+//* Set Things 
 log.init('MueAPI');
 fastify.register(require('fastify-cors'));
 fastify.register(require('fastify-no-icon'));
