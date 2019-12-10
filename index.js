@@ -1,6 +1,6 @@
 //* Imports
 const fastify = require('fastify')();
-const db      = require('better-sqlite3')('mue.db');
+const db      = require('better-sqlite3')(config.database);
 const log     = require('leekslazylogger');
 const cat     = require('./categories.json');
 const config  = require('./config.json');

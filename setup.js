@@ -1,5 +1,5 @@
 //* Imports
-const db = require('better-sqlite3')('mue.db');
+const db = require('better-sqlite3')(config.database);
 
 //* Run SQL commands
 db.prepare('CREATE TABLE images (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT, url TEXT, photographer TEXT, location TEXT);').run();

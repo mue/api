@@ -5,5 +5,6 @@
         "max": 100,
         "timewin": "1 minute"
     },
-    "helloworld": "hello world"
+    "helloworld": "hello world",
+    "database": "database.db"
 }
