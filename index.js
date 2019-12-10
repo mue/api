@@ -33,9 +33,9 @@ fastify.get('/getImage', async (req, res) => {
   if (req.query.category) {
     if (!cat.includes(prepareString(req.query.category))) {
       log.error(`User attempted to set category as "${req.query.category}"`);
-      res.status(404); // Use proper 404 status
+      res.status(400); // Use proper 400 status
       return {
-        message: 'Category not found'
+        message: 'Invalid Category'
       }
     }
     log.info(`Attempting to get image from ${req.query.category}`);
