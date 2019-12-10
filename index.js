@@ -3,20 +3,20 @@ const fastify = require('fastify')();
 const db      = require('better-sqlite3')('mue.db');
 const log     = require('leekslazylogger');
 const cat     = require('./categories.json');
+const config  = require('./config.json');
 
 //* Set Things 
-log.init('MueAPI');
+log.init(config.logname);
 fastify.register(require('fastify-cors'));
-fastify.register(require('fastify-no-icon'));
 fastify.register(require('fastify-rate-limit'), {
-  max: 100,
-  timeWindow: '1 minute'
+  max: config.ratelimit.max,
+  timeWindow: config.ratelimit.timewin
 });
 
 //* Functions
 const prepareString = (string) => {
-  const toUpper = string.charAt(0).toUpperCase() + string.slice(1);
-  return toUpper.replace('"', '');
+  const toUpper = string.charAt(0).toUpperCase() + string.slice(1); // Set the category to uppercase
+  return toUpper.replace('"', ''); // Replace dodgy character "
 }
 
 //* Routes
@@ -24,15 +24,16 @@ const prepareString = (string) => {
 fastify.get('/', async () => {
   log.info('Request made to /');
   return {
-    message: 'Hello world! Documentation can be found at https://apidocs.muetab.xyz'
+    message: config.helloworld
   };
 });
 
-fastify.get('/getImage', async (req) => {
+fastify.get('/getImage', async (req, res) => {
   log.info('Request made to /getImage');
   if (req.query.category) {
     if (!cat.includes(prepareString(req.query.category))) {
-      log.error(`User attempted to set category as ${req.query.category}`);
+      log.error(`User attempted to set category as "${req.query.category}"`);
+      res.status(404); // Use proper 404 status
       return {
         message: 'Category not found'
       }
@@ -49,9 +50,10 @@ fastify.get('/getImage', async (req) => {
 fastify.get('/getImage/:id', async (req) => {
   log.info('Request made to /getImage');
   log.info(`Attempting to get image id ${req.params.id}`);
-  const latest = db.prepare('SELECT * FROM images ORDER BY ID DESC LIMIT 1;').get();
-  if (isNaN(req.params.id) || req.params.id > latest.id) {
-    log.error(`Failed to get image id ${req.params.id}`);
+  const latest = db.prepare('SELECT * FROM images ORDER BY ID DESC LIMIT 1;').get(); // Get the last ID in the database
+  if (isNaN(req.params.id) || req.params.id > latest.id) { // Check if ID is number and if it is larger than the last ID in the database
+    log.error(`Failed to get image id "${req.params.id}"`);
+    res.status(400); // Use proper 400 status
     return { 
       message: 'Invalid ID'
     }
@@ -68,9 +70,10 @@ fastify.get('/getQuote', async (req) =>  {
 fastify.get('/getQuote/:id', async (req) =>  {
   log.info('Request made to /getQuote');
   log.info(`Attempting to get quote id ${req.params.id}`);
-  const latest = db.prepare('SELECT * FROM quotes ORDER BY ID DESC LIMIT 1;').get();
-  if (isNaN(req.params.id) || req.params.id > latest.id) {
+  const latest = db.prepare('SELECT * FROM quotes ORDER BY ID DESC LIMIT 1;').get(); // Get the last ID in the database
+  if (isNaN(req.params.id) || req.params.id > latest.id) { // Check if ID is number and if it is larger than the last ID in the database
     log.error(`Failed to get quote id ${req.params.id}`);
+    res.status(400); // Use proper 400 status
     return { 
       message: 'Invalid ID'
     }
@@ -88,11 +91,12 @@ fastify.get('/getCategories', async () => {
   return require('./categories.json');
 });
 
-fastify.get('*', async () => {
+fastify.get('*', async (req, res) => {
+  res.status(404); // Use proper 404 status
   return {
-    message: '404'
+    message: '404 Not Found'
   }
 });
 
 //* Listen on port
-fastify.listen(2815, log.info('Fastify server started'));
+fastify.listen(config.port, log.info('Fastify server started'));

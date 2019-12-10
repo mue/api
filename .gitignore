@@ -1,0 +1,9 @@
+# Directories
+logs/
+node_modules/
+
+# Files
+mue.db
+yarn.lock
+config.json
+package-lock.json
