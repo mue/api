@@ -1,9 +1,9 @@
 //* Imports
 const fastify = require('fastify')();
-const db      = require('better-sqlite3')(config.database);
 const log     = require('leekslazylogger');
-const cat     = require('./categories.json');
 const config  = require('./config.json');
+const db      = require('better-sqlite3')(config.database);
+const cat     = require('./categories.json');
 
 //* Set Things 
 log.init(config.logname);
