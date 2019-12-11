@@ -20,7 +20,6 @@ const prepareString = (string) => {
 }
 
 //* Routes
-// Public
 fastify.get('/', async () => {
   log.info('Request made to /');
   return {
@@ -35,7 +34,9 @@ fastify.get('/getImage', async (req, res) => {
       log.error(`User attempted to set category as "${req.query.category}"`);
       res.status(400); // Use proper 400 status
       return {
-        message: 'Invalid Category'
+        statusCode: 400,
+        error: 'Invalid Category',
+        message: 'Category Not Found'
       }
     }
     log.info(`Attempting to get image from ${req.query.category}`);
@@ -55,7 +56,9 @@ fastify.get('/getImage/:id', async (req) => {
     log.error(`Failed to get image id "${req.params.id}"`);
     res.status(400); // Use proper 400 status
     return { 
-      message: 'Invalid ID'
+      statusCode: 400,
+      error: 'Invalid ID',
+      message: 'ID Not Found'
     }
   }
   return db.prepare(`SELECT * FROM images WHERE id="${req.params.id}" ORDER BY RANDOM() LIMIT 1;`).get();
@@ -75,7 +78,9 @@ fastify.get('/getQuote/:id', async (req) =>  {
     log.error(`Failed to get quote id ${req.params.id}`);
     res.status(400); // Use proper 400 status
     return { 
-      message: 'Invalid ID'
+      statusCode: 400,
+      error: 'Invalid ID',
+      message: 'ID Not Found'
     }
   }
   return db.prepare(`SELECT * FROM quotes WHERE id="${req.params.id}" ORDER BY RANDOM() LIMIT 1;`).get();
@@ -89,13 +94,6 @@ fastify.get('/getUpdate', async () => {
 fastify.get('/getCategories', async () => {
   log.info('Request made to /getCategories');
   return require('./categories.json');
-});
-
-fastify.get('*', async (req, res) => {
-  res.status(404); // Use proper 404 status
-  return {
-    message: '404 Not Found'
-  }
 });
 
 //* Listen on port
