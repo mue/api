@@ -8,6 +8,7 @@ const cat     = require('./categories.json');
 //* Set Things 
 log.init(config.logname);
 fastify.register(require('fastify-cors'));
+fastify.register(require('fastify-no-icon'));
 fastify.register(require('fastify-rate-limit'), {
   max: config.ratelimit.max,
   timeWindow: config.ratelimit.timewin
