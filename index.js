@@ -1,9 +1,9 @@
 //* Imports
 const fastify = require('fastify')();
-const log     = require('leekslazylogger');
-const config  = require('./config.json');
-const db      = require('better-sqlite3')(config.database);
-const cat     = require('./categories.json');
+const log = require('leekslazylogger');
+const config = require('./config.json');
+const db = require('better-sqlite3')(config.database);
+const cat = require('./categories.json');
 
 //* Set Things 
 log.init(config.logname);
@@ -65,7 +65,7 @@ fastify.get('/getImage/:id', async (req) => {
   return db.prepare(`SELECT * FROM images WHERE id="${req.params.id}" ORDER BY RANDOM() LIMIT 1;`).get();
 });
 
-fastify.get('/getQuote', async (req) =>  {
+fastify.get('/getQuote', async (_req) =>  {
   log.info('Request made to /getQuote');
   return db.prepare('SELECT * FROM quotes WHERE language="English" ORDER BY RANDOM() LIMIT 1;').get();
   //else return db.prepare(`SELECT * FROM quotes WHERE language="${req.query.language}" ORDER BY RANDOM() LIMIT 1;`).get();

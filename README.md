@@ -1,5 +1,5 @@
-# api
-Code for the Mue API
+# Mue API
+Source code for the Mue API.
 
 ## Installation
 1. ``npm i`` (or ``yarn``)
