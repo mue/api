@@ -8,3 +8,4 @@ mue.db
 yarn.lock
 config.json
 package-lock.json
+src/setup.js

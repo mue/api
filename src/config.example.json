@@ -1,0 +1,10 @@
+{
+    "port": 1234,
+    "logname": "MueAPI",
+    "databaseUrl": "mongodb://localhost:27017",
+    "helloworld": "Hello, world!",
+    "ratelimit": {
+        "max": 100,
+        "timeWindow": "1 minute"
+    }
+}
