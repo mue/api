@@ -9,7 +9,7 @@
         "fastify-no-icon": "3.0.0",
         "fastify-rate-limit": "3.0.1",
         "leekslazylogger": "1.1.9",
-        "mongodb": "3.4.1",
+        "mongodb": "3.5.0",
         "wumpfetch": "0.3.1"
     }
 }
