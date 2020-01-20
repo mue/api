@@ -16,6 +16,6 @@ module.exports = ({ server, logger, config }) => {
 
     server.get('/getCategories', async(req) => {
         logger.info('Request made to "/getCategories"');
-        return categories
+        return categories;
     });
 };

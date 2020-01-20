@@ -23,15 +23,23 @@ module.exports = ({ server, logger, db }) => {
                 category
             });
 
-            return {
-                statusCode: 200,
-                images: all.toArray()
-            };
+            return all.map(s => ({
+              id: String(s.id),
+              category: s.category,
+              file: s.file,
+              photographer: s.photographer,
+              location: s.location
+            }));
         } else {
             const all = await db.images.find().toArray();
+            const s = all[Math.floor(Math.random() * all.length)];
+
             return {
-                statusCode: 200,
-                image: all[Math.floor(Math.random() * all.length)]
+              id: String(s.id),
+              category: s.category,
+              file: s.file,
+              photographer: s.photographer,
+              location: s.location
             };
         }
     });
@@ -39,9 +47,7 @@ module.exports = ({ server, logger, db }) => {
     server.get('/getImage/:id', async (req, res) => {
         logger.info('Request made to "/getImage"');
         logger.info(`Attempting to find image with ID: ${req.params.id}`);
-        
         const all = await db.images.find().sort({ id: 1 }).toArray();
-        console.log(all);
 
         const latest = all[all.length - 1];
         if (isNaN(req.params.id) || req.params.id > latest.id) {
@@ -55,9 +61,23 @@ module.exports = ({ server, logger, db }) => {
         }
 
         const image = await db.images.findOne({
-            id: req.params.id
+            id: Number(req.params.id)
         });
 
-        return image;
+        if (!image || image === null) {
+          res.status(404);
+          return {
+            statusCode: 404,
+            message: `Invalid ID: ${req.params.id}`
+          };
+        }
+
+        return {
+          id: String(image.id),
+          category: image.category,
+          file: image.file,
+          photographer: image.photographer,
+          location: image.location
+        };
     });
 };
