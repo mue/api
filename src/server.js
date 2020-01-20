@@ -5,9 +5,9 @@ const setup = require('./setup');
 
 //* Initialize the server
 const api = new Server(config);
-api.run();
-    //.then(() => setup.recursive(api))
-    //.then(() => api.logger.info('Recursed over all images and quotes, do not run this again!'));
+api.run()
+    .then(() => setup.recursive(api))
+    .then(() => api.logger.info('Recursed over all images and quotes, do not run this again!'));
 
 //* Handle when the process exits
 process.on('SIGINT', () => {
