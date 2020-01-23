@@ -5,7 +5,7 @@ module.exports = ({ server, db, logger }) => {
         
         const quote = all[Math.floor(Math.random() * all.length)];
         return {
-          id: String(req.params.id),
+          id: String(quote.id),
           quote: quote.quote,
           language: quote.language,
           author: quote.author

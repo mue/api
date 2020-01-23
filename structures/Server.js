@@ -1,5 +1,5 @@
 const { readdir } = require('fs');
-const Database = require('./Database');
+const Database = require('./Database.js');
 const fastify = require('fastify');
 const log = require('leekslazylogger');
 
