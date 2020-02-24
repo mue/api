@@ -4,8 +4,7 @@ logs/
 node_modules/
 
 # Files
-mue.db
+mue.db*
 yarn.lock
 config.json
 package-lock.json
-src/setup.js

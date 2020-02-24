@@ -6,6 +6,7 @@ const db = require('better-sqlite3')(config.database);
 const cat = require('./categories.json');
 
 //* Set Things 
+db.pragma('journal_mode = WAL'); // This makes sqlite FAST
 log.init(config.logname);
 fastify.register(require('fastify-cors'));
 fastify.register(require('fastify-no-icon'));
