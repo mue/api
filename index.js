@@ -50,7 +50,7 @@ fastify.get('/getImage', async (req, res) => {
   }
 });
 
-fastify.get('/getImage/:id', async (req) => {
+fastify.get('/getImage/:id', async (req, res) => {
   log.info('Request made to /getImage');
   log.info(`Attempting to get image id ${req.params.id}`);
   const latest = db.prepare('SELECT * FROM images ORDER BY ID DESC LIMIT 1;').get(); // Get the last ID in the database
@@ -72,7 +72,7 @@ fastify.get('/getQuote', async (_req) =>  {
   //else return db.prepare(`SELECT * FROM quotes WHERE language="${req.query.language}" ORDER BY RANDOM() LIMIT 1;`).get();
 });
 
-fastify.get('/getQuote/:id', async (req) =>  {
+fastify.get('/getQuote/:id', async (req, res) =>  {
   log.info('Request made to /getQuote');
   log.info(`Attempting to get quote id ${req.params.id}`);
   const latest = db.prepare('SELECT * FROM quotes ORDER BY ID DESC LIMIT 1;').get(); // Get the last ID in the database
