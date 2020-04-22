@@ -51,7 +51,7 @@ fastify.get('/getImage', async (req, res) => {
       return {
         id: data.id,
         category: data.category,
-        file: data.file.replace('.jpg', '.webp'),
+        file: data.file.split('e/')[0] + 'e/webp' + data.file.split('/mue')[1].replace('.jpg', '.webp'),
         photographer: data.photographer,
         location: data.location
       }
