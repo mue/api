@@ -46,7 +46,16 @@ fastify.get('/getImage', async (req, res) => {
   }
   else {
     log.info('Getting random image');
-    return db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
+    if (req.query.webp) {
+      const data = db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
+      return {
+        id: data.id,
+        category: data.category,
+        file: data.file.replace('.jpg', '.webp'),
+        photographer: data.photographer,
+        location: data.location
+      }
+    } else return db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
   }
 });
 
