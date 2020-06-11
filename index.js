@@ -39,7 +39,7 @@ fastify.get('/getImage', async (req, res) => {
       }
     }
     log.info(`Attempting to get image from ${req.query.category}`);
-    return db.prepare(`SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;`, prepareString(req.query.category)).get();
+    return db.prepare(`SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;`).get(prepareString(req.query.category));
   }
   else {
     log.info('Getting random image');
@@ -69,7 +69,7 @@ fastify.get('/getImage/:id', async (req, res) => {
       message: 'ID Not Found'
     }
   }
-  return db.prepare(`SELECT * FROM images WHERE id=? ORDER BY RANDOM() LIMIT 1;`, req.params.id).get();
+  return db.prepare(`SELECT * FROM images WHERE id=? ORDER BY RANDOM() LIMIT 1;`).get(req.params.id);
 });
 
 fastify.get('/getQuote', async (_req) =>  {
@@ -91,7 +91,7 @@ fastify.get('/getQuote/:id', async (req, res) =>  {
       message: 'ID Not Found'
     }
   }
-  return db.prepare(`SELECT * FROM quotes WHERE id=? ORDER BY RANDOM() LIMIT 1;`, req.params.id).get();
+  return db.prepare(`SELECT * FROM quotes WHERE id=? ORDER BY RANDOM() LIMIT 1;`).get(req.params.id);
 });
 
 fastify.get('/getUpdate', async () => {
