@@ -16,10 +16,7 @@ fastify.register(require('fastify-rate-limit'), {
 });
 
 //* Functions
-const prepareString = (string) => {
-  const toUpper = string.charAt(0).toUpperCase() + string.slice(1); // Set the category to uppercase
-  return toUpper.replace('"', ''); // Replace dodgy character "
-}
+const prepareString = (string) => string.charAt(0).toUpperCase() + string.slice(1); // Uppercase category input
 
 //* Routes
 fastify.get('/', async () => {
@@ -42,7 +39,7 @@ fastify.get('/getImage', async (req, res) => {
       }
     }
     log.info(`Attempting to get image from ${req.query.category}`);
-    return db.prepare(`SELECT * FROM images WHERE category="${prepareString(req.query.category)}" ORDER BY RANDOM() LIMIT 1;`).get();
+    return db.prepare(`SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;`, prepareString(req.query.category)).get();
   }
   else {
     log.info('Getting random image');
@@ -72,7 +69,7 @@ fastify.get('/getImage/:id', async (req, res) => {
       message: 'ID Not Found'
     }
   }
-  return db.prepare(`SELECT * FROM images WHERE id="${req.params.id}" ORDER BY RANDOM() LIMIT 1;`).get();
+  return db.prepare(`SELECT * FROM images WHERE id=? ORDER BY RANDOM() LIMIT 1;`, req.params.id).get();
 });
 
 fastify.get('/getQuote', async (_req) =>  {
@@ -94,7 +91,7 @@ fastify.get('/getQuote/:id', async (req, res) =>  {
       message: 'ID Not Found'
     }
   }
-  return db.prepare(`SELECT * FROM quotes WHERE id="${req.params.id}" ORDER BY RANDOM() LIMIT 1;`).get();
+  return db.prepare(`SELECT * FROM quotes WHERE id=? ORDER BY RANDOM() LIMIT 1;`, req.params.id).get();
 });
 
 fastify.get('/getUpdate', async () => {
