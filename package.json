@@ -4,8 +4,8 @@
     "author": "ohlookitsderpy",
     "license": "MIT",
     "dependencies": {
-        "better-sqlite3": "^7.1.0",
-        "fastify": "2.14.0",
+        "better-sqlite3": "7.1.0",
+        "fastify": "2.14.1",
         "fastify-cors": "3.0.3",
         "fastify-no-icon": "3.0.0",
         "fastify-rate-limit": "3.0.1",
