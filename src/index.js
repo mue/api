@@ -3,6 +3,7 @@ const fastify = require('fastify')();
 const log = require('leekslazylogger');
 const config = require('./config.json');
 const db = require('better-sqlite3')(config.database);
+const cat = require('./categories.json');
 
 //* Set Things 
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
