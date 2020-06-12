@@ -3,7 +3,6 @@ const fastify = require('fastify')();
 const log = require('leekslazylogger');
 const config = require('./config.json');
 const db = require('better-sqlite3')(config.database);
-const cat = require('./categories.json');
 
 //* Set Things 
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
@@ -74,7 +73,7 @@ fastify.get('/getImage/:id', async (req, res) => {
 
 fastify.get('/getQuote', async (_req) =>  {
   log.info('Request made to /getQuote');
-  return db.prepare('SELECT * FROM quotes WHERE language="English" ORDER BY RANDOM() LIMIT 1;').get();
+  return db.prepare('SELECT * FROM quotes WHERE language=? ORDER BY RANDOM() LIMIT 1;').get('English');
   //else return db.prepare(`SELECT * FROM quotes WHERE language="${req.query.language}" ORDER BY RANDOM() LIMIT 1;`).get();
 });
 
@@ -101,7 +100,10 @@ fastify.get('/getUpdate', async () => {
 
 fastify.get('/getCategories', async () => {
   log.info('Request made to /getCategories');
-  return require('./categories.json');
+  const categories = db.prepare('SELECT DISTINCT d.category FROM images AS s INNER JOIN images AS d ON s.category = d.category;').all();
+  let categoriesArray = [];
+  categories.forEach(item => categoriesArray.push(item.category));
+  return categoriesArray;
 });
 
 //* Listen on port
