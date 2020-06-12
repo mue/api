@@ -3,7 +3,6 @@ const fastify = require('fastify')();
 const log = require('leekslazylogger');
 const config = require('./config.json');
 const db = require('better-sqlite3')(config.database);
-const cat = require('./categories.json');
 
 //* Set Things 
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
@@ -29,7 +28,8 @@ fastify.get('/', async () => {
 fastify.get('/getImage', async (req, res) => {
   log.info('Request made to /getImage');
   if (req.query.category) {
-    if (!cat.includes(prepareString(req.query.category))) {
+    const ifExists = db.prepare(`SELECT EXISTS (SELECT category FROM images WHERE category=?);`).get(prepareString(req.query.category));
+    if (ifExists['EXISTS (SELECT category FROM images WHERE category=?)'] === 0) {
       log.error(`User attempted to set category as "${req.query.category}"`);
       res.status(400); // Use proper 400 status
       return {
