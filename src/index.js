@@ -28,7 +28,7 @@ fastify.get('/', async () => {
 fastify.get('/getImage', async (req, res) => {
   log.info('Request made to /getImage');
   if (req.query.category) {
-    const ifExists = db.prepare(`SELECT EXISTS (SELECT category FROM images WHERE category=?);`).get(prepareString(req.query.category));
+    const ifExists = db.prepare('SELECT EXISTS (SELECT category FROM images WHERE category=?);').get(prepareString(req.query.category));
     if (ifExists['EXISTS (SELECT category FROM images WHERE category=?)'] === 0) {
       log.error(`User attempted to set category as "${req.query.category}"`);
       res.status(400); // Use proper 400 status
@@ -39,7 +39,7 @@ fastify.get('/getImage', async (req, res) => {
       }
     }
     log.info(`Attempting to get image from ${req.query.category}`);
-    return db.prepare(`SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;`).get(prepareString(req.query.category));
+    return db.prepare('SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;').get(prepareString(req.query.category));
   }
   else {
     log.info('Getting random image');
@@ -69,7 +69,7 @@ fastify.get('/getImage/:id', async (req, res) => {
       message: 'ID Not Found'
     }
   }
-  return db.prepare(`SELECT * FROM images WHERE id=? ORDER BY RANDOM() LIMIT 1;`).get(req.params.id);
+  return db.prepare('SELECT * FROM images WHERE id=? ORDER BY RANDOM() LIMIT 1;').get(req.params.id);
 });
 
 fastify.get('/getQuote', async (_req) =>  {
@@ -91,7 +91,7 @@ fastify.get('/getQuote/:id', async (req, res) =>  {
       message: 'ID Not Found'
     }
   }
-  return db.prepare(`SELECT * FROM quotes WHERE id=? ORDER BY RANDOM() LIMIT 1;`).get(req.params.id);
+  return db.prepare('SELECT * FROM quotes WHERE id=? ORDER BY RANDOM() LIMIT 1;').get(req.params.id);
 });
 
 fastify.get('/getUpdate', async () => {
