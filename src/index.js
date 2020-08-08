@@ -8,7 +8,7 @@ const db = require('better-sqlite3')(config.database);
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
 log.init(config.logname);
 fastify.register(require('fastify-cors'));
-fastify.register(require('fastify-no-icon'));
+//fastify.register(require('fastify-no-icon'));
 fastify.register(require('fastify-rate-limit'), {
   max: config.ratelimit.max,
   timeWindow: config.ratelimit.timewin
