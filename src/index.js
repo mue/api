@@ -1,10 +1,11 @@
-//* Imports
 const fastify = require('fastify')();
 const log = require('leekslazylogger');
 const config = require('./config.json');
 const db = require('better-sqlite3')(config.database);
+const GhostContentAPI = require('@tryghost/content-api');
+const dtf = require('@eartharoid/dtf');
 
-//* Set Things 
+//* Set Things
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
 log.init(config.logname);
 fastify.register(require('fastify-cors'));
@@ -12,6 +13,11 @@ fastify.register(require('fastify-cors'));
 fastify.register(require('fastify-rate-limit'), {
   max: config.ratelimit.max,
   timeWindow: config.ratelimit.timewin
+});
+const ghost = new GhostContentAPI({
+  url: config.update.blogurl,
+  key: config.update.ghostapikey,
+  version: 'v3'
 });
 
 //* Functions
@@ -40,8 +46,7 @@ fastify.get('/getImage', async (req, res) => {
     }
     log.info(`Attempting to get image from ${req.query.category}`);
     return db.prepare('SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;').get(prepareString(req.query.category));
-  }
-  else {
+  } else {
     log.info('Getting random image');
     if (req.query.webp) {
       const data = db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
@@ -63,7 +68,7 @@ fastify.get('/getImage/:id', async (req, res) => {
   if (isNaN(req.params.id) || req.params.id > latest.id) { // Check if ID is number and if it is larger than the last ID in the database
     log.error(`Failed to get image id "${req.params.id}"`);
     res.status(400); // Use proper 400 status
-    return { 
+    return {
       statusCode: 400,
       error: 'Invalid ID',
       message: 'ID Not Found'
@@ -85,7 +90,7 @@ fastify.get('/getQuote/:id', async (req, res) =>  {
   if (isNaN(req.params.id) || req.params.id > latest.id) { // Check if ID is number and if it is larger than the last ID in the database
     log.error(`Failed to get quote id ${req.params.id}`);
     res.status(400); // Use proper 400 status
-    return { 
+    return {
       statusCode: 400,
       error: 'Invalid ID',
       message: 'ID Not Found'
@@ -96,7 +101,15 @@ fastify.get('/getQuote/:id', async (req, res) =>  {
 
 fastify.get('/getUpdate', async () => {
   log.info('Request made to /getUpdate');
-  return require('./update.json');
+  const data = await ghost.posts.read({ slug: config.update.post, include: ['authors'] });
+  return {
+    title: data.title,
+    content: data.html,
+    image: data.feature_image,
+    url: data.url,
+    published: dtf('n_D MMM YYYY', data.published_at, 'en-GB'),
+    author: data.primary_author.name
+  }
 });
 
 fastify.get('/getCategories', async () => {
