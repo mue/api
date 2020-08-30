@@ -9,7 +9,6 @@ const dtf = require('@eartharoid/dtf');
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
 log.init(config.logname);
 fastify.register(require('fastify-cors'));
-//fastify.register(require('fastify-no-icon'));
 fastify.register(require('fastify-rate-limit'), {
   max: config.ratelimit.max,
   timeWindow: config.ratelimit.timewin
@@ -118,6 +117,14 @@ fastify.get('/getCategories', async () => {
   let categoriesArray = [];
   categories.forEach(item => categoriesArray.push(item.category));
   return categoriesArray;
+});
+
+fastify.get('/getPhotographers', async () => {
+  log.info('Request made to /getPhotographers');
+  const photographers = db.prepare('SELECT DISTINCT d.photographer FROM images AS s INNER JOIN images AS d ON s.photographer = d.photographer;').all();
+  let photographerArray = [];
+  photographers.forEach(item => photographerArray.push(item.photographer));
+  return photographerArray;
 });
 
 //* Listen on port
