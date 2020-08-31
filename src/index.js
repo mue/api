@@ -1,5 +1,5 @@
 const fastify = require('fastify')();
-const log = require('leekslazylogger');
+const Logger = require('leekslazylogger');
 const config = require('./config.json');
 const db = require('better-sqlite3')(config.database);
 const GhostContentAPI = require('@tryghost/content-api');
@@ -7,7 +7,9 @@ const dtf = require('@eartharoid/dtf');
 
 //* Set Things
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
-log.init(config.logname);
+const log = new Logger({
+  name: config.logname
+});
 fastify.register(require('fastify-cors'));
 fastify.register(require('fastify-rate-limit'), {
   max: config.ratelimit.max,
@@ -138,4 +140,4 @@ fastify.get('/getPhotographers', async () => {
 });
 
 //* Listen on port
-fastify.listen(config.port, log.info(`Fastify server started on port ${config.port}`));
+fastify.listen(config.port, () => log.info(`Fastify server started on port ${config.port}`));
