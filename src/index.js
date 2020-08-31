@@ -16,11 +16,8 @@ fastify.register(require('fastify-rate-limit'), {
 const ghost = new GhostContentAPI({
   url: config.update.blogurl,
   key: config.update.ghostapikey,
-  version: 'v3'
+  version: config.update.ghostversion
 });
-
-//* Functions
-const prepareString = (string) => string.charAt(0).toUpperCase() + string.slice(1); // Uppercase category input
 
 //* Routes
 fastify.get('/', async () => {
@@ -33,7 +30,7 @@ fastify.get('/', async () => {
 fastify.get('/getImage', async (req, res) => {
   log.info('Request made to /getImage');
   if (req.query.category) {
-    const ifExists = db.prepare('SELECT EXISTS (SELECT category FROM images WHERE category=?);').get(prepareString(req.query.category));
+    const ifExists = db.prepare('SELECT EXISTS (SELECT category FROM images WHERE category=?);').get(req.query.category);
     if (ifExists['EXISTS (SELECT category FROM images WHERE category=?)'] === 0) {
       log.error(`User attempted to set category as "${req.query.category}"`);
       res.status(400); // Use proper 400 status
@@ -44,7 +41,7 @@ fastify.get('/getImage', async (req, res) => {
       }
     }
     log.info(`Attempting to get image from ${req.query.category}`);
-    return db.prepare('SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;').get(prepareString(req.query.category));
+    return db.prepare('SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;').get(req.query.category);
   } else {
     log.info('Getting random image');
     if (req.query.webp) {
@@ -54,7 +51,9 @@ fastify.get('/getImage', async (req, res) => {
         category: data.category,
         file: data.file.split('e/')[0] + 'e/webp' + data.file.split('/mue')[1].replace('.jpg', '.webp'),
         photographer: data.photographer,
-        location: data.location
+        location: data.location,
+        camera: data.camera,
+        resolution: data.resolution
       }
     } else return db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
   }
@@ -100,7 +99,18 @@ fastify.get('/getQuote/:id', async (req, res) =>  {
 
 fastify.get('/getUpdate', async () => {
   log.info('Request made to /getUpdate');
-  const data = await ghost.posts.read({ slug: config.update.post, include: ['authors'] });
+  let data;
+  try {
+    data = await ghost.posts.read({ slug: config.update.post, include: ['authors'] });
+  } catch (e) {
+    res.status(502);
+    return {
+      statusCode: 502,
+      error: 'Request Failed',
+      message: 'Could not connect to the Mue Blog'
+    }
+  }
+
   return {
     title: data.title,
     content: data.html,
@@ -128,4 +138,4 @@ fastify.get('/getPhotographers', async () => {
 });
 
 //* Listen on port
-fastify.listen(config.port, log.info('Fastify server started'));
+fastify.listen(config.port, log.info(`Fastify server started on port ${config.port}`));
