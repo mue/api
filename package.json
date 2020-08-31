@@ -8,6 +8,6 @@
         "fastify": "3.3.0",
         "fastify-cors": "4.1.0",
         "fastify-rate-limit": "4.0.2",
-        "leekslazylogger": "1.1.9"
+        "leekslazylogger": "2.0.1"
     }
 }
