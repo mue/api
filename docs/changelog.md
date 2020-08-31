@@ -1,6 +1,10 @@
-
-
 # Changelog
+
+## 1.3.0 - 31/08/20
+## Added
+* A lot more info to the /getUpdate endpoint, now using data from the blog
+* /getPhotographers endpoint
+* /getImages now includes camera model and resolution
 
 ## 1.2.1 - 14/12/19
 ### Changed

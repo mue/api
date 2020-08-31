@@ -2,8 +2,11 @@
 Quote-related endpoints
 
 #### Get Quote
+
 ```https://api.muetab.xyz/getQuote```
+
 This endpoint allows you to get a quote. If ID isn't specified it will return a random quote.
+
 <!-- tabs:start -->
 #### ** Request **
 Parameter | Type | Info
