@@ -6,7 +6,7 @@
     "dependencies": {
         "@tryghost/content-api": "1.4.4",
         "better-sqlite3": "7.1.1",
-        "fastify": "3.3.0",
+        "fastify": "3.4.1",
         "fastify-cors": "4.1.0",
         "fastify-rate-limit": "4.0.2",
         "leekslazylogger": "2.0.3"
