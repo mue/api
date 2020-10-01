@@ -4,7 +4,7 @@
     "author": "ohlookitsderpy",
     "license": "MIT",
     "dependencies": {
-        "@tryghost/content-api": "1.4.4",
+        "@tryghost/content-api": "1.4.5",
         "better-sqlite3": "7.1.1",
         "fastify": "3.4.1",
         "fastify-cors": "4.1.0",
