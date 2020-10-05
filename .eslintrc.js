@@ -11,12 +11,11 @@ module.exports = {
 		'SharedArrayBuffer': 'readonly'
 	},
 	'parserOptions': {
-		'ecmaVersion': 2020
+		'ecmaVersion': 8
 	},
 	'rules': {
 		'indent': [
-			'warn',
-			'tab'
+			'off'
 		],
 		'linebreak-style': [
 			'off',
