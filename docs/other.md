@@ -3,7 +3,7 @@ Other endpoints on the Mue API
 
 #### /
 
-```https://api.muetab.xyz```
+```https://api.muetab.com/```
 
 Returns hello world message.
 
@@ -11,14 +11,14 @@ Returns hello world message.
 #### ** Response **
 Type | Code | Response
 --- | --- | ---
-OK | 200 | ```Hello world! Documentation can be found at https://apidocs.muetab.xyz```
+OK | 200 | ```Hello world! Documentation can be found at https://apidocs.muetab.com```
 <!-- tabs:end -->
 
 #### Get Update Changelog
 
-```https://api.muetab.xyz/getUpdate```
+```https://api.muetab.com/getUpdate```
 
-This endpoint allows you to get the most recent update changelog from the [blog](https://blog.muetab.xyz).
+This endpoint allows you to get the most recent update changelog from the [blog](https://blog.muetab.com).
 
 <!-- tabs:start -->
 #### ** Response **

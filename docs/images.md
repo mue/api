@@ -3,7 +3,7 @@ Image-related endpoints
 
 #### Get Image
 
-```https://api.muetab.xyz/getImage```
+```https://api.muetab.com/getImage```
 
 This endpoint allows you to get an image. If ID or category aren't specified it will return a random image from all categories.
 
@@ -23,7 +23,7 @@ Not Found | 404 | ```{"message":"Category not found."}```
 
 ### Get Categories
 
-```https://api.muetab.xyz/getCategories```
+```https://api.muetab.com/getCategories```
 
 This endpoint returns all categories in an array.
 
@@ -36,7 +36,7 @@ OK | 200 | ```["Outdoors"]```
 
 ### Get Photographers
 
-```https://api.muetab.xyz/getPhotographers```
+```https://api.muetab.com/getPhotographers```
 
 This endpoint returns all photographers in an array.
 

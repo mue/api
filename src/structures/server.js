@@ -52,7 +52,7 @@ module.exports = class Server {
         this.addMiddleware();
         this.addRoutes();
 
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         this.server.listen(this.config.port, (error, address) =>
             error ? this.log.error(`Unable to build the fastify instance:\n${error}`) : this.log.info(`Running the API server at ${address}`)
         );
