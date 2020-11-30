@@ -1,7 +1,9 @@
+const package = require('../../package.json');
+
 module.exports = ({ server, config }) => {
     server.get('/', async () => {
         return {
-            statusCode: 200,
+            version: package.version,
             message: `API docs: ${config.docs}`
         };
     });

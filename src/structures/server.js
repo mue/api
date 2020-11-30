@@ -5,18 +5,12 @@ const config = require('../config.json');
 
 const log = new Logger({
 	name: config.logs.name,
-	logToFile: config.logs.logToFile,
+    logToFile: config.logs.logToFile,
+    format: '{method} {status-colour}{status} &7{path} {time-colour}({time})'
 });
 
-const db = require('better-sqlite3')(config.database);
+const db = require('better-sqlite3')(config.database.file);
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
-
-const GhostContentAPI = require('@tryghost/content-api'); // for getUpdate endpoint
-const ghost = new GhostContentAPI({
-	url: config.update.blogurl,
-	key: config.update.ghostapikey,
-	version: config.update.ghostversion
-});
 
 module.exports = class Server {
     constructor(config) {
@@ -24,7 +18,6 @@ module.exports = class Server {
         this.config = config;
         this.log = log;
         this.db = db;
-        this.ghost = ghost;
     }
 
     addMiddleware() {
@@ -54,7 +47,7 @@ module.exports = class Server {
 
         await new Promise(resolve => setTimeout(resolve, 1000));
         this.server.listen(this.config.port, (error, address) =>
-            error ? this.log.error(`Unable to build the fastify instance:\n${error}`) : this.log.info(`Running the API server at ${address}`)
+            error ? this.log.error(`Unable to build the Fastify instance:\n${error}`) : this.log.info(`Running the API server at ${address}`)
         );
     }
 };

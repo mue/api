@@ -1,6 +1,13 @@
 const dtf = require('@eartharoid/dtf');
+const GhostContentAPI = require('@tryghost/content-api'); // for getUpdate endpoint
 
-module.exports = ({ server, config, ghost }) => {
+module.exports = ({ server, config }) => {
+    const ghost = new GhostContentAPI({
+        url: config.update.blogurl,
+        key: config.update.ghostapikey,
+        version: config.update.ghostversion
+    });
+
     server.get('/getUpdate', async (_req, res) => {
         let data;
         try {
@@ -8,7 +15,6 @@ module.exports = ({ server, config, ghost }) => {
         } catch (e) {
             res.status(502);
             return {
-                statusCode: 502,
                 error: 'Request Failed',
                 message: 'Could not connect to the Mue Blog'
             };
