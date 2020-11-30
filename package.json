@@ -1,14 +1,18 @@
 {
+    "private": true,
     "name": "mue-api",
     "description": "API for Mue, a new tab extension.",
-    "author": "ohlookitsderpy",
+    "author": "David \"ohlookitsderpy\" Ralph <contact@derpyenterprises.org> (https://derpyenterprises.org)",
     "license": "MIT",
     "main": "src/",
+    "version": "2.0.0",
     "dependencies": {
+        "@eartharoid/dtf": "1.0.8",
         "@tryghost/content-api": "1.4.7",
+        "axios": "0.21.0",
         "better-sqlite3": "7.1.1",
-        "fastify": "3.7.0",
-        "fastify-cors": "4.1.0",
+        "fastify": "3.8.0",
+        "fastify-cors": "5.0.0",
         "fastify-rate-limit": "4.0.3",
         "leekslazylogger-fastify": "0.0.3"
     }

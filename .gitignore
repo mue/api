@@ -8,6 +8,3 @@ mue.db*
 yarn.lock
 config.json
 package-lock.json
-database.db
-database.db-shm
-database.db-wal
