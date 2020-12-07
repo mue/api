@@ -9,7 +9,7 @@
         "better-sqlite3": "7.1.1",
         "fastify": "3.8.0",
         "fastify-cors": "5.0.0",
-        "fastify-rate-limit": "4.0.3",
+        "fastify-rate-limit": "4.1.0",
         "leekslazylogger-fastify": "0.0.3"
     }
 }
