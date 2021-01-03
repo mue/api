@@ -1,3 +1,5 @@
+const fetch = require('centra');
+
 module.exports = ({ server, db, config }) => {
     server.get('/getImage', async (req, res) => {
         let data;
@@ -43,5 +45,17 @@ module.exports = ({ server, db, config }) => {
     server.get('/getPhotographers', async () => {
         const photographers = db.prepare('SELECT DISTINCT d.photographer FROM images AS s INNER JOIN images AS d ON s.photographer = d.photographer;').all();
         return photographers.map(item => item.photographer);
+    });
+
+
+    server.get('/getUnsplash', async (_req, res) => {
+        const data = await (await fetch(`https://api.unsplash.com/photos/random?client_id=${config.unsplashKey}&query=nature&content_filter=high&featured=true&orientation=landscape`).send()).json();
+        res.send({
+          file: data.urls.full + '&w=1920',
+          photographer: data.user.name,
+          location: data.location.city + ' ' + data.location.country,
+          photographer_page: data.user.links.html + '?utm_source=mue&utm_medium=referral'
+        });
+        await fetch(`${data.links.download_location}?client_id=${config.unsplashKey}`).send(); // api requirement
     });
 };
