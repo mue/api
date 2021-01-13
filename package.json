@@ -5,7 +5,7 @@
     "license": "MIT",
     "main": "src/",
     "dependencies": {
-        "@tryghost/content-api": "1.4.11",
+        "@tryghost/content-api": "1.4.13",
         "better-sqlite3": "7.1.2",
         "fastify": "3.9.2",
         "fastify-cors": "5.1.0",
