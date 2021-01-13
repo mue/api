@@ -4,7 +4,7 @@ module.exports = ({ server, config }) => {
     server.get('/', async () => {
         return {
             version: package.version,
-            message: `API docs: ${config.docs}`
+            message: `Hello World! API docs: ${config.docs}`
         };
     });
 };

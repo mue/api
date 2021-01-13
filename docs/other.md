@@ -3,7 +3,7 @@ Other endpoints on the Mue API
 
 #### /
 
-```https://api.muetab.com/```
+```https://api.muetab.com```
 
 Returns hello world message.
 

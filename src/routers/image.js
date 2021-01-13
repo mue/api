@@ -47,7 +47,6 @@ module.exports = ({ server, db, config }) => {
         return photographers.map(item => item.photographer);
     });
 
-
     server.get('/getUnsplash', async (_req, res) => {
         const data = await (await fetch(`https://api.unsplash.com/photos/random?client_id=${config.unsplashKey}&query=nature&content_filter=high&featured=true&orientation=landscape`).send()).json();
         res.send({

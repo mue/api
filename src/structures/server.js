@@ -9,8 +9,9 @@ const log = new Logger({
     format: '{method} {status-colour}{status} &7{path} {time-colour}({time})'
 });
 
-const db = require('better-sqlite3')(config.database.file);
+const db = require('better-sqlite3')('mue.db');
 db.pragma('journal_mode = WAL'); // This makes sqlite FAST
+db.pragma('synchronous = OFF'); // disable sync, we only do read requests so hopefully corruption shouldn't occur
 
 module.exports = class Server {
     constructor(config) {
