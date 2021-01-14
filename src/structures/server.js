@@ -15,7 +15,9 @@ db.pragma('synchronous = OFF'); // disable sync, we only do read requests so hop
 
 module.exports = class Server {
     constructor(config) {
-        this.server = fastify();
+        this.server = fastify({
+            ignoreTrailingSlash: true
+        });
         this.config = config;
         this.log = log;
         this.db = db;
@@ -23,11 +25,11 @@ module.exports = class Server {
 
     addMiddleware() {
         this.server.register(log.fastify); // logger plugin
-        this.server.register(require('fastify-cors'));
+        if (!this.config.nginx) this.server.register(require('fastify-cors'));
         this.server.register(require('fastify-rate-limit'), {
             max: config.ratelimit.max,
             timeWindow: config.ratelimit.timewin,
-            keyGenerator: (req) => { return req.headers['x-real-ip'] || req.raw.ip }
+            keyGenerator: (req) => { return req.headers['x-real-ip'] || req.raw.ip } // support for nginx
         });
     }
 
@@ -38,7 +40,7 @@ module.exports = class Server {
             if (error) this.log.error(`Unable to build routes:\n${error}`);
             files.forEach(file => {
                 require(`../routers/${file}`)(this);
-                this.log.info(`Built route in "${file}"`);
+                this.log.info(`Built ${file} route`);
             });
         });
     }

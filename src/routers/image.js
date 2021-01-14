@@ -21,17 +21,15 @@ module.exports = ({ server, db, config }) => {
     });
 
     server.get('/getImage/:id', async (req, res) => {
-        let data;
-        if (req.params.id) {
-            const latest = db.prepare('SELECT * FROM images ORDER BY ID DESC LIMIT 1;').get(); // Get the last ID in the database
-            if (isNaN(req.params.id) || req.params.id > latest.id) { // Check if ID is number and if it is larger than the last ID in the database
-                res.status(400);
-                return {
-                    error: 'Invalid ID',
-                    message: 'ID Not Found'
-                };
-            }
-        } else data = db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
+        const latest = db.prepare('SELECT * FROM images ORDER BY ID DESC LIMIT 1;').get(); // Get the last ID in the database
+        if (isNaN(req.params.id) || req.params.id > latest.id) { // Check if ID is number and if it is larger than the last ID in the database
+            res.status(400);
+            return {
+                error: 'Invalid ID',
+                message: 'ID Not Found'
+            };
+        }
+        let data = db.prepare('SELECT * FROM quotes WHERE id=? ORDER BY RANDOM() LIMIT 1;').get(req.params.id);
         if (req.query.webp) data.file = config.database.cdn + data.file + '.webp';
         else data.file = config.database.cdn + data.file + '.jpg';
         return data;
