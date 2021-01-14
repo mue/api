@@ -1,5 +1,9 @@
+* Information
 * [Welcome](/)
 * [Changelog](changelog.md)
+* [Wrappers](wrappers.md)
+* Endpoints
 * [Images](images.md)
 * [Quotes](quotes.md)
+* [Marketplace](marketplace.md)
 * [Other](other.md)

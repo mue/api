@@ -1,48 +1,38 @@
-module.exports = ({ server, log, db }) => {
+const fetch = require('centra');
+
+module.exports = ({ server, db, config }) => {
     server.get('/getImage', async (req, res) => {
+        let data;
         if (req.query.category) {
-            log.info(`Attempting to get image from "${req.query.category}" category`);
-            const ifExists = db.prepare('SELECT EXISTS (SELECT category FROM images WHERE category=?);').get(req.query.category);
-            if (ifExists['EXISTS (SELECT category FROM images WHERE category=?)'] === 0) {
-                log.warn(`Category "${req.query.category}" doesn't exist`);
-                res.status(400); // Use proper 400 status
+            const ifExists = db.prepare('SELECT EXISTS (SELECT category FROM images WHERE category=?);').get(req.query.category.toLowerCase());
+            if (JSON.parse(Object.values(ifExists)) === 0) {
+                res.status(400);
                 return {
-                    statusCode: 400,
                     error: 'Invalid Category',
                     message: 'Category Not Found'
                 };
             }
-            return db.prepare('SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;').get(req.query.category);
-        } else {
-            log.info('Getting random image');
-            if (req.query.webp) {
-                const data = db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
-                return {
-                    id: data.id,
-                    category: data.category,
-                    file: data.file.split('e/')[0] + 'e/webp' + data.file.split('/mue')[1].replace('.jpg', '.webp'),
-                    photographer: data.photographer,
-                    location: data.location,
-                    camera: data.camera,
-                    resolution: data.resolution
-                };
-            } else return db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
-        }
+            data = db.prepare('SELECT * FROM images WHERE category=? ORDER BY RANDOM() LIMIT 1;').get(req.query.category.toLowerCase());
+        } else data = db.prepare('SELECT * FROM images ORDER BY RANDOM() LIMIT 1;').get();
+
+        if (req.query.webp) data.file = config.database.cdn + data.file + '.webp';
+        else data.file = config.database.cdn + data.file + '.jpg';
+        return data;
     });
 
     server.get('/getImage/:id', async (req, res) => {
-        log.info(`Attempting to get image id ${req.params.id}`);
         const latest = db.prepare('SELECT * FROM images ORDER BY ID DESC LIMIT 1;').get(); // Get the last ID in the database
         if (isNaN(req.params.id) || req.params.id > latest.id) { // Check if ID is number and if it is larger than the last ID in the database
-            log.error(`Failed to get image id ${req.params.id}`);
-            res.status(400); // Use proper 400 status
+            res.status(400);
             return {
-                statusCode: 400,
                 error: 'Invalid ID',
                 message: 'ID Not Found'
             };
         }
-        return db.prepare('SELECT * FROM images WHERE id=? ORDER BY RANDOM() LIMIT 1;').get(req.params.id);
+        let data = db.prepare('SELECT * FROM quotes WHERE id=? ORDER BY RANDOM() LIMIT 1;').get(req.params.id);
+        if (req.query.webp) data.file = config.database.cdn + data.file + '.webp';
+        else data.file = config.database.cdn + data.file + '.jpg';
+        return data;
     });
 
     server.get('/getCategories', async () => {
@@ -53,5 +43,16 @@ module.exports = ({ server, log, db }) => {
     server.get('/getPhotographers', async () => {
         const photographers = db.prepare('SELECT DISTINCT d.photographer FROM images AS s INNER JOIN images AS d ON s.photographer = d.photographer;').all();
         return photographers.map(item => item.photographer);
+    });
+
+    server.get('/getUnsplash', async (_req, res) => {
+        const data = await (await fetch(`https://api.unsplash.com/photos/random?client_id=${config.unsplashKey}&query=nature&content_filter=high&featured=true&orientation=landscape`).send()).json();
+        res.send({
+          file: data.urls.full + '&w=1920',
+          photographer: data.user.name,
+          location: data.location.city + ' ' + data.location.country,
+          photographer_page: data.user.links.html + '?utm_source=mue&utm_medium=referral'
+        });
+        await fetch(`${data.links.download_location}?client_id=${config.unsplashKey}`).send(); // api requirement
     });
 };

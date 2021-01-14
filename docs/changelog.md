@@ -1,7 +1,17 @@
 # Changelog
 
+## 2.0.0 - 14/01/21
+### Added
+* Documentation now covers marketplace and Unsplash information
+* Unsplash route to main API, deprecating the old server
+* /getQuoteLanguages route and allow getting quotes in other languages
+
+### Changed
+* API optimisations
+* Various fixes and changes
+
 ## 1.3.0 - 31/08/20
-## Added
+### Added
 * A lot more info to the /getUpdate endpoint, now using data from the blog
 * /getPhotographers endpoint
 * /getImages now includes camera model and resolution

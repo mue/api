@@ -1,26 +1,18 @@
-const dtf = require('@eartharoid/dtf');
+const fetch = require('centra');
+const cheerio = require('cheerio');
 
-module.exports = ({ server, config, ghost }) => {
-    server.get('/getUpdate', async (_req, res) => {
-        let data;
-        try {
-            data = await ghost.posts.read({ slug: config.update.post, include: ['authors'] });
-        } catch (e) {
-            res.status(502);
-            return {
-                statusCode: 502,
-                error: 'Request Failed',
-                message: 'Could not connect to the Mue Blog'
-            };
-        }
+module.exports = ({ server, config }) => {
+    server.get('/getUpdate', async () => {
+        const data = await (await fetch(config.update.url + config.update.post).send()).text();
+        const $ = cheerio.load(data);
 
         return {
-            title: data.title,
-            content: data.html.replace(/<p><\/p>/gm, ''), // remove the spam at the end
-            image: data.feature_image,
-            url: data.url,
-            published: dtf('n_D MMM YYYY', data.published_at, 'en-GB'),
-            author: data.primary_author.name
-        };
+            title: $('h1', '.wrapper').html(),
+            content: $('.post__entry').html(),
+            image: 'null',
+            url: config.update.url + config.update.post,
+            published: $('.post__meta').text(),
+            author: config.update.author
+        }
     });
 };
