@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 - ???
+## 2.0.0 - 14/01/21
 ### Added
 * Documentation now covers marketplace and Unsplash information
 * Unsplash route to main API, deprecating the old server

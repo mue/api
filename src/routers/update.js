@@ -2,17 +2,17 @@ const fetch = require('centra');
 const cheerio = require('cheerio');
 
 module.exports = ({ server, config }) => {
-    server.get('/getUpdate', async (_req, res) => {
-        const data = await (await fetch(`https://blog.muetab.com/update-410/`).send()).text();
+    server.get('/getUpdate', async () => {
+        const data = await (await fetch(config.update.url + config.update.post).send()).text();
         const $ = cheerio.load(data);
 
         return {
-            title: '',
-            content: $('.post__entry').innerHTML,
+            title: $('h1', '.wrapper').html(),
+            content: $('.post__entry').html(),
             image: 'null',
-            url: 'https://blog.muetab.com/update-410/',
-            published: '',
-            author: 'Mue Staff'
+            url: config.update.url + config.update.post,
+            published: $('.post__meta').text(),
+            author: config.update.author
         }
     });
 };
