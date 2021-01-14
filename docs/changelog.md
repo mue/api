@@ -4,6 +4,7 @@
 ### Added
 * Documentation now covers marketplace and Unsplash information
 * Unsplash route to main API, deprecating the old server
+* /getQuoteLanguages route and allow getting quotes in other languages
 
 ### Changed
 * API optimisations

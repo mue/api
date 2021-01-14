@@ -26,7 +26,8 @@ module.exports = class Server {
         this.server.register(require('fastify-cors'));
         this.server.register(require('fastify-rate-limit'), {
             max: config.ratelimit.max,
-            timeWindow: config.ratelimit.timewin
+            timeWindow: config.ratelimit.timewin,
+            keyGenerator: (req) => { return req.headers['x-real-ip'] || req.raw.ip }
         });
     }
 
