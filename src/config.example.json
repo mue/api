@@ -1,0 +1,21 @@
+{
+    "port": 8080,
+    "logs": {
+        "name": "API",
+        "logToFile": true
+    },
+    "ratelimit": {
+        "max": 100,
+        "timewin": "1 minute"
+    },
+    "database": {
+        "file": "database.db",
+        "cdn": "https://img.muetab.com/"
+    },
+    "docs": "https://apidocs.muetab.com",
+    "update": {
+        "url": "https://blog.muetab.com/",
+        "post": "update-410/",
+        "author": "Mue"
+    }
+}

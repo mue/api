@@ -7,4 +7,8 @@ module.exports = ({ server, config }) => {
             message: `Hello World! API docs: ${config.docs}`
         };
     });
+
+    server.get('/docs', async (_req, res) => {
+        res.redirect(config.docs);
+    });
 };
