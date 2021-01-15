@@ -25,7 +25,7 @@ module.exports = class Server {
 
     addMiddleware() {
         this.server.register(log.fastify); // logger plugin
-        if (!this.config.nginx) this.server.register(require('fastify-cors'));
+        this.server.register(require('fastify-cors'));
         this.server.register(require('fastify-rate-limit'), {
             max: config.ratelimit.max,
             timeWindow: config.ratelimit.timewin,
