@@ -10,7 +10,7 @@
         "better-sqlite3": "7.1.2",
         "centra": "2.4.2",
         "cheerio": "1.0.0-rc.5",
-        "fastify": "3.10.1",
+        "fastify": "3.11.0",
         "fastify-cors": "5.2.0",
         "fastify-rate-limit": "5.0.1",
         "leekslazylogger-fastify": "0.0.3"
