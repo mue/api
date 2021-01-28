@@ -7,7 +7,8 @@ module.exports = async (req, res) => {
     const { data, error } = await supabase
     .from('quotes')
     .select()
-    .filter('id', 'eq', Math.floor(Math.random() * (config.count.quotes - 1 + 1)) + 1);
+    .eq('language', 'English')
+    .eq('id', Math.floor(Math.random() * (config.count.quotes - 1 + 1)) + 1);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     

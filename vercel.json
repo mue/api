@@ -1,7 +1,15 @@
 {
-	"rewrites": [
-        { "source": "/", "destination": "/api/index" },
-        { "source": "/getImage", "destination": "/api/getImage" },
-        { "source": "/getQuote", "destination": "/api/getQuote" }
-	]
+        "rewrites": [{
+                        "source": "/",
+                        "destination": "/api/index"
+                },
+                {
+                        "source": "/getImage",
+                        "destination": "/api/getImage"
+                },
+                {
+                        "source": "/getQuote",
+                        "destination": "/api/getQuote"
+                }
+        ]
 }
