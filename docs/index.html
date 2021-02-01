@@ -14,7 +14,6 @@
 <body>
   <div id='app'></div>
   <script src='https://unpkg.com/docsify-edit-on-github/index.js'></script>
-  <script src='https://unpkg.com/docsify-ethicalads@1.0.1/dist/docsify-ethicalads.min.js'></script>
   <script>
     window.$docsify = {
       name: 'Mue API',
@@ -22,10 +21,7 @@
       loadSidebar: true,
       plugins: [
         EditOnGithubPlugin.create('https://github.com/mue/api/tree/master/docs',
-          'https://github.com/mue/api/edit/master/docs/', 'Edit on GitHub'),
-        DocsifyEthicalAds.create('muetab-com', {
-          type: 'text'
-        })
+          'https://github.com/mue/api/edit/master/docs/', 'Edit on GitHub')
       ],
       pagination: {
         previousText: 'Previous',
