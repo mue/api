@@ -5,11 +5,15 @@
                 },
                 {
                         "source": "/getImage",
-                        "destination": "/api/getImage"
+                        "destination": "/api/image"
                 },
                 {
                         "source": "/getQuote",
-                        "destination": "/api/getQuote"
+                        "destination": "/api/quote"
+                },
+                {
+                        "source": "/getUpdate",
+                        "destination": "/api/update"
                 }
         ]
 }

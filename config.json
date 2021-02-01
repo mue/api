@@ -4,5 +4,9 @@
     "count": {
         "images": 299,
         "quotes": 107
+    },
+    "update": {
+        "url": "https://blog.muetab.com/",
+        "post": "update-410/"
     }
 }
