@@ -14,6 +14,18 @@
                 {
                         "source": "/getUpdate",
                         "destination": "/api/update"
+                },
+                {
+                        "source": "/getPhotographers",
+                        "destination": "/api/photographers"
+                },
+                {
+                        "source": "/getCategories",
+                        "destination": "/api/categories"
+                },
+                {
+                        "source": "/getQuoteLanguages",
+                        "destination": "/api/quotelanguages"
                 }
         ]
 }
