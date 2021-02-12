@@ -1,5 +1,5 @@
 {
-    "cdn": "https://img.muetab.com/file/muetab/",
+    "cdn": "https://f003.backblazeb2.com/file/muetab/",
     "helloworld": {"version":"2.0.0","message":"Hello World! API docs: https://apidocs.muetab.com"},
     "count": {
         "images": 299,
