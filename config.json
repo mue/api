@@ -1,5 +1,5 @@
 {
-    "cdn": "https://f003.backblazeb2.com/file/muetab/",
+    "cdn": "https://res.cloudinary.com/mue/image/upload/photos/old/",
     "helloworld": {"version":"2.0.0","message":"Hello World! API docs: https://apidocs.muetab.com"},
     "count": {
         "images": 299,
