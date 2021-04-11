@@ -8,7 +8,15 @@
                         "destination": "/api/image"
                 },
                 {
+                        "source": "/images/random",
+                        "destination": "/api/image"
+                },
+                {
                         "source": "/getQuote",
+                        "destination": "/api/quote"
+                },
+                {
+                        "source": "/quotes/random",
                         "destination": "/api/quote"
                 },
                 {
