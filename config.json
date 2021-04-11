@@ -1,10 +1,5 @@
 {
-    "cdn": "https://res.cloudinary.com/mue/image/upload/photos/old/",
-    "helloworld": {"version":"2.0.0","message":"Hello World! API docs: https://apidocs.muetab.com"},
-    "count": {
-        "images": 299,
-        "quotes": 107
-    },
+    "helloworld": {"version":"1.4.0","message":"Hello World! API docs: https://apidocs.muetab.com"},
     "update": {
         "url": "https://blog.muetab.com/",
         "post": "update-410/"

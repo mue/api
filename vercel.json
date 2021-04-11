@@ -24,15 +24,19 @@
                         "destination": "/api/update"
                 },
                 {
-                        "source": "/getPhotographers",
+                        "source": "/update",
+                        "destination": "/api/update"
+                },
+                {
+                        "source": "/images/photographers",
                         "destination": "/api/photographers"
                 },
                 {
-                        "source": "/getCategories",
+                        "source": "/images/categories",
                         "destination": "/api/categories"
                 },
                 {
-                        "source": "/getQuoteLanguages",
+                        "source": "/quotes/languages",
                         "destination": "/api/quotelanguages"
                 }
         ]

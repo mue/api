@@ -2,7 +2,7 @@
     "private": true,
     "name": "mue-api",
     "description": "API for Mue, a new tab extension.",
-    "author": "David \"ohlookitsderpy\" Ralph <contact@derpyenterprises.org> (https://derpyenterprises.org)",
+    "author": "David \"ohlookitsderpy\" Ralph <me@davidjcralph.co.uk> (https://davidjcralph.co.uk)",
     "license": "MIT",
     "main": "src/",
     "version": "1.4.0",
