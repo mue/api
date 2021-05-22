@@ -1,7 +1,6 @@
 {
-    "helloworld": {"version":"1.4.0","message":"Hello World! API docs: https://docs.muetab.com/api/introduction"},
-    "update": {
-        "url": "https://blog.muetab.com/",
-        "post": "update-410/"
+    "helloworld": {
+        "version": "1.4.0",
+        "message": "Hello World! API docs: https://docs.muetab.com/api/introduction"
     }
 }

@@ -10,7 +10,9 @@ module.exports = async (_req, res) => {
     let array = [];
 
     for (const key in data) {
-        if (!array.includes(data[key].language)) array.push(data[key].language);
+        if (!array.includes(data[key].language)) {
+            array.push(data[key].language);
+        }
     }
 
     res.setHeader('Access-Control-Allow-Origin', '*');
