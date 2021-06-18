@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
     const { data } = await supabase
     .from('quotes')
     .select()
-    .eq('language', req.query.language || 'English');
+    .eq('language', req.query.language.replace('French', 'Français') || 'English');
 
     const random = data[Math.floor(Math.random() * data.length)];
 
