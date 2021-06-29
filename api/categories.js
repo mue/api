@@ -1,7 +1,6 @@
 const config = require('../config.json');
 
 const { createClient } = require('@supabase/supabase-js');
-
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TOKEN);
 
 const rateLimit = require('lambda-rate-limiter')({

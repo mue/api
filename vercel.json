@@ -20,14 +20,6 @@
                         "destination": "/api/quote"
                 },
                 {
-                        "source": "/getUpdate",
-                        "destination": "/api/update"
-                },
-                {
-                        "source": "/update",
-                        "destination": "/api/update"
-                },
-                {
                         "source": "/images/photographers",
                         "destination": "/api/photographers"
                 },

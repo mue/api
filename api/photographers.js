@@ -1,7 +1,6 @@
 const config = require('../config.json');
 
 const { createClient } = require('@supabase/supabase-js');
-
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TOKEN);
 
 const rateLimit = require('lambda-rate-limiter')({
@@ -21,11 +20,11 @@ module.exports = async (req, res) => {
 
     let array = [];
 
-    for (const key in data) {
+    data.forEach((key) => {
         if (!array.includes(data[key].photographer)) {
             array.push(data[key].photographer);
         }
-    }
+    });
 
     res.setHeader('Access-Control-Allow-Origin', '*');
 
