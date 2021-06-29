@@ -7,6 +7,7 @@
     "main": "src/",
     "version": "1.5.0",
     "dependencies": {
-        "@supabase/supabase-js": "^1.11.14"
+        "@supabase/supabase-js": "^1.11.14",
+        "lambda-rate-limiter": "^3.0.0"
     }
 }
