@@ -1,35 +1,34 @@
 {
-        "rewrites": [{
-                        "source": "/",
-                        "destination": "/api/index"
-                },
-                {
-                        "source": "/getImage",
-                        "destination": "/api/image"
-                },
-                {
-                        "source": "/images/random",
-                        "destination": "/api/image"
-                },
-                {
-                        "source": "/getQuote",
-                        "destination": "/api/quote"
-                },
-                {
-                        "source": "/quotes/random",
-                        "destination": "/api/quote"
-                },
-                {
-                        "source": "/images/photographers",
-                        "destination": "/api/photographers"
-                },
-                {
-                        "source": "/images/categories",
-                        "destination": "/api/categories"
-                },
-                {
-                        "source": "/quotes/languages",
-                        "destination": "/api/quotelanguages"
-                }
-        ]
+  "rewrites": [{
+    "source": "/",
+    "destination": "/api/index"
+  },
+  {
+    "source": "/getImage",
+    "destination": "/api/image"
+  },
+  {
+    "source": "/images/random",
+     "destination": "/api/image"
+  },
+  {
+    "source": "/getQuote",
+    "destination": "/api/quote"
+  },
+  {
+    "source": "/quotes/random",
+    "destination": "/api/quote"
+  },
+  {
+    "source": "/images/photographers",
+    "destination": "/api/photographers"
+  },
+  {
+    "source": "/images/categories",
+    "destination": "/api/categories"
+  },
+  {
+    "source": "/quotes/languages",
+    "destination": "/api/quotelanguages"
+  }]
 }

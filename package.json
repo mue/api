@@ -1,17 +1,17 @@
 {
-    "name": "mue-api",
-    "private": true,
-    "description": "API for Mue, a new tab extension.",
-    "repository": {
-      "url": "github:mue/api"
-    },
-    "homepage": "https://api.muetab.com",
-    "author": "The Mue Authors (https://github.com/mue/api/graphs/contributors)",
-    "license": "MIT",
-    "main": "src/",
-    "version": "1.5.0",
-    "dependencies": {
-        "@supabase/supabase-js": "^1.17.0",
-        "lambda-rate-limiter": "^3.0.0"
-    }
+  "name": "mue-api",
+  "private": true,
+  "description": "API for Mue, a new tab extension.",
+  "repository": {
+    "url": "github:mue/api"
+  },
+  "homepage": "https://api.muetab.com",
+  "author": "The Mue Authors (https://github.com/mue/api/graphs/contributors)",
+  "license": "MIT",
+  "main": "src/",
+  "version": "1.5.0",
+  "dependencies": {
+    "@supabase/supabase-js": "^1.18.0",
+    "lambda-rate-limiter": "^3.0.0"
+  }
 }

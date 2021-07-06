@@ -1,6 +1,6 @@
 {
     "helloworld": {
-      "version": "1.4.0",
+      "version": "1.5.0",
       "message": "Hello World! API docs: https://docs.muetab.com/api/introduction"
     },
     "ratelimit_time": 60
