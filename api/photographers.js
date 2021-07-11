@@ -20,11 +20,11 @@ module.exports = async (req, res) => {
 
   let array = [];
 
-  data.forEach((key) => {
+  for (const key in data) {
     if (!array.includes(data[key].photographer)) {
       array.push(data[key].photographer);
     }
-  });
+  }
 
   res.setHeader('Access-Control-Allow-Origin', '*');
 
