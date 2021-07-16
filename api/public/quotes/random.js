@@ -1,4 +1,4 @@
-const config = require('../../config.json');
+const config = require('../../../config.json');
 
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TOKEN);
@@ -9,24 +9,21 @@ const rateLimit = require('lambda-rate-limiter')({
 
 module.exports = async (req, res) => {
   try {
-    await rateLimit(50, req.headers['x-real-ip']);
+    await rateLimit(100, req.headers['x-real-ip']);
   } catch (error) {
-    return res.status(429).send({ message: 'Too many requests' });
+    return res.status(429).send({ 
+      message: 'Too many requests' 
+    });
   }
 
   const { data } = await supabase
   .from('quotes')
-  .select('language');
+  .select('author, quote, language')
+  .eq('language', req.query.language ? req.query.language.replace('French', 'Français') : 'English');
 
-  let array = [];
-
-  for (const key in data) {
-    if (!array.includes(data[key].language)) {
-      array.push(data[key].language);
-    }
-  }
+  const random = data[Math.floor(Math.random() * data.length)];
 
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  return res.status(200).send(array);
+  return res.status(200).send(random);
 };

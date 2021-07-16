@@ -1,4 +1,4 @@
-const config = require('../../config.json');
+const config = require('../../../config.json');
 
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TOKEN);
@@ -11,17 +11,26 @@ module.exports = async (req, res) => {
   try {
     await rateLimit(100, req.headers['x-real-ip']);
   } catch (error) {
-    return res.status(429).send({ message: 'Too many requests' });
+    return res.status(429).send({ 
+      message: 'Too many requests' 
+    });
   }
 
   const { data } = await supabase
-  .from('quotes')
-  .select('author, quote, language')
-  .eq('language', req.query.language ? req.query.language.replace('French', 'Français') : 'English');
+  .from('images')
+  .select('file, photographer, location, camera, resolution');
 
   const random = data[Math.floor(Math.random() * data.length)];
+  random.file = process.env.CDN_URL + random.file + '.jpg';
 
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  return res.status(200).send(random);
+  return res.status(200).send({
+    category: random.category,
+    file: random.file,
+    photographer: random.photographer,
+    location: random.location,
+    camera: random.camera || null,
+    resolution: random.resolution || null
+  });
 };
