@@ -5,30 +5,30 @@
   },
   {
     "source": "/getImage",
-    "destination": "/api/image"
+    "destination": "/api/images/random"
   },
   {
     "source": "/images/random",
-     "destination": "/api/image"
+     "destination": "/api/images/random"
   },
   {
     "source": "/getQuote",
-    "destination": "/api/quote"
+    "destination": "/api/quotes/random"
   },
   {
     "source": "/quotes/random",
-    "destination": "/api/quote"
+    "destination": "/api/quotes/random"
   },
   {
     "source": "/images/photographers",
-    "destination": "/api/photographers"
+    "destination": "/api/images/photographers"
   },
   {
     "source": "/images/categories",
-    "destination": "/api/categories"
+    "destination": "/api/images/categories"
   },
   {
     "source": "/quotes/languages",
-    "destination": "/api/quotelanguages"
+    "destination": "/api/quotes/languages"
   }]
 }

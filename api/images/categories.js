@@ -1,4 +1,4 @@
-const config = require('../config.json');
+const config = require('../../config.json');
 
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TOKEN);
@@ -16,13 +16,13 @@ module.exports = async (req, res) => {
 
   const { data } = await supabase
   .from('images')
-  .select('photographer');
+  .select('category');
 
   let array = [];
 
   for (const key in data) {
-    if (!array.includes(data[key].photographer)) {
-      array.push(data[key].photographer);
+    if (!array.includes(data[key].category)) {
+      array.push(data[key].category);
     }
   }
 

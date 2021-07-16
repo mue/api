@@ -1,4 +1,4 @@
-const config = require('../config.json');
+const config = require('../../config.json');
 
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TOKEN);
@@ -15,20 +15,13 @@ module.exports = async (req, res) => {
   }
 
   const { data } = await supabase
-  .from('images')
-  .select('file, photographer, location, camera, resolution');
+  .from('quotes')
+  .select('author, quote, language')
+  .eq('language', req.query.language ? req.query.language.replace('French', 'Français') : 'English');
 
   const random = data[Math.floor(Math.random() * data.length)];
-  random.file = process.env.CDN_URL + random.file + '.jpg';
 
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  return res.status(200).send({
-    category: random.category,
-    file: random.file,
-    photographer: random.photographer,
-    location: random.location,
-    camera: random.camera || null,
-    resolution: random.resolution || null
-  });
+  return res.status(200).send(random);
 };
