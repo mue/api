@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
   }
 
   const { data } = await supabase
-  .from('quotes')
+  .from('old_quotes')
   .select('language');
 
   let array = [];

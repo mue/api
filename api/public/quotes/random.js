@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
   }
 
   const { data } = await supabase
-  .from('quotes')
+  .from('old_quotes')
   .select('author, quote, language')
   .eq('language', req.query.language ? req.query.language.replace('French', 'Français') : 'English');
 

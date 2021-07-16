@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
   }
 
   const { data } = await supabase
-  .from('images')
+  .from('old_images')
   .select('file, photographer, location, camera, resolution');
 
   const random = data[Math.floor(Math.random() * data.length)];
