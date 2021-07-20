@@ -22,15 +22,12 @@ module.exports = async (req, res) => {
     });
   }
 
-  const { error, data } = await supabase
-  .from('images')
-  .insert([{ 
-    filename: req.query.filename,
-    photographer: req.query.photographer,
-    category: req.query.category,
-    location: req.query.location.charAt(0).toUpperCase() + req.query.location.slice(1), 
-    camera: req.query.camera
-  }]);
+  const { error } = await supabase
+  .from('quotes')
+  .delete()
+  .match({ 
+    id: req.query.id 
+  });
 
   if (error) {
     return res.status(500).send({ 
@@ -39,7 +36,6 @@ module.exports = async (req, res) => {
   }
 
   return res.status(200).send({
-    id: data[0].id,
     message: 'Success'
   });
 };

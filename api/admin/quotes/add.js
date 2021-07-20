@@ -23,13 +23,11 @@ module.exports = async (req, res) => {
   }
 
   const { error, data } = await supabase
-  .from('images')
+  .from('quotes')
   .insert([{ 
-    filename: req.query.filename,
-    photographer: req.query.photographer,
-    category: req.query.category,
-    location: req.query.location.charAt(0).toUpperCase() + req.query.location.slice(1), 
-    camera: req.query.camera
+    language: req.query.language,
+    author: req.query.author,
+    quote: req.query.quote
   }]);
 
   if (error) {

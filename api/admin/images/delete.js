@@ -23,9 +23,11 @@ module.exports = async (req, res) => {
   }
 
   const { error } = await supabase
-  .from('newimages')
+  .from('images')
   .delete()
-  .match({ id: req.query.id });
+  .match({ 
+    id: req.query.id 
+  });
 
   if (error) {
     return res.status(500).send({ 
