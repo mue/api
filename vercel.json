@@ -38,5 +38,9 @@
   {
     "source": "/quotes/languages",
     "destination": "/api/public/quotes/languages"
+  },
+  { 
+    "source": "/(.*)", 
+    "destination": "/api/404" 
   }]
 }
