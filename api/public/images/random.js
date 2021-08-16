@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
 
   const { data } = await supabase
   .from('old_images')
-  .select('file, photographer, location, camera, resolution');
+  .select('file, photographer, location, camera');
 
   const random = data[Math.floor(Math.random() * data.length)];
   random.file = process.env.CDN_URL + random.file + '.jpg';
@@ -32,7 +32,6 @@ module.exports = async (req, res) => {
     file: random.file,
     photographer: random.photographer,
     location: random.location,
-    camera: random.camera || null,
-    resolution: random.resolution || null
+    camera: random.camera || null
   });
 };
