@@ -4,16 +4,18 @@ const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TOKEN);
 
 const rateLimit = require('lambda-rate-limiter')({
-  interval: config.ratelimit_time * 1000
+  interval: config.ratelimit.time * 1000
 }).check;
 
 module.exports = async (req, res) => {
-  try {
-    await rateLimit(10, req.headers['x-real-ip']);
-  } catch (error) {
-    return res.status(429).send({ 
-      message: 'Too many requests' 
-    });
+  if (config.ratelimit.enabled) {
+    try {
+      await rateLimit(config.ratelimit.limits.admin.quotes_delete, req.headers['x-real-ip']);
+    } catch (error) {
+      return res.status(429).send({ 
+        message: 'Too many requests' 
+      });
+    }
   }
 
   if (req.headers.authorization !== process.env.ADMIN_TOKEN) { 

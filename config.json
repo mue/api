@@ -1,7 +1,27 @@
 {
   "helloworld": {
-    "version": "1.5.0",
+    "version": "1.6.0",
     "message": "Hello World! API docs: https://docs.muetab.com/api/introduction"
   },
-  "ratelimit_time": 60
+  "ratelimit": {
+    "enabled": true,
+    "time": 60,
+    "limits": {
+      "hello": 30,
+      "not_found": 30,
+      "public": {
+        "quotes_random": 100,
+        "quotes_languages": 50,
+        "images_random": 100,
+        "images_photographers": 50,
+        "images_categories": 50
+      },
+      "admin": {
+        "quotes_add": 10,
+        "quotes_delete": 10,
+        "images_add": 10,
+        "images_delete": 10
+      }
+    }
+  }
 }
