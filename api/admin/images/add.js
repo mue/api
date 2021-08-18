@@ -1,17 +1,7 @@
 const config = require('../../../config.json');
 
-const { PostgrestClient } = require('@supabase/postgrest-js');
-const supabase = new PostgrestClient(`${process.env.SUPABASE_URL}/rest/v1`, {
-  headers: {
-    apikey: process.env.SUPABASE_TOKEN,
-    Authorization: `Bearer ${process.env.SUPABASE_TOKEN}`
-  },
-  schema: 'public'
-});
-
-const rateLimit = require('lambda-rate-limiter')({
-  interval: config.ratelimit.time * 1000
-}).check;
+const supabase = require('../../../struct/postgrest');
+const rateLimit = require('../../../struct/ratelimiter');
 
 module.exports = async (req, res) => {
   if (config.ratelimit.enabled) {
