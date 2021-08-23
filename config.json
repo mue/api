@@ -3,6 +3,7 @@
     "version": "1.6.0",
     "message": "Hello World! API docs: https://docs.muetab.com/api/introduction"
   },
+  "umami": true,
   "ratelimit": {
     "enabled": true,
     "time": 60,
