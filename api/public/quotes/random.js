@@ -7,6 +7,16 @@ const umami = require('../../../struct/umami');
 module.exports = async (req, res) => {
   const language = req.query.language ? req.query.language.replace('French', 'Français') : 'English';
 
+  if (!config.quote_languages.supported.includes(language)) {
+    if (config.umami === true) {
+      await umami.error('/quotes/random/' + language, req, 'unsupported-language');
+    }
+
+    return res.status(401).send({
+      message: config.quote_languages.error_message
+    });
+  }
+
   if (config.umami === true) {
     await umami.request('/quotes/random/' + language, req);
   }
