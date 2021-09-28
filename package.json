@@ -11,7 +11,7 @@
   "main": "src/",
   "version": "1.6.0",
   "dependencies": {
-    "@supabase/postgrest-js": "^0.33.1",
+    "@supabase/postgrest-js": "^0.34.0",
     "lambda-rate-limiter": "^3.0.0",
     "node-fetch": "^2.6.1"
   }
