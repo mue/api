@@ -14,8 +14,7 @@ module.exports = class Umami {
           website: process.env.UMAMI_ID,
           url: url,
           language: '',
-          screen: '',
-          referrer: req.headers['referer'] || req.headers['referrer'] || req.headers['origin']
+          screen: ''
         }
       })
     });
@@ -34,8 +33,7 @@ module.exports = class Umami {
           website: process.env.UMAMI_ID,
           url: url,
           event_type: 'error',
-          event_value: error,
-          referrer: req.headers['referer'] || req.headers['referrer'] || req.headers['origin']
+          event_value: error
         }
       })
     });
