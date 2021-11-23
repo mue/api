@@ -6,8 +6,7 @@ module.exports = class Umami {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': req.headers['user-agent'],
-        'Referer': req.headers['referer'] || req.headers['referrer'] || req.headers['origin']
+        'User-Agent': req.headers['user-agent']
       },
       body: JSON.stringify({
         type: 'pageview',
@@ -15,7 +14,8 @@ module.exports = class Umami {
           website: process.env.UMAMI_ID,
           url: url,
           language: '',
-          screen: ''
+          screen: '',
+          referrer: req.headers['referer'] || req.headers['referrer'] || req.headers['origin']
         }
       })
     });
@@ -27,7 +27,6 @@ module.exports = class Umami {
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': req.headers['user-agent'],
-        'Referer': req.headers['referer'] || req.headers['referrer'] || req.headers['origin']
       },
       body: JSON.stringify({
         type: 'event',
@@ -35,7 +34,8 @@ module.exports = class Umami {
           website: process.env.UMAMI_ID,
           url: url,
           event_type: 'error',
-          event_value: error
+          event_value: error,
+          referrer: req.headers['referer'] || req.headers['referrer'] || req.headers['origin']
         }
       })
     });
