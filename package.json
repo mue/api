@@ -13,6 +13,7 @@
   "dependencies": {
     "@supabase/postgrest-js": "^0.35.0",
     "lambda-rate-limiter": "^3.0.1",
-    "node-fetch": "^2.6.2"
+    "node-fetch": "^2.6.2",
+    "ua-parser-js": "^1.0.2"
   }
 }
