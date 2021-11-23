@@ -1,6 +1,8 @@
 const fetch = require('node-fetch');
 const parser = require('ua-parser-js');
 
+const config = require('../config.json');
+
 module.exports = class Umami {
   static getReferrer(req) {
     const referrer = req.headers['referer'] || req.headers['referrer'] || req.headers['origin'];
@@ -8,13 +10,19 @@ module.exports = class Umami {
 
     if (referrer.startsWith('moz-extension://')) {
       return 'https://firefox.muetab.com';
-    } else if (referrer === 'chrome-extension://bngmbednanpcfochchhgbkookpiaiaid') {
+    } else if (referrer === config.chrome_extension || referrer === config.edge_extension || referrer === config.whale_extension) {
       switch (ua.getBrowser().name) {
         case 'Chrome':
           return 'https://chrome.muetab.com';
         case 'Edge':
+          if (referrer === config.chrome_extension) {
+            return 'https://chromeonedge.muetab.com';
+          }
           return 'https://edge.muetab.com';
         case 'Whale':
+          if (referrer === config.chrome_extension) {
+            return 'https://chromeonwhale.muetab.com';
+          }
           return 'https://whale.muetab.com';
         default:
           return 'https://chromium.muetab.com';

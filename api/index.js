@@ -22,5 +22,5 @@ module.exports = async (req, res) => {
     }
   }
 
-  return res.status(200).send(config.helloworld);
+  return res.status(200).send(config.hello_world);
 };

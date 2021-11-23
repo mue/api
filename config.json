@@ -1,6 +1,6 @@
 {
-  "helloworld": {
-    "version": "1.6.0",
+  "hello_world": {
+    "version": "1.6.1",
     "message": "Hello World! API docs: https://docs.muetab.com/api/introduction"
   },
   "quote_languages": {
@@ -8,6 +8,9 @@
     "error_message": "Language not supported, see the docs here: https://docs.muetab.com/api/endpoints#get-quote-languages"
   },
   "umami": true,
+  "chrome_extension": "chrome-extension://bngmbednanpcfochchhgbkookpiaiaid",
+  "edge_extension": "chrome-extension://aepnglgjfokepefimhbnibfjekidhmja",
+  "whale_extension": "chrome-extension://ecllekeilcmicbfkkiknfdddbogibbnc",
   "ratelimit": {
     "enabled": true,
     "time": 60,

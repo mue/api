@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
 
   if (req.headers.authorization !== process.env.ADMIN_TOKEN) {
     if (config.umami === true) {
-      await umami.error('/admin/images/delete', req, 'unauthorised');
+      await umami.error('/admin/images/delete', req, 'unauthorized');
     }
 
     return res.status(401).send({ 
