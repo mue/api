@@ -15,6 +15,7 @@ module.exports = async (req, res) => {
       if (config.umami === true) {
         await umami.error('/404', req, 'ratelimit');
       }
+
       return res.status(429).send({ 
         message: 'Too many requests' 
       });

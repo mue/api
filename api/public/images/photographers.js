@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
   .from('old_images')
   .select('photographer');
 
-  let array = [];
+  const array = [];
 
   for (const key in data) {
     if (!array.includes(data[key].photographer)) {
