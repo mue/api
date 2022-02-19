@@ -4,6 +4,10 @@
     "destination": "/api/index"
   },
   {
+    "source": "/stats",
+    "destination": "/api/stats"
+  },
+  {
     "source": "/getImage",
     "destination": "/api/public/images/random"
   },
