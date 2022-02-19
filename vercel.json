@@ -8,6 +8,10 @@
     "destination": "/api/stats"
   },
   {
+    "source": "/versions",
+    "destination": "/api/versions"
+  },
+  {
     "source": "/getImage",
     "destination": "/api/public/images/random"
   },

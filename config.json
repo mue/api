@@ -11,6 +11,7 @@
   "chrome_extension": "chrome-extension://bngmbednanpcfochchhgbkookpiaiaid",
   "edge_extension": "chrome-extension://aepnglgjfokepefimhbnibfjekidhmja",
   "whale_extension": "chrome-extension://ecllekeilcmicbfkkiknfdddbogibbnc",
+  "firefox_extension": "mue",
   "ratelimit": {
     "enabled": true,
     "time": 60,
