@@ -26,9 +26,11 @@ module.exports = async (req, res) => {
     }
   }
 
-  const edge = await (await fetch('https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/aepnglgjfokepefimhbnibfjekidhmja')).json();
-  const chrome = (await ChromeWebStore.load({ id: config.chrome_extension.split('//')[1], qs: { hl: 'en' } })).meta();
-  const firefox = (await Amo.load({ id: config.firefox_extension })).meta();
+  const [edge, chrome, firefox] = await Promise.all([
+    await (await fetch('https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/aepnglgjfokepefimhbnibfjekidhmja')).json(),
+    (await ChromeWebStore.load({ id: config.chrome_extension.split('//')[1], qs: { hl: 'en' } })).meta(),
+    (await Amo.load({ id: config.firefox_extension })).meta()
+  ]);
 
   const edgeVersion = JSON.parse(edge.manifest).version;
 

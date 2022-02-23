@@ -36,10 +36,12 @@ module.exports = async (req, res) => {
     }
   };
 
-  const repo = await (await fetch('https://api.github.com/repos/mue/mue')).json();
-  const releases = await (await fetch('https://api.github.com/repos/mue/mue/releases')).json();
-  const edge = await (await fetch('https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/aepnglgjfokepefimhbnibfjekidhmja')).json();
-  const chrome = (await ChromeWebStore.load({ id: config.chrome_extension.split('//')[1], qs: { hl: 'en' } })).meta();
+  const [repo, releases, edge, chrome] = await Promise.all([
+    (await (await fetch('https://api.github.com/repos/mue/mue')).json()),
+    (await (await fetch('https://api.github.com/repos/mue/mue/releases')).json()),
+    (await (await fetch('https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/aepnglgjfokepefimhbnibfjekidhmja')).json()),
+    (await ChromeWebStore.load({ id: config.chrome_extension.split('//')[1], qs: { hl: 'en' } })).meta()
+  ]);
 
   res.setHeader('Cache-Control', 'max-age=0, s-maxage=86400');
   return res.status(200).send({
