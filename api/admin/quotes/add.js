@@ -38,7 +38,8 @@ module.exports = async (req, res) => {
   .insert([{ 
     language: req.query.language,
     author: req.query.author,
-    quote: req.query.quote
+    quote: req.query.quote,
+    author_occupation: req.query.author_occupation
   }]);
 
   if (error) {

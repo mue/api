@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
 
   const { data } = await supabase
   .from('old_quotes')
-  .select('author, quote, language')
+  .select('author, quote, language, author_occupation')
   .eq('language', language);
 
   const random = data[Math.floor(Math.random() * data.length)];
