@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
   const [repo, releases, edge, chrome] = await Promise.all([
     (await (await fetch('https://api.github.com/repos/mue/mue')).json()),
     (await (await fetch('https://api.github.com/repos/mue/mue/releases')).json()),
-    (await (await fetch('https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/aepnglgjfokepefimhbnibfjekidhmja')).json()),
+    (await (await fetch('https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/' + config.edge_extension.split('//')[1])).json()),
     (await ChromeWebStore.load({ id: config.chrome_extension.split('//')[1], qs: { hl: 'en' } })).meta()
   ]);
 

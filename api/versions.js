@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
   }
 
   const [edge, chrome, firefox] = await Promise.all([
-    await (await fetch('https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/aepnglgjfokepefimhbnibfjekidhmja')).json(),
+    await (await fetch('https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/' + config.edge_extension.split('//')[1])).json(),
     (await ChromeWebStore.load({ id: config.chrome_extension.split('//')[1], qs: { hl: 'en' } })).meta(),
     (await Amo.load({ id: config.firefox_extension })).meta()
   ]);
