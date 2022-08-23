@@ -42,7 +42,7 @@ const getURL = (id, options) => {
 
 console.log({
 	original: getURL(id, '/'),
-	qhd: getURL(id, '/pr:qhd/'),
-	fhd: getURL(id, '/pr:fhd/'),
-	hd: getURL(id, '/pr:hd/'),
+	qhd: getURL(id, '/pr:qhd/q:90/'),
+	fhd: getURL(id, '/pr:fhd/q:80/'),
+	hd: getURL(id, '/pr:hd/q:70/'),
 });
