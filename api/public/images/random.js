@@ -48,12 +48,12 @@ module.exports = async (req, res) => {
 
   return res.status(200).send({
     category: random.category,
-    file:  getURL(random.file, '/pr:fhd/'),
+    file:  getURL(random.file, '/pr:fhd/q:80/'),
     files: {
-      original: getURL(random.file, '/'),
-      qhd: getURL(random.file, '/pr:qhd/'),
-      fhd: getURL(random.file, '/pr:fhd/'),
-      hd: getURL(random.file, '/pr:hd/'),
+      original: getURL(random.file, '/q:90/'),
+      qhd: getURL(random.file, '/pr:qhd/q:90/'),
+      fhd: getURL(random.file, '/pr:fhd/q:80/'),
+      hd: getURL(random.file, '/pr:hd/q:70/'),
     },
     photographer: random.photographer,
     location: random.location,
