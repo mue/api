@@ -3,6 +3,7 @@ const config = require('../../../config.json');
 const supabase = require('../../../struct/postgrest');
 const rateLimit = require('../../../struct/ratelimiter');
 const umami = require('../../../struct/umami');
+const crypto = require('crypto');
 
 const sign = target => {
   const hmac = crypto.createHmac('sha256', Buffer.from(process.env.KEY, 'hex'));

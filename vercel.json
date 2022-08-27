@@ -12,24 +12,8 @@
     "destination": "/api/versions"
   },
   {
-    "source": "/getImage",
-    "destination": "/api/public/images/random"
-  },
-  {
     "source": "/images/random",
     "destination": "/api/public/images/random"
-  },
-  {
-    "source": "/images/add",
-    "destination": "/api/admin/images/add"
-  },
-  {
-    "source": "/images/delete",
-    "destination": "/api/admin/images/delete"
-  },
-  {
-    "source": "/getQuote",
-    "destination": "/api/public/quotes/random"
   },
   {
     "source": "/quotes/random",
