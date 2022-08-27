@@ -12,16 +12,12 @@ const sign = target => {
   return hmac.digest('base64url');
 };
 
-// const getURL = (id, options) => {
-//   const origin = `s3://${process.env.BUCKET}/${id}.jpg`;
-//   const path = options + Buffer.from(origin).toString('base64url');
-//   const signature = sign(path);
-//   const final = process.env.CDN_URL + '/' + signature + path;
-//   return final;
-// };
-
 const getURL = (id, options) => {
-  return 'https://muetab.s3.us-west-004.backblazeb2.com/' + id + '.jpg';
+  const origin = `s3://${process.env.BUCKET}/${id}.jpg`;
+  const path = options + Buffer.from(origin).toString('base64url');
+  const signature = sign(path);
+  const final = process.env.CDN_URL + '/' + signature + path;
+  return final;
 };
 
 module.exports = async (req, res) => {
