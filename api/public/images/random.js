@@ -3,6 +3,22 @@ const config = require('../../../config.json');
 const supabase = require('../../../struct/postgrest');
 const rateLimit = require('../../../struct/ratelimiter');
 const umami = require('../../../struct/umami');
+const crypto = require('crypto');
+
+const sign = target => {
+  const hmac = crypto.createHmac('sha256', Buffer.from(process.env.KEY, 'hex'));
+  hmac.update(Buffer.from(process.env.SALT, 'hex'));
+  hmac.update(target);
+  return hmac.digest('base64url');
+};
+
+const getURL = (id, options) => {
+  const origin = `s3://${process.env.BUCKET}/${id}.jpg`;
+  const path = options + Buffer.from(origin).toString('base64url');
+  const signature = sign(path);
+  const final = process.env.CDN_URL + '/' + signature + path;
+  return final;
+};
 
 module.exports = async (req, res) => {
   if (config.umami === true) {
@@ -24,17 +40,23 @@ module.exports = async (req, res) => {
   }
 
   const { data } = await supabase
-  .from('old_images')
-  .select('file, photographer, location, camera');
+    .from('old_images')
+    .select('file, photographer, location, camera');
 
   const random = data[Math.floor(Math.random() * data.length)];
-  random.file = process.env.CDN_URL + random.file + '.jpg';
 
   res.setHeader('Access-Control-Allow-Origin', '*');
 
+  const qualities = {
+    original: getURL(random.file, '/q:90/'),
+    high: getURL(random.file, '/pr:qhd/q:90/'),
+    normal: getURL(random.file, '/pr:fhd/q:80/'),
+    datasaver: getURL(random.file, '/pr:hd/q:70/'),
+  }
+
   return res.status(200).send({
     category: random.category,
-    file: random.file,
+    file:  (req.query ? qualities[req.query.quality] : null) ?? getURL(random.file, '/pr:fhd/q:80/'),
     photographer: random.photographer,
     location: random.location,
     camera: random.camera || null
