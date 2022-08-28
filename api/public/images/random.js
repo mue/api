@@ -47,15 +47,16 @@ module.exports = async (req, res) => {
 
   res.setHeader('Access-Control-Allow-Origin', '*');
 
+  const qualities = {
+    original: getURL(random.file, '/q:90/'),
+    high: getURL(random.file, '/pr:qhd/q:90/'),
+    normal: getURL(random.file, '/pr:fhd/q:80/'),
+    datasaver: getURL(random.file, '/pr:hd/q:70/'),
+  }
+
   return res.status(200).send({
     category: random.category,
-    file:  getURL(random.file, '/pr:fhd/q:80/'),
-    files: {
-      original: getURL(random.file, '/q:90/'),
-      qhd: getURL(random.file, '/pr:qhd/q:90/'),
-      fhd: getURL(random.file, '/pr:fhd/q:80/'),
-      hd: getURL(random.file, '/pr:hd/q:70/'),
-    },
+    file:  (req.query ? qualities[req.query.quality] : null) ?? getURL(random.file, '/pr:fhd/q:80/'),
     photographer: random.photographer,
     location: random.location,
     camera: random.camera || null
