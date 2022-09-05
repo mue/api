@@ -32,5 +32,12 @@
         "images_delete": 10
       }
     }
+  },
+  "current_news": {
+    "title": "7.0 is out and it's looking real clean",
+    "date": "2022-07-20T21:14:38.000Z",
+    "description": "うーぱぱうぱぱうーぱうぱぱー！うーぱぱうぱぱうーぱうぱぱー！うーぱぱうぱぱうーぱうぱぱー！",
+    "link": "https://twitter.com",
+    "link_text": "Eggman"
   }
 }
