@@ -12,6 +12,10 @@
     "destination": "/api/versions"
   },
   {
+    "source": "/news",
+    "destination": "/api/news"
+  },
+  {
     "source": "/images/random",
     "destination": "/api/public/images/random"
   },
