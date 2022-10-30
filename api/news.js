@@ -22,7 +22,9 @@ module.exports = async (req, res) => {
     }
   }
 
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'max-age=0, s-maxage=86400');
+
   return res.status(200).send({
     news: config.current_news
   });
