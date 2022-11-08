@@ -16,5 +16,8 @@
     "node-fetch": "2.6.7",
     "ua-parser-js": "1.0.32",
     "webextension-store-meta": "1.0.5"
+  },
+  "engines": {
+	"node": "16"
   }
 }
