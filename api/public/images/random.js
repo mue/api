@@ -40,10 +40,10 @@ module.exports = async (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 
 	return res.status(200).send({
-		category: random.category,
+		camera: data.camera,
+		category: data.category,
 		file: (req.query ? qualities[req.query.quality] : null) ?? qualities['normal'],
-		photographer: random.photographer,
-		location: random.location,
-		camera: random.camera || null
+		location: data.locationName,
+		photographer: data.photographer,
 	});
 };
