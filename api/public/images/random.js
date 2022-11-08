@@ -30,7 +30,8 @@ module.exports = async (req, res) => {
 		}
 	}
 
-	const { data } = await supabase.rpc('getRandomImage').single();
+	const { data, error } = await supabase.rpc('getRandomImage').single();
+	console.log(data, error);
 	const format = req.headers.accept?.includes('avif') ? 'avif' : 'webp';
 	const qualities = Object.entries(sizes).reduce((obj, [k, v]) => {
 		obj[k] = `https://cdn.muetab.com/img/${v}/${data.id}.${format}`;
