@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
 	return res.status(200).send({
 		camera: data.camera,
 		category: data.category,
-		file: (req.query ? qualities[req.query.quality] : null) ?? qualities['normal'],
+		file: (req.query ? qualities[req.query.quality] : null) ?? qualities.normal,
 		location: data.locationName,
 		photographer: data.photographer,
 	});
