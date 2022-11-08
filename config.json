@@ -4,7 +4,7 @@
     "message": "Hello World! API docs: https://docs.muetab.com/api/introduction"
   },
   "quote_languages": {
-    "supported": ["English", "French"],
+    "supported": ["English", "Français"],
     "error_message": "Language not supported, see the docs here: https://docs.muetab.com/api/endpoints#get-quote-languages"
   },
   "umami": true,
