@@ -28,21 +28,16 @@ module.exports = async (req, res) => {
       if (config.umami === true) {
         await umami.error('/quotes/random/' + language, req, 'ratelimit');
       }
-      
-      return res.status(429).send({ 
-        message: 'Too many requests' 
+
+      return res.status(429).send({
+        message: 'Too many requests'
       });
     }
   }
 
-  const { data } = await supabase
-  .from('old_quotes')
-  .select('author, quote, language, author_occupation')
-  .eq('language', language);
-
-  const random = data[Math.floor(Math.random() * data.length)];
+  const { data } = await supabase.rpc('getRandomQuote', { lang: language }).single();
 
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  return res.status(200).send(random);
+  return res.status(200).send(data);
 };
