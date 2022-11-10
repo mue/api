@@ -12,6 +12,7 @@ import v2 from './v2';
 import sizes from './sizes';
 import news from '../news';
 import { getVersions } from './versions';
+import { getStats } from './stats';
 
 const limiter = limiterFactory({ interval: ms('1m') });
 
@@ -63,9 +64,10 @@ router
 		const { data } = await req.supabase.rpc('get_random_old_quote', { _language: req.query.language }).single();
 		return json(data);
 	})
+	.get('/stats', async () => json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }))
 	.get('/versions', async () => {
 		const browsers = await getVersions();
-		return json({ browsers }, { headers: { 'Cache-Control': 'max-age=3600' } });
+		return json({ browsers }, { headers: { 'Cache-Control': 'max-age=86400' } });
 	})
 	.all('/v2/*', v2.handle)
 	.all('*', () => missing('Not Found'));
@@ -78,7 +80,10 @@ export default {
 			res.headers.set('Access-Control-Allow-Origin', '*');
 			return res;
 		} catch (err) {
-			console.log(req, error);
+			console.error('ERROR:', {
+				err,
+				req,
+			});
 			ctx.waitUntil(Umami.error(req, env, 'unknown'));
 			return error(500, {
 				error: err.message,

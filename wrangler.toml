@@ -1,7 +1,7 @@
 name = "api"
 main = "src/index.js"
 compatibility_date = "2022-11-09"
-
+node_compat = true
 # route = { pattern = "api.muetab.com/*", zone_name = "muetab.com" }
 
 [env.staging]
@@ -11,10 +11,11 @@ route = { pattern = "staging--api.muetab.com/*", zone_name = "muetab.com" }
 [vars]
   UMAMI_URL = "https://umami.muetab.com"
   UMAMI_ID = "f6fc2ba1-68d2-4e15-87e8-c93ef886ebd5"
-  MAPBOX_TOKEN = "pk.eyJ1IjoiZGF2aWRqY3JhbHBoIiwiYSI6ImNrd2o5ZWpsNjB3cnkybm8wYnh6YWhvNjQifQ.ebdHnUqo3OVVH2NlJpkcBw"
 
 # SECRETS:
 # SUPABASE_URL
 # SUPABASE_TOKEN
 # UNSPLASH_TOKEN
+# PEXELS_TOKEN
 # MAPBOX_TOKEN
+# OPENWEATHER_TOKEN

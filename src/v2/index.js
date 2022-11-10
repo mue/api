@@ -6,8 +6,11 @@ import {
 import Umami from '../umami';
 import sizes from '../sizes';
 import news from '../../news';
+import { getStats } from '../stats';
+import { getVersions } from '../versions';
 
 export default new Router({ base: '/v2' })
+	.get('/gps', async req => json(null, { headers: { 'Cache-Control': 'private, max-age=86400' } }))
 	.get('/images/categories', async req => {
 		const { data } = await req.supabase.rpc('get_image_categories');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
@@ -70,5 +73,9 @@ export default new Router({ base: '/v2' })
 		const { data } = await req.supabase.rpc('get_random_quote', { _language: language }).single();
 		return json(data);
 	})
-	.get('/weather')
-	.get('/gps', async req => json(null, { headers: { 'Cache-Control': 'private, max-age=86400' } }));
+	.get('/stats', async () => json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }))
+	.get('/versions', async () => {
+		const browsers = await getVersions();
+		return json({ browsers }, { headers: { 'Cache-Control': 'max-age=86400' } });
+	})
+	.get('/weather');
