@@ -57,12 +57,10 @@ router
 		}, { headers: { 'Cache-Control': 'no-cache' } });
 	})
 	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
-	.get('/quotes/languages', async req => {
-		const { data } = await req.$supabase.rpc('get_quote_languages');
-		return json(data.map(row => row.name), { headers: { 'Cache-Control': 'max-age=3600' } });
-	})
+	.get('/quotes/languages', () => json(['English', 'French'], { headers: { 'Cache-Control': 'max-age=3600' } }))
 	.get('/quotes/random', async req => {
-		const { data } = await req.$supabase.rpc('get_random_old_quote', { _language: req.query.language }).single();
+		const language = req.query.language?.replace('French', 'Français') || 'English';
+		const { data } = await req.$supabase.rpc('get_random_old_quote', { _language: language }).single();
 		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
 	})
 	.get('/stats', async () => json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }))
