@@ -8,7 +8,7 @@ export default class Umami {
 		this.ctx = ctx;
 	}
 
-	static getReferrer(req) {
+	getReferrer(req) {
 		const referrer = req.headers.referer || req.headers.referrer || req.headers.origin;
 		const ua = new parser(req.headers['user-agent']);
 

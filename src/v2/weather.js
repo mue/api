@@ -1,6 +1,6 @@
 import { error } from 'itty-router-extras';
 
-export const withWeatherLanguage = (req, env, ctx) => {
+export const withWeatherLanguage = req => {
 	const allowed = ['en', 'de', 'es', 'fr', 'nl', 'no', 'ru', 'zh_cn', 'id', 'tr'];
 	const map = new Map([
 		['de_DE', 'de'],
