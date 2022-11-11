@@ -44,6 +44,7 @@ export default new Router({ base: '/v2' })
 		return json({
 			camera: data.camera,
 			category: data.category,
+			colour: data.colour,
 			file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}`,
 			id: data.id,
 			location: {
