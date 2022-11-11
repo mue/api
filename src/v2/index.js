@@ -8,6 +8,7 @@ import sizes from '../sizes';
 import news from '../../news';
 import { getStats } from '../stats';
 import { getVersions } from '../versions';
+import { getUnsplashImage } from './unsplash';
 
 export default new Router({ base: '/v2' })
 	.get('/gps', async req => json(null, { headers: { 'Cache-Control': 'private, max-age=86400' } }))
@@ -35,6 +36,7 @@ export default new Router({ base: '/v2' })
 			camera: data.camera,
 			category: data.category,
 			file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}`,
+			id: data.id,
 			location: {
 				latitude: coordinates?.[0] ?? null,
 				longitude: coordinates?.[1] ?? null,
@@ -43,7 +45,15 @@ export default new Router({ base: '/v2' })
 			photographer: data.photographer,
 		});
 	})
-	.get('/images/unsplash')
+	.get('/images/unsplash', async (req, ...rest) => {
+		let { data: allowed } = await req.supabase.rpc('get_image_categories');
+		allowed = allowed.map(row => row.name);
+		let categories = req.query.categories?.split(',') ?? [];
+		if (categories.length === 0) categories = allowed;
+		else categories = categories.filter(category => allowed.includes(category));
+		const category = categories[Math.floor(Math.random() * categories.length)];
+		return json(await getUnsplashImage(category, req.query.quality ?? 'normal', ...rest));
+	})
 	.get('/quotes/languages', async req => {
 		const { data } = await req.supabase.rpc('get_quote_languages');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });

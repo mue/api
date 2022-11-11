@@ -11,6 +11,7 @@ route = { pattern = "staging--api.muetab.com/*", zone_name = "muetab.com" }
 [vars]
   UMAMI_URL = "https://umami.muetab.com"
   UMAMI_ID = "f6fc2ba1-68d2-4e15-87e8-c93ef886ebd5"
+  UNSPLASH_REFERRAL = "mue" 
 
 # SECRETS:
 # SUPABASE_URL
