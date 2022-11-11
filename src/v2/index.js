@@ -98,4 +98,17 @@ export default new Router({ base: '/v2' })
 		const browsers = await getVersions();
 		return json({ browsers }, { headers: { 'Cache-Control': 'max-age=86400' } });
 	})
-	.get('/weather'); // return json(data, { headers: { 'Cache-Control': 'private, max-age=900' } }); // important: **private**
+	.get('/weather', withWeatherLanguage, async (req, env) => {
+		const { city } = req.query;
+		if (!city) {
+			if (req.$umami) req.$umami.error(req, 'missing-params');
+			return error(400, '`city` param is required');
+		}
+		const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${env.OPENWEATHER_TOKEN}&lang=${req.$language}`;
+		const data = await (await fetch(url)).json();
+		if (data.cod === 404) {
+			if (req.$umami) req.$umami.error(req, 'data-no-found');
+			return error(404, 'No data. Try another city?');
+		}
+		return json(data, { headers: { 'Cache-Control': 'private, max-age=900' } }); // important: **private**
+	});
