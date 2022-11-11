@@ -43,13 +43,15 @@ router
 		return json(data.map(row => row.name), { headers: { 'Cache-Control': 'max-age=3600' } });
 	})
 	.get('/images/random', async req => {
-		const { data } = await req.$supabase.rpc('get_random_image').single();
+		const { data: categories } = await req.$supabase.rpc('get_image_categories');
+		const category = categories[Math.floor(Math.random() * categories.length)].name;
+		const { data } = await req.$supabase.rpc('get_random_image', { _category: category }).single();
 		const format = req.headers.get('accept')?.includes('avif') ? 'avif' : 'webp';
 		const quality = sizes[req.query?.quality] ?? 'fhd';
 		return json({
 			camera: data.camera,
 			category: data.category,
-			file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}`,
+			file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}?v=${data.version}`,
 			location: data.location_name,
 			photographer: data.photographer,
 		}, { headers: { 'Cache-Control': 'no-cache' } });
