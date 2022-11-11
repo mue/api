@@ -37,7 +37,10 @@ export default new Router({ base: '/v2' })
 		let categories = req.query.categories?.split(',')?.filter(category => allowed.includes(category)) ?? [];
 		if (categories.length === 0) categories = allowed;
 		const category = categories[Math.floor(Math.random() * categories.length)];
-		const { data } = await req.$supabase.rpc('get_random_image', { _category: category }).single();
+		const { data } = await req.$supabase.rpc('get_random_image', {
+			_category: category,
+			_exclude: req.query.exclude,
+		}).single();
 		const format = req.headers.get('accept')?.includes('avif') ? 'avif' : 'webp';
 		const quality = sizes[req.query?.quality] ?? 'fhd';
 		const coordinates = data.location_data?.split(',');
