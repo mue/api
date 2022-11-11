@@ -106,7 +106,7 @@ export default new Router({ base: '/v2' })
 		}
 		const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${env.OPENWEATHER_TOKEN}&lang=${req.$language}`;
 		const data = await (await fetch(url)).json();
-		if (data.cod === 404) {
+		if (data.cod === '404') {
 			if (req.$umami) req.$umami.error(req, 'data-no-found');
 			return error(404, 'No data. Try another city?');
 		}
