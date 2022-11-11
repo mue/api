@@ -52,7 +52,7 @@ router
 			file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}`,
 			location: data.location_name,
 			photographer: data.photographer,
-		});
+		}, { headers: { 'Cache-Control': 'no-cache' } });
 	})
 	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
 	.get('/quotes/languages', async req => {
@@ -61,7 +61,7 @@ router
 	})
 	.get('/quotes/random', async req => {
 		const { data } = await req.$supabase.rpc('get_random_old_quote', { _language: req.query.language }).single();
-		return json(data);
+		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
 	})
 	.get('/stats', async () => json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }))
 	.get('/versions', async () => {
