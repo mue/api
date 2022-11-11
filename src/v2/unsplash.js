@@ -17,12 +17,12 @@ export const getUnsplashImage = async (category, quality, ...rest) => {
 	const collection = collections[category];
 	const size = sizes[quality];
 	const data = await (await fetch(`https://api.unsplash.com/photos/random?client_id=${env.UNSPLASH_TOKEN}&collections=${collection}`)).json();
-	console.log(data.urls);
 	ctx.waitUntil(fetch(`${data.links.download_location}&client_id=${env.UNSPLASH_TOKEN}`)); // api requirement
-
 	return {
 		blur_hash: data.blur_hash,
 		camera: data.exif.model ?? null,
+		category,
+		colour: data.color,
 		description: data.description ?? null,
 		downloads: data.downloads,
 		file: data.urls.raw + '&q=80&auto=format' + size,

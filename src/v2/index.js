@@ -9,6 +9,7 @@ import news from '../../news';
 import { getStats } from '../stats';
 import { getVersions } from '../versions';
 import { getUnsplashImage } from './unsplash';
+import { getPexelsImage } from './pexels';
 
 export default new Router({ base: '/v2' })
 	.get('/gps', async req => json(null, { headers: { 'Cache-Control': 'private, max-age=86400' } }))
@@ -24,9 +25,8 @@ export default new Router({ base: '/v2' })
 	.get('/images/random', async req => {
 		let { data: allowed } = await req.supabase.rpc('get_image_categories');
 		allowed = allowed.map(row => row.name);
-		let categories = req.query.categories?.split(',') ?? [];
+		let categories = req.query.categories?.split(',')?.filter(category => allowed.includes(category)) ?? [];
 		if (categories.length === 0) categories = allowed;
-		else categories = categories.filter(category => allowed.includes(category));
 		const category = categories[Math.floor(Math.random() * categories.length)];
 		const { data } = await req.supabase.rpc('get_random_image', { _category: category }).single();
 		const format = req.headers.get('accept')?.includes('avif') ? 'avif' : 'webp';
@@ -48,9 +48,8 @@ export default new Router({ base: '/v2' })
 	.get('/images/unsplash', async (req, ...rest) => {
 		let { data: allowed } = await req.supabase.rpc('get_image_categories');
 		allowed = allowed.map(row => row.name);
-		let categories = req.query.categories?.split(',') ?? [];
+		let categories = req.query.categories?.split(',')?.filter(category => allowed.includes(category)) ?? [];
 		if (categories.length === 0) categories = allowed;
-		else categories = categories.filter(category => allowed.includes(category));
 		const category = categories[Math.floor(Math.random() * categories.length)];
 		return json(await getUnsplashImage(category, req.query.quality ?? 'normal', ...rest));
 	})
@@ -72,6 +71,7 @@ export default new Router({ base: '/v2' })
 		return new Response(res.body, res);
 	})
 	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
+	.get('/pexels', async (req, ...rest) => json(await getPexelsImage(req.query.quality ?? 'normal', ...rest)))
 	.get('/quotes/random', async (req, env, ctx) => {
 		let { data: allowed } = await req.supabase.rpc('get_quote_languages');
 		allowed = allowed.map(row => row.name);
