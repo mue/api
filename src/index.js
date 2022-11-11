@@ -18,19 +18,18 @@ const limiter = limiterFactory({ interval: ms('1m') });
 
 const router = Router();
 router
-	// global middleware
+	// global middleware for decorating and tracking the request
 	.all('*', async (req, env, ctx) => {
-		// track request
-		if (env.UMAMI_URL) ctx.waitUntil(Umami.request(req, env));
-
-		// decorate request
 		req.$supabase = createClient(env.SUPABASE_URL, env.SUPABASE_TOKEN);
-
+		if (env.UMAMI_URL) {
+			req.$umami = new Umami(env.UMAMI_URL, env.UMAMI_ID, ctx);
+			ctx.waitUntil(req.$umami.request(req));
+		}
 		// handle rate limits
 		try {
 			await limiter.check(100, req.headers.get('CF-Connecting-IP'));
 		} catch {
-			ctx.waitUntil(Umami.error(req, env, 'ratelimit'));
+			if (env.UMAMI_URL) req.$umami.error(req, 'ratelimit');
 			return error(429, 'Too Many Requests');
 		}
 	})
@@ -84,7 +83,7 @@ export default {
 				err,
 				req,
 			});
-			ctx.waitUntil(Umami.error(req, env, 'unknown'));
+			if (env.UMAMI_URL) req.$umami.error(req, 'unknown');
 			return error(500, {
 				error: err.message,
 				message: 'Internal Serverless Error',

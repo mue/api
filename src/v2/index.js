@@ -3,7 +3,6 @@ import {
 	json,
 	error,
 } from 'itty-router-extras';
-import Umami from '../umami';
 import sizes from '../sizes';
 import news from '../../news';
 import { getStats } from '../stats';
@@ -13,15 +12,15 @@ import { getPexelsImage } from './pexels';
 import { withWeatherLanguage } from './weather';
 
 export default new Router({ base: '/v2' })
-	.get('/gps', withWeatherLanguage, async (req, env, ctx) => {
+	.get('/gps', withWeatherLanguage, async (req, env) => {
 		const { latitude, longitude } = req.query;
 		if (!latitude || !longitude) {
-			ctx.waitUntil(Umami.error(req, env, 'missing-params'));
+			if (req.$umami) req.$umami.error(req, 'missing-params');
 			return error(400, '`latitude` and `longitude` params are required');
 		}
 		const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${env.OPENWEATHER_TOKEN}&lang=${req.$language}`;
 		const data = await (await fetch(url)).json();
-		return json(data, { headers: { 'Cache-Control': 'private, max-age=3600' } }); // important: **private**
+		return json(data, { headers: { 'Cache-Control': 'max-age=86400' } });
 	})
 	.get('/images/categories', async req => {
 		const { data } = await req.$supabase.rpc('get_image_categories');
@@ -82,12 +81,12 @@ export default new Router({ base: '/v2' })
 	})
 	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
 	.get('/pexels', async (req, ...rest) => json(await getPexelsImage(req.query.quality ?? 'normal', ...rest)))
-	.get('/quotes/random', async (req, env, ctx) => {
+	.get('/quotes/random', async req => {
 		let { data: allowed } = await req.$supabase.rpc('get_quote_languages');
 		allowed = allowed.map(row => row.name);
 		const language = req.query.language || 'en';
 		if (!allowed.includes(language)) {
-			ctx.waitUntil(Umami.error(req, env, 'unsupported-language'));
+			if (req.$umami) req.$umami.error(req, 'unsupported-language');
 			return error(400, 'Unsupported language');
 		}
 		const { data } = await req.$supabase.rpc('get_random_quote', { _language: language }).single();
@@ -98,4 +97,4 @@ export default new Router({ base: '/v2' })
 		const browsers = await getVersions();
 		return json({ browsers }, { headers: { 'Cache-Control': 'max-age=86400' } });
 	})
-	.get('/weather');
+	.get('/weather'); // return json(data, { headers: { 'Cache-Control': 'private, max-age=900' } }); // important: **private**
