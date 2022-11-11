@@ -24,7 +24,7 @@ router
 		if (env.UMAMI_URL) ctx.waitUntil(Umami.request(req, env));
 
 		// decorate request
-		req.supabase = createClient(env.SUPABASE_URL, env.SUPABASE_TOKEN);
+		req.$supabase = createClient(env.SUPABASE_URL, env.SUPABASE_TOKEN);
 
 		// handle rate limits
 		try {
@@ -36,15 +36,15 @@ router
 	})
 	.get('/', () => json('Hello World! API docs: https://docs.muetab.com/api/introduction'))
 	.get('/images/categories', async req => {
-		const { data } = await req.supabase.rpc('get_image_categories');
+		const { data } = await req.$supabase.rpc('get_image_categories');
 		return json(data.map(row => row.name), { headers: { 'Cache-Control': 'max-age=3600' } });
 	})
 	.get('/images/photographers', async req => {
-		const { data } = await req.supabase.rpc('get_image_photographers');
+		const { data } = await req.$supabase.rpc('get_image_photographers');
 		return json(data.map(row => row.name), { headers: { 'Cache-Control': 'max-age=3600' } });
 	})
 	.get('/images/random', async req => {
-		const { data } = await req.supabase.rpc('get_random_image').single();
+		const { data } = await req.$supabase.rpc('get_random_image').single();
 		const format = req.headers.get('accept')?.includes('avif') ? 'avif' : 'webp';
 		const quality = sizes[req.query?.quality] ?? 'fhd';
 		return json({
@@ -57,11 +57,11 @@ router
 	})
 	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
 	.get('/quotes/languages', async req => {
-		const { data } = await req.supabase.rpc('get_quote_languages');
+		const { data } = await req.$supabase.rpc('get_quote_languages');
 		return json(data.map(row => row.name), { headers: { 'Cache-Control': 'max-age=3600' } });
 	})
 	.get('/quotes/random', async req => {
-		const { data } = await req.supabase.rpc('get_random_old_quote', { _language: req.query.language }).single();
+		const { data } = await req.$supabase.rpc('get_random_old_quote', { _language: req.query.language }).single();
 		return json(data);
 	})
 	.get('/stats', async () => json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }))

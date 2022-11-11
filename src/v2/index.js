@@ -10,25 +10,35 @@ import { getStats } from '../stats';
 import { getVersions } from '../versions';
 import { getUnsplashImage } from './unsplash';
 import { getPexelsImage } from './pexels';
+import { withWeatherLanguage } from './weather';
 
 export default new Router({ base: '/v2' })
-	.get('/gps', async req => json(null, { headers: { 'Cache-Control': 'private, max-age=86400' } }))
+	.get('/gps', withWeatherLanguage, async (req, env, ctx) => {
+		const { latitude, longitude } = req.query;
+		if (!latitude || !longitude) {
+			ctx.waitUntil(Umami.error(req, env, 'missing-params'));
+			return error(400, '`latitude` and `longitude` params are required');
+		}
+		const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${env.OPENWEATHER_TOKEN}&lang=${req.$language}`;
+		const data = await (await fetch(url)).json();
+		return json(data, { headers: { 'Cache-Control': 'private, max-age=3600' } }); // important: **private**
+	})
 	.get('/images/categories', async req => {
-		const { data } = await req.supabase.rpc('get_image_categories');
+		const { data } = await req.$supabase.rpc('get_image_categories');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
 	})
 	.get('/images/pexels')
 	.get('/images/photographers', async req => {
-		const { data } = await req.supabase.rpc('get_image_photographers');
+		const { data } = await req.$supabase.rpc('get_image_photographers');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
 	})
 	.get('/images/random', async req => {
-		let { data: allowed } = await req.supabase.rpc('get_image_categories');
+		let { data: allowed } = await req.$supabase.rpc('get_image_categories');
 		allowed = allowed.map(row => row.name);
 		let categories = req.query.categories?.split(',')?.filter(category => allowed.includes(category)) ?? [];
 		if (categories.length === 0) categories = allowed;
 		const category = categories[Math.floor(Math.random() * categories.length)];
-		const { data } = await req.supabase.rpc('get_random_image', { _category: category }).single();
+		const { data } = await req.$supabase.rpc('get_random_image', { _category: category }).single();
 		const format = req.headers.get('accept')?.includes('avif') ? 'avif' : 'webp';
 		const quality = sizes[req.query?.quality] ?? 'fhd';
 		const coordinates = data.location_data?.split(',');
@@ -46,7 +56,7 @@ export default new Router({ base: '/v2' })
 		});
 	})
 	.get('/images/unsplash', async (req, ...rest) => {
-		let { data: allowed } = await req.supabase.rpc('get_image_categories');
+		let { data: allowed } = await req.$supabase.rpc('get_image_categories');
 		allowed = allowed.map(row => row.name);
 		let categories = req.query.categories?.split(',')?.filter(category => allowed.includes(category)) ?? [];
 		if (categories.length === 0) categories = allowed;
@@ -54,7 +64,7 @@ export default new Router({ base: '/v2' })
 		return json(await getUnsplashImage(category, req.query.quality ?? 'normal', ...rest));
 	})
 	.get('/quotes/languages', async req => {
-		const { data } = await req.supabase.rpc('get_quote_languages');
+		const { data } = await req.$supabase.rpc('get_quote_languages');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
 	})
 	.get('/map', async (req, env) => {
@@ -73,14 +83,14 @@ export default new Router({ base: '/v2' })
 	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
 	.get('/pexels', async (req, ...rest) => json(await getPexelsImage(req.query.quality ?? 'normal', ...rest)))
 	.get('/quotes/random', async (req, env, ctx) => {
-		let { data: allowed } = await req.supabase.rpc('get_quote_languages');
+		let { data: allowed } = await req.$supabase.rpc('get_quote_languages');
 		allowed = allowed.map(row => row.name);
 		const language = req.query.language || 'en';
 		if (!allowed.includes(language)) {
 			ctx.waitUntil(Umami.error(req, env, 'unsupported-language'));
 			return error(400, 'Unsupported language');
 		}
-		const { data } = await req.supabase.rpc('get_random_quote', { _language: language }).single();
+		const { data } = await req.$supabase.rpc('get_random_quote', { _language: language }).single();
 		return json(data);
 	})
 	.get('/stats', async () => json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }))
