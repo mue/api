@@ -84,11 +84,13 @@ export default {
 				req,
 			});
 			if (env.UMAMI_URL) req.$umami.error(req, 'unknown');
-			return error(500, {
+			const res = error(500, {
 				error: err.message,
 				message: 'Internal Serverless Error',
 				stack: err.stack,
 			});
+			res.headers.set('Access-Control-Allow-Origin', '*');
+			return res;
 		}
 	},
 };
