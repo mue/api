@@ -56,7 +56,7 @@ router
 			photographer: data.photographer,
 		}, { headers: { 'Cache-Control': 'no-cache' } });
 	})
-	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
+	.get('/news', () => json({ news }, { headers: { 'Cache-Control': 'max-age=3600' } }))
 	.get('/quotes/languages', () => json(['English', 'French'], { headers: { 'Cache-Control': 'max-age=3600' } }))
 	.get('/quotes/random', async req => {
 		const language = req.query.language?.replace('French', 'Français') || 'English';
