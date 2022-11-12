@@ -45,6 +45,7 @@ export default new Router({ base: '/v2' })
 		const quality = sizes[req.query?.quality] ?? 'fhd';
 		const coordinates = data.location_data?.split(',');
 		return json({
+			blur_hash: data.blur_hash,
 			camera: data.camera,
 			category: data.category,
 			colour: data.colour,
