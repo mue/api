@@ -53,7 +53,7 @@ end;$$;
 
 
 create or replace function get_random_image(
-  _category text default 'outdoors',
+  _category text default 'landscapes',
   _exclude text default ''
 )
 returns setof images
