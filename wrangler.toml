@@ -1,12 +1,10 @@
+account_id = "950e96e5beb222c4eeb9962512a6d6fc"
 name = "api"
 main = "src/index.js"
 compatibility_date = "2022-11-09"
 node_compat = true
-# route = { pattern = "api.muetab.com/*", zone_name = "muetab.com" }
-
-[env.staging]
-name = "api-staging"
-route = { pattern = "staging--api.muetab.com/*", zone_name = "muetab.com" }
+workers_dev = true
+route = "api.muetab.com/*"
 
 [vars]
   UMAMI_URL = "https://umami.muetab.com"
@@ -15,9 +13,9 @@ route = { pattern = "staging--api.muetab.com/*", zone_name = "muetab.com" }
   PEXELS_COLLECTION = "iwf78dt"
 
 # SECRETS:
-# SUPABASE_URL
-# SUPABASE_TOKEN
-# UNSPLASH_TOKEN
-# PEXELS_TOKEN
-# MAPBOX_TOKEN
-# OPENWEATHER_TOKEN
+# 	SUPABASE_URL
+# 	SUPABASE_TOKEN
+# 	UNSPLASH_TOKEN
+# 	PEXELS_TOKEN
+# 	MAPBOX_TOKEN
+# 	OPENWEATHER_TOKEN
