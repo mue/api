@@ -4,7 +4,9 @@ main = "src/index.js"
 compatibility_date = "2022-11-09"
 node_compat = true
 workers_dev = true
-route = "api.muetab.com/*"
+routes = [
+	{ pattern = "api.muetab.com", custom_domain = true, zone_name = "muetab.com" }
+]
 
 [vars]
   UMAMI_URL = "https://umami.muetab.com"
