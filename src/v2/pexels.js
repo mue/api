@@ -8,7 +8,9 @@ const sizes = {
 export const getPexelsImage = async (quality, ...rest) => {
 	const [env] = rest;
 	const size = sizes[quality];
-	const url = `https://api.pexels.com/v1/collections/${env.PEXELS_COLLECTION}?per_page=80&page=${Math.floor(Math.random() * 2) + 1}`;
+	const url = `https://api.pexels.com/v1/collections/${env.PEXELS_COLLECTION}?per_page=80&page=${
+		Math.floor(Math.random() * 2) + 1
+	}`;
 	let data = await (await fetch(url, { headers: { Authorization: env.PEXELS_TOKEN } })).json();
 	data = data.media[Math.floor(Math.random() * data.media.length) + 1];
 	return {

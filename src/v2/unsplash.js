@@ -16,7 +16,11 @@ export const getUnsplashImage = async (category, quality, ...rest) => {
 	const ref = `?utm_source=${env.UNSPLASH_REFERRAL}&utm_medium=referral`;
 	const collection = collections[category];
 	const size = sizes[quality];
-	const data = await (await fetch(`https://api.unsplash.com/photos/random?client_id=${env.UNSPLASH_TOKEN}&collections=${collection}`)).json();
+	const data = await (
+		await fetch(
+			`https://api.unsplash.com/photos/random?client_id=${env.UNSPLASH_TOKEN}&collections=${collection}`,
+		)
+	).json();
 	ctx.waitUntil(fetch(`${data.links.download_location}&client_id=${env.UNSPLASH_TOKEN}`)); // api requirement
 	return {
 		blur_hash: data.blur_hash,

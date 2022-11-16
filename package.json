@@ -12,10 +12,12 @@
   "version": "1.7.0",
   "scripts": {
     "dev": "wrangler dev",
-    "test": "jest"
+    "test": "jest",
+    "pretty": "prettier --write \"./src/**/*.{js,json}\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.5",
+    "cheerio": "1.0.0-rc.12",
     "itty-router": "^2.6.6",
     "itty-router-extras": "^0.4.2",
     "lambda-rate-limiter": "3.0.1",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "eslint": "^8.27.0",
+    "eslint-config-prettier": "^8.5.0",
     "wrangler": "^2.1.15"
   }
 }

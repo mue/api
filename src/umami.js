@@ -17,14 +17,18 @@ export default class Umami {
 				return 'https://firefox.muetab.com';
 			} else if (Object.values(extensions).includes(referrer)) {
 				switch (ua.getBrowser().name) {
-				case 'Chrome':
-					return 'https://chrome.muetab.com';
-				case 'Edge':
-					return referrer === extensions.chrome ? 'https://chromeonedge.muetab.com' : 'https://edge.muetab.com';
-				case 'Whale':
-					return referrer === extensions.chrome ? 'https://chromeonwhale.muetab.com' : 'https://whale.muetab.com';
-				default:
-					return 'https://chromium.muetab.com';
+					case 'Chrome':
+						return 'https://chrome.muetab.com';
+					case 'Edge':
+						return referrer === extensions.chrome
+							? 'https://chromeonedge.muetab.com'
+							: 'https://edge.muetab.com';
+					case 'Whale':
+						return referrer === extensions.chrome
+							? 'https://chromeonwhale.muetab.com'
+							: 'https://whale.muetab.com';
+					default:
+						return 'https://chromium.muetab.com';
 				}
 			} else {
 				return referrer;
@@ -40,7 +44,9 @@ export default class Umami {
 			fetch(this.url + '/api/collect', {
 				body: JSON.stringify({
 					payload: {
-						language: req.headers['accept-language'] ? req.headers['accept-language'].split(',')[0] : '',
+						language: req.headers['accept-language']
+							? req.headers['accept-language'].split(',')[0]
+							: '',
 						referrer: this.getReferrer(req),
 						screen: '1920x1080',
 						type: 'pageview',
@@ -55,7 +61,6 @@ export default class Umami {
 				method: 'POST',
 			}),
 		);
-
 	}
 
 	/**

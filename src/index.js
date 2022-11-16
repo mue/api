@@ -1,10 +1,6 @@
 import { Router } from 'itty-router';
-import {
-	json,
-	missing,
-	error,
-} from 'itty-router-extras';
-import limiterFactory  from 'lambda-rate-limiter';
+import { json, missing, error } from 'itty-router-extras';
+import limiterFactory from 'lambda-rate-limiter';
 import ms from 'ms';
 import Umami from './umami';
 import { createClient } from '@supabase/supabase-js';
@@ -34,36 +30,51 @@ router
 		}
 	})
 	.get('/', () => json('Hello World! API docs: https://docs.muetab.com/api/introduction'))
-	.get('/images/categories', async req => {
+	.get('/images/categories', async (req) => {
 		const { data } = await req.$supabase.rpc('get_image_categories');
-		return json(data.map(row => row.name), { headers: { 'Cache-Control': 'max-age=3600' } });
+		return json(
+			data.map((row) => row.name),
+			{ headers: { 'Cache-Control': 'max-age=3600' } },
+		);
 	})
-	.get('/images/photographers', async req => {
+	.get('/images/photographers', async (req) => {
 		const { data } = await req.$supabase.rpc('get_image_photographers');
-		return json(data.map(row => row.name), { headers: { 'Cache-Control': 'max-age=3600' } });
+		return json(
+			data.map((row) => row.name),
+			{ headers: { 'Cache-Control': 'max-age=3600' } },
+		);
 	})
-	.get('/images/random', async req => {
+	.get('/images/random', async (req) => {
 		const { data: categories } = await req.$supabase.rpc('get_image_categories');
 		const category = categories[Math.floor(Math.random() * categories.length)].name;
 		const { data } = await req.$supabase.rpc('get_random_image', { _category: category }).single();
 		const format = req.headers.get('accept')?.includes('avif') ? 'avif' : 'webp';
 		const quality = sizes[req.query?.quality] ?? 'fhd';
-		return json({
-			camera: data.camera,
-			category: data.category,
-			file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}?v=${data.version}`,
-			location: data.location_name,
-			photographer: data.photographer,
-		}, { headers: { 'Cache-Control': 'no-cache' } });
+		return json(
+			{
+				camera: data.camera,
+				category: data.category,
+				file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}?v=${data.version}`,
+				location: data.location_name,
+				photographer: data.photographer,
+			},
+			{ headers: { 'Cache-Control': 'no-cache' } },
+		);
 	})
 	.get('/news', () => json({ news }, { headers: { 'Cache-Control': 'max-age=3600' } }))
-	.get('/quotes/languages', () => json(['English', 'French'], { headers: { 'Cache-Control': 'max-age=3600' } }))
-	.get('/quotes/random', async req => {
+	.get('/quotes/languages', () =>
+		json(['English', 'French'], { headers: { 'Cache-Control': 'max-age=3600' } }),
+	)
+	.get('/quotes/random', async (req) => {
 		const language = req.query.language?.replace('French', 'Français') || 'English';
-		const { data } = await req.$supabase.rpc('get_random_old_quote', { _language: language }).single();
+		const { data } = await req.$supabase
+			.rpc('get_random_old_quote', { _language: language })
+			.single();
 		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
 	})
-	.get('/stats', async () => json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }))
+	.get('/stats', async () =>
+		json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }),
+	)
 	.get('/versions', async () => {
 		const browsers = await getVersions();
 		return json({ browsers }, { headers: { 'Cache-Control': 'max-age=86400' } });
