@@ -89,7 +89,7 @@ export default new Router({ base: '/v2' })
 		if (!latitude) return error(400, 'latitude is required');
 		if (!longitude) return error(400, 'longitude is required');
 		const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+555555(${longitude},${latitude})/${longitude},${latitude},9},0/300x150?access_token=${env.MAPBOX_TOKEN}`;
-		const res = await fetch(url, { cf: { cacheTtl: 604800 } });
+		const res = await fetch(url, { cf: { cacheTtl: 2592000 } });
 		return new Response(res.body, res);
 	})
 	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
