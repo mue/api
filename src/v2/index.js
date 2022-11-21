@@ -88,7 +88,7 @@ export default new Router({ base: '/v2' })
 		const { latitude, longitude } = req.query;
 		if (!latitude) return error(400, 'latitude is required');
 		if (!longitude) return error(400, 'longitude is required');
-		const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+555555(${longitude},${latitude})/${longitude},${latitude},9},0/400x200?access_token=${env.MAPBOX_TOKEN}`;
+		const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+555555(${longitude},${latitude})/${longitude},${latitude},9},0/300x200?access_token=${env.MAPBOX_TOKEN}`;
 		const res = await fetch(url, { cf: { cacheTtl: 31536000 } });
 		return new Response(res.body, res);
 	})
