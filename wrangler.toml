@@ -1,0 +1,24 @@
+account_id = "950e96e5beb222c4eeb9962512a6d6fc"
+name = "api"
+main = "src/index.js"
+compatibility_date = "2022-11-09"
+node_compat = true
+workers_dev = true
+routes = [
+	{ pattern = "api.muetab.com", custom_domain = true, zone_name = "muetab.com" }
+]
+
+[vars]
+  UMAMI_URL = "https://umami.muetab.com"
+  UMAMI_ID = "f6fc2ba1-68d2-4e15-87e8-c93ef886ebd5"
+  UNSPLASH_REFERRAL = "mue"
+  PEXELS_COLLECTION = "iwf78dt"
+  SPONSORS_NAME = "mue"
+
+# SECRETS:
+# 	SUPABASE_URL
+# 	SUPABASE_TOKEN
+# 	UNSPLASH_TOKEN
+# 	PEXELS_TOKEN
+# 	MAPBOX_TOKEN
+# 	OPENWEATHER_TOKEN
