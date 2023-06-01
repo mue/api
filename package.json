@@ -18,7 +18,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.0.5",
     "cheerio": "1.0.0-rc.12",
-    "itty-router": "^2.6.6",
+    "itty-router": "^4.0.9",
     "itty-router-extras": "^0.4.2",
     "lambda-rate-limiter": "3.0.1",
     "ms": "^2.1.3",
