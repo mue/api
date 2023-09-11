@@ -8,6 +8,8 @@ export const withWeatherLanguage = (req) => {
 		['en_US', 'en'],
 		['zh_CN', 'zh_cn'],
 		['pt_BR', 'pt'],
+		['es-419', 'es'],
+		['tr-TR', 'tr'],
 	]);
 	let { language } = req.query;
 	if (!language) {
