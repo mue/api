@@ -33,7 +33,7 @@
 		],
 		"arrow-parens": [
 			"error",
-			"as-needed"
+			"always"
 		],
 		"block-spacing": [
 			"error",

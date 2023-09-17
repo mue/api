@@ -1,5 +1,5 @@
 import { Router } from 'itty-router';
-import { json, missing, error } from 'itty-router-extras';
+import { json, error } from 'itty-router-extras';
 import limiterFactory from 'lambda-rate-limiter';
 import ms from 'ms';
 import Umami from './umami';
@@ -9,6 +9,13 @@ import sizes from './sizes';
 import news from '../news';
 import { getVersions } from './versions';
 import { getStats } from './stats';
+import {
+	getCollection,
+	getCollections,
+	getFeatured,
+	getItem,
+	getItems,
+} from './v2/marketplace';
 
 const limiter = limiterFactory({ interval: ms('1m') });
 
@@ -30,6 +37,9 @@ router
 		}
 	})
 	.get('/', () => json('Hello World! API docs: https://docs.muetab.com/api/introduction'))
+	.get('/collection/:collection', getCollection)
+	.get('/collections', getCollections)
+	.get('/featured', getFeatured)
 	.get('/images/categories', async (req) => {
 		const { data } = await req.$supabase.rpc('get_image_categories');
 		return json(
@@ -61,6 +71,8 @@ router
 			{ headers: { 'Cache-Control': 'no-cache' } },
 		);
 	})
+	.get('/item/:category/:item', getItem)
+	.get('/items/:category', getItems)
 	.get('/news', () => json({ news }, { headers: { 'Cache-Control': 'max-age=3600' } }))
 	.get('/quotes/languages', () =>
 		json(['English', 'French'], { headers: { 'Cache-Control': 'max-age=3600' } }),
@@ -80,7 +92,7 @@ router
 		return json({ browsers }, { headers: { 'Cache-Control': 'max-age=86400' } });
 	})
 	.all('/v2/*', v2.handle)
-	.all('*', () => missing('Not Found'));
+	.all('*', () => error(404, 'Not Found'));
 
 export default {
 	async fetch(req, env, ctx) {
@@ -94,7 +106,7 @@ export default {
 				err,
 				req,
 			});
-			if (env.UMAMI_URL) req.$umami.error(req, 'unknown');
+			// if (env.UMAMI_URL) req.$umami.error(req, 'unknown');
 			const res = error(500, {
 				error: err?.message,
 				message: 'Internal Serverless Error',

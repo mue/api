@@ -17,18 +17,18 @@ export default class Umami {
 				return 'https://firefox.muetab.com';
 			} else if (Object.values(extensions).includes(referrer)) {
 				switch (ua.getBrowser().name) {
-					case 'Chrome':
-						return 'https://chrome.muetab.com';
-					case 'Edge':
-						return referrer === extensions.chrome
-							? 'https://chromeonedge.muetab.com'
-							: 'https://edge.muetab.com';
-					case 'Whale':
-						return referrer === extensions.chrome
-							? 'https://chromeonwhale.muetab.com'
-							: 'https://whale.muetab.com';
-					default:
-						return 'https://chromium.muetab.com';
+				case 'Chrome':
+					return 'https://chrome.muetab.com';
+				case 'Edge':
+					return referrer === extensions.chrome
+						? 'https://chromeonedge.muetab.com'
+						: 'https://edge.muetab.com';
+				case 'Whale':
+					return referrer === extensions.chrome
+						? 'https://chromeonwhale.muetab.com'
+						: 'https://whale.muetab.com';
+				default:
+					return 'https://chromium.muetab.com';
 				}
 			} else {
 				return referrer;

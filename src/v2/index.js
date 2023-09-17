@@ -7,8 +7,18 @@ import { getVersions } from '../versions';
 import { getUnsplashImage } from './unsplash';
 import { getPexelsImage } from './pexels';
 import { withWeatherLanguage } from './weather';
+import {
+	getCollection,
+	getCollections,
+	getFeatured,
+	getItem,
+	getItems,
+} from './marketplace';
 
 export default new Router({ base: '/v2' })
+	.get('/collection/:collection', getCollection)
+	.get('/collections', getCollections)
+	.get('/featured', getFeatured)
 	.get('/gps', withWeatherLanguage, async (req, env) => {
 		const { latitude, longitude } = req.query;
 		if (!latitude || !longitude) {
@@ -17,18 +27,14 @@ export default new Router({ base: '/v2' })
 		}
 		const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${env.OPENWEATHER_TOKEN}&lang=${req.$language}`;
 		const data = await (await fetch(url)).json();
-		return json(data, {
-			headers: { 'Cache-Control': 'max-age=604800, stale-while-revalidate=86400, immutable' },
-		});
+		return json(data, { headers: { 'Cache-Control': 'max-age=604800, stale-while-revalidate=86400, immutable' } });
 	})
 	.get('/images/categories', async (req) => {
 		const { data } = await req.$supabase.rpc('get_image_categories');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
 	})
 	.get('/images/pexels', async (req, ...rest) =>
-		json(await getPexelsImage(req.query.quality ?? 'normal', ...rest), {
-			headers: { 'Cache-Control': 'no-cache' },
-		}),
+		json(await getPexelsImage(req.query.quality ?? 'normal', ...rest), { headers: { 'Cache-Control': 'no-cache' } }),
 	)
 	.get('/images/photographers', async (req) => {
 		const { data } = await req.$supabase.rpc('get_image_photographers');
@@ -76,10 +82,10 @@ export default new Router({ base: '/v2' })
 			req.query.categories?.split(',')?.filter((category) => allowed.includes(category)) ?? [];
 		if (categories.length === 0) categories = allowed;
 		const category = categories[Math.floor(Math.random() * categories.length)];
-		return json(await getUnsplashImage(category, req.query.quality ?? 'normal', ...rest), {
-			headers: { 'Cache-Control': 'no-cache' },
-		});
+		return json(await getUnsplashImage(category, req.query.quality ?? 'normal', ...rest), { headers: { 'Cache-Control': 'no-cache' } });
 	})
+	.get('/item/:category/:item', getItem)
+	.get('/items/:category', getItems)
 	.get('/quotes/languages', async (req) => {
 		const { data } = await req.$supabase.rpc('get_quote_languages');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });

@@ -8,11 +8,9 @@ export const getSponsors = async () => {
 	const sponsors = [];
 	$('.d-inline-block').each((i, el) => {
 		sponsors.push({
-			name: $(el).find('img').attr('alt'),
 			img: $(el).attr('href').replace('/', ''),
+			name: $(el).find('img').attr('alt'),
 		});
 	});
-	return {
-		sponsors,
-	};
+	return { sponsors };
 };
