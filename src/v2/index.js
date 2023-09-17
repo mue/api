@@ -16,9 +16,9 @@ import {
 } from './marketplace';
 
 export default new Router({ base: '/v2' })
-	.get('/collection/:collection', getCollection)
-	.get('/collections', getCollections)
-	.get('/featured', getFeatured)
+	.get('/marketplace/collection/:collection', getCollection)
+	.get('/marketplace/collections', getCollections)
+	.get('/marketplace/featured', getFeatured)
 	.get('/gps', withWeatherLanguage, async (req, env) => {
 		const { latitude, longitude } = req.query;
 		if (!latitude || !longitude) {
@@ -84,8 +84,8 @@ export default new Router({ base: '/v2' })
 		const category = categories[Math.floor(Math.random() * categories.length)];
 		return json(await getUnsplashImage(category, req.query.quality ?? 'normal', ...rest), { headers: { 'Cache-Control': 'no-cache' } });
 	})
-	.get('/item/:category/:item', getItem)
-	.get('/items/:category', getItems)
+	.get('/marketplace/item/:category/:item', getItem)
+	.get('/marketplace/items/:category', getItems)
 	.get('/quotes/languages', async (req) => {
 		const { data } = await req.$supabase.rpc('get_quote_languages');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
