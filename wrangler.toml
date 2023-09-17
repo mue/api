@@ -5,7 +5,8 @@ compatibility_date = "2022-11-09"
 node_compat = true
 workers_dev = true
 routes = [
-	{ pattern = "api.muetab.com", custom_domain = true, zone_name = "muetab.com" }
+	{ pattern = "api.muetab.com", custom_domain = true, zone_name = "muetab.com" },
+	{ pattern = "marketplace.muetab.com", custom_domain = true, zone_name = "muetab.com" }
 ]
 
 [vars]
