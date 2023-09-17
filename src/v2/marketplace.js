@@ -83,12 +83,22 @@ export async function getItem(req) {
 	if (!index) {
 		return error(404, 'Item Not Found');
 	}
-	const item = await (await fetch(`https://marketplace-data.muetab.com/${req.params.category}/${req.params.item}.json`, {
+	let item = await (await fetch(`https://marketplace-data.muetab.com/${req.params.category}/${req.params.item}.json`, {
 		cf: {
 			cacheEverything: true,
 			cacheTtl: ms('1h'),
 		},
 	})).json();
+
+	const version = getVersion(req);
+	if (version === 2) {
+		item = {
+			display_name: item.name,
+			...item,
+			name: req.params.item,
+		};
+	}
+
 	return json({
 		data: item,
 		updated: 'unknown',
