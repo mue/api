@@ -76,13 +76,33 @@ export default new Router({ base: '/v2' })
 		);
 	})
 	.get('/images/unsplash', async (req, ...rest) => {
-		let { data: allowed } = await req.$supabase.rpc('get_image_categories');
-		allowed = allowed.map((row) => row.name);
-		let categories =
-			req.query.categories?.split(',')?.filter((category) => allowed.includes(category)) ?? [];
-		if (categories.length === 0) categories = allowed;
-		const category = categories[Math.floor(Math.random() * categories.length)];
-		return json(await getUnsplashImage(category, req.query.quality ?? 'normal', ...rest), { headers: { 'Cache-Control': 'no-cache' } });
+		const named_collections = {
+			animals: 'nJDnd_8TN_g',
+			architecture: 'e9-QAhrwZ5Q',
+			landscapes: 'SxeKQtPuR0U',
+			plants: 'y15m5OvaD98',
+		};
+		let {
+			categories,
+			collections,
+			orientation,
+			topics,
+			username,
+		} = req.query;
+		const unsplash_query = new URLSearchParams({ orientation: orientation ?? 'landscape' });
+		if (categories && categories.length > 0) collections = categories.split(',').map((category) => named_collections[category]).join(',');
+		if (collections !== undefined) unsplash_query.set('collections', collections);
+		if (topics !== undefined) unsplash_query.set('topics', topics);
+		if (username !== undefined) unsplash_query.set('username', username);
+		return json(await getUnsplashImage(unsplash_query, req.query.quality ?? 'normal', ...rest), { headers: { 'Cache-Control': 'no-cache' } });
+	})
+	.get('/images/unsplash/topics', async (req, env) => {
+		const data = await (
+			await fetch(
+				`https://api.unsplash.com/topics?client_id=${env.UNSPLASH_TOKEN}`,
+			)
+		).json();
+		return json(data, { headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400' } });
 	})
 	.get('/marketplace/item/:category/:item', getItem)
 	.get('/marketplace/items/:category', getItems)
@@ -94,7 +114,7 @@ export default new Router({ base: '/v2' })
 		const { latitude, longitude } = req.query;
 		if (!latitude) return error(400, 'latitude is required');
 		if (!longitude) return error(400, 'longitude is required');
-		const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+555555(${longitude},${latitude})/${longitude},${latitude},9},0/300x200?access_token=${env.MAPBOX_TOKEN}`;
+		const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+555555(${longitude},${latitude})/${longitude},${latitude},9},0/400x200?access_token=${env.MAPBOX_TOKEN}`;
 		const res = await fetch(url, { cf: { cacheTtl: 31536000 } });
 		return new Response(res.body, res);
 	})

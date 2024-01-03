@@ -1,9 +1,3 @@
-const collections = {
-	animals: 'nJDnd_8TN_g',
-	architecture: 'e9-QAhrwZ5Q',
-	landscapes: 'SxeKQtPuR0U',
-	plants: 'y15m5OvaD98',
-};
 const sizes = {
 	original: '',
 	high: '&w=3840', // eslint-disable-line sort-keys
@@ -11,21 +5,21 @@ const sizes = {
 	datasaver: '&w=1280', // eslint-disable-line sort-keys
 };
 
-export const getUnsplashImage = async (category, quality, ...rest) => {
+export const getUnsplashImage = async (query, quality, ...rest) => {
 	const [env, ctx] = rest;
+	query.set('client_id', env.UNSPLASH_TOKEN);
 	const ref = `?utm_source=${env.UNSPLASH_REFERRAL}&utm_medium=referral`;
-	const collection = collections[category];
 	const size = sizes[quality];
 	const data = await (
 		await fetch(
-			`https://api.unsplash.com/photos/random?client_id=${env.UNSPLASH_TOKEN}&collections=${collection}`,
+			`https://api.unsplash.com/photos/random?${query.toString()}`,
 		)
 	).json();
 	ctx.waitUntil(fetch(`${data.links.download_location}&client_id=${env.UNSPLASH_TOKEN}`)); // api requirement
 	return {
 		blur_hash: data.blur_hash,
 		camera: data.exif.model ?? null,
-		category,
+		category: null,
 		colour: data.color,
 		description: data.description ?? null,
 		downloads: data.downloads,

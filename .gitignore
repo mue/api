@@ -3,6 +3,7 @@
 .vscode/
 .vercel/
 .history/
+.wrangler/
 node_modules/
 
 # Files
