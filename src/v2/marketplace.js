@@ -29,7 +29,7 @@ async function getManifest() {
 export async function getCollection(req) {
 	const manifest = await getManifest();
 	const index = manifest.index.collections[req.params.collection];
-	if (!index) {
+	if (index === undefined) {
 		return error(404, 'Not Found');
 	}
 	const collection = manifest.collections[index];
@@ -80,7 +80,7 @@ export async function getItem(req) {
 		return error(404, 'Category Not Found');
 	}
 	const index = manifest.index[req.params.category][req.params.item];
-	if (!index) {
+	if (index === undefined) {
 		return error(404, 'Item Not Found');
 	}
 	let item = await (await fetch(`https://marketplace-data.muetab.com/${req.params.category}/${req.params.item}.json`, {

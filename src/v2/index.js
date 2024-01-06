@@ -19,6 +19,8 @@ export default new Router({ base: '/v2' })
 	.get('/marketplace/collection/:collection', getCollection)
 	.get('/marketplace/collections', getCollections)
 	.get('/marketplace/featured', getFeatured)
+	.get('/marketplace/item/:category/:item', getItem)
+	.get('/marketplace/items/:category', getItems)
 	.get('/gps', withWeatherLanguage, async (req, env) => {
 		const { latitude, longitude } = req.query;
 		if (!latitude || !longitude) {
@@ -104,8 +106,6 @@ export default new Router({ base: '/v2' })
 		).json();
 		return json(data, { headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400' } });
 	})
-	.get('/marketplace/item/:category/:item', getItem)
-	.get('/marketplace/items/:category', getItems)
 	.get('/quotes/languages', async (req) => {
 		const { data } = await req.$supabase.rpc('get_quote_languages');
 		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
