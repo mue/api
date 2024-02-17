@@ -10,6 +10,8 @@ import { withWeatherLanguage } from './weather';
 import {
 	getCollection,
 	getCollections,
+	getCurator,
+	getCurators,
 	getFeatured,
 	getItem,
 	getItems,
@@ -18,6 +20,8 @@ import {
 export default new Router({ base: '/v2' })
 	.get('/marketplace/collection/:collection', getCollection)
 	.get('/marketplace/collections', getCollections)
+	.get('/marketplace/curator/:curator', getCurator)
+	.get('/marketplace/curators', getCurators)
 	.get('/marketplace/featured', getFeatured)
 	.get('/marketplace/item/:category/:item', getItem)
 	.get('/marketplace/items/:category', getItems)

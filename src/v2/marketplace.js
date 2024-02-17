@@ -14,7 +14,7 @@ function getVersion(req) {
 }
 
 async function getManifest() {
-	const manifest = await (await fetch('https://marketplace-data.muetab.com/manifest.json', {
+	const manifest = await (await fetch('https://marketplace-data.muetab.com/manifest.json?v=2', {
 		cf: {
 			cacheEverything: true,
 			cacheTtl: ms('1h'),
@@ -28,16 +28,15 @@ async function getManifest() {
  */
 export async function getCollection(req) {
 	const manifest = await getManifest();
-	const index = manifest.index.collections[req.params.collection];
-	if (index === undefined) {
+	const collection = manifest.collections[req.params.collection];
+	if (collection === undefined) {
 		return error(404, 'Not Found');
 	}
-	const collection = manifest.collections[index];
 	const unresolved_items = collection.items;
 	collection.items = unresolved_items.map((item) => {
 		const [type, name] = item.split('/');
 		return {
-			...manifest[type][manifest.index[type][name]],
+			...manifest[type][name],
 			type,
 		};
 	});
@@ -53,11 +52,36 @@ export async function getCollection(req) {
 
 export async function getCollections() {
 	const manifest = await getManifest();
-	const collections = manifest.collections.map((collection) => {
+	const collections = Object.values(manifest.collections).map((collection) => {
 		delete collection.items;
 		return collection;
 	});
 	return json({ data: collections });
+}
+
+/**
+ * @param {Request} req
+ */
+export async function getCurator(req) {
+	const manifest = await getManifest();
+	const curator = manifest.curators[decodeURIComponent(req.params.curator)];
+	if (curator === undefined) {
+		return error(404, 'Not Found');
+	}
+	const items = curator.map((item) => {
+		const [type, name] = item.split('/');
+		return {
+			...manifest[type][name],
+			type,
+		};
+	});
+	return json({ data: { items } });
+}
+
+export async function getCurators() {
+	const manifest = await getManifest();
+	const curators = Object.keys(manifest.curators);
+	return json({ data: curators });
 }
 
 export async function getFeatured() {
@@ -79,8 +103,7 @@ export async function getItem(req) {
 	if (!manifest[req.params.category]) {
 		return error(404, 'Category Not Found');
 	}
-	const index = manifest.index[req.params.category][req.params.item];
-	if (index === undefined) {
+	if (manifest[req.params.category][req.params.item] === undefined) {
 		return error(404, 'Item Not Found');
 	}
 	let item = await (await fetch(`https://marketplace-data.muetab.com/${req.params.category}/${req.params.item}.json`, {
@@ -89,6 +112,12 @@ export async function getItem(req) {
 			cacheTtl: ms('1h'),
 		},
 	})).json();
+
+	item.in_collections = manifest[req.params.category][req.params.item].in_collections.map((name) => {
+		const collection = manifest.collections[name];
+		delete collection.items;
+		return collection;
+	});
 
 	const version = getVersion(req);
 	if (version === 2) {
@@ -113,15 +142,15 @@ export async function getItems(req) {
 	if (req.params.category === 'all') {
 		return json({
 			data: [
-				...manifest.preset_settings.map((item) => {
+				...Object.values(manifest.preset_settings).map((item) => {
 					item.type = 'preset_settings';
 					return item;
 				}),
-				...manifest.photo_packs.map((item) => {
+				...Object.values(manifest.photo_packs).map((item) => {
 					item.type = 'photo_packs';
 					return item;
 				}),
-				...manifest.quote_packs.map((item) => {
+				...Object.values(manifest.quote_packs).map((item) => {
 					item.type = 'quote_packs';
 					return item;
 				}),
