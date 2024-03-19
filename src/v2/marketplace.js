@@ -162,14 +162,15 @@ export async function getItems(req) {
 			return error(404, 'Not Found');
 		}
 
+		let data = Object.values(category);
 		const version = getVersion(req);
 		if (version === 1) {
-			category.map((item) => {
+			data = data.map((item) => {
 				item.type = req.params.category;
 				return item;
 			});
 		}
 
-		return json({ data: category });
+		return json({ data });
 	}
 }
