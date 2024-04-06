@@ -1,6 +1,6 @@
 import { error } from 'itty-router-extras';
 
-export const withWeatherLanguage = (req) => {
+export const withWeatherLanguage = (req, env, ctx) => {
 	const allowed = ['en', 'de', 'es', 'fr', 'nl', 'no', 'ru', 'zh_cn', 'id', 'tr', 'pt', 'bn'];
 	const map = new Map([
 		['de_DE', 'de'],
@@ -11,7 +11,6 @@ export const withWeatherLanguage = (req) => {
 		['es_419', 'es'],
 		['tr_TR', 'tr'],
 		['id_ID', 'id'],
-		
 	]);
 	let { language } = req.query;
 	if (!language) {
@@ -19,8 +18,7 @@ export const withWeatherLanguage = (req) => {
 	} else if (map.has(language)) {
 		language = map.get(language);
 	} else if (!allowed.includes(language)) {
-		if (req.$umami) req.$umami.error(req, 'unsupported-language');
 		return error(400, 'Unsupported language');
 	}
-	req.$language = language;
+	ctx.$language = language;
 };

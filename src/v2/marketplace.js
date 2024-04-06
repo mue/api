@@ -1,5 +1,4 @@
 import { error, json } from 'itty-router-extras';
-import ms from 'ms';
 
 /**
  * @param {Request} req
@@ -14,12 +13,9 @@ function getVersion(req) {
 }
 
 async function getManifest() {
-	const manifest = await (await fetch('https://marketplace-data.muetab.com/manifest.json?v=2', {
-		cf: {
-			cacheEverything: true,
-			cacheTtl: ms('1h'),
-		},
-	})).json();
+	const manifest = await (
+		await fetch('https://marketplace-data.muetab.com/manifest.json?v=2', { cf: { cacheTtl: 3600 } })
+	).json();
 	return manifest;
 }
 
@@ -86,12 +82,9 @@ export async function getCurators() {
 
 export async function getFeatured() {
 	return json({
-		data: await (await fetch('https://marketplace-data.muetab.com/featured.json', {
-			cf: {
-				cacheEverything: true,
-				cacheTtl: ms('1h'),
-			},
-		})).json(),
+		data: await (
+			await fetch('https://marketplace-data.muetab.com/featured.json', { cf: { cacheTtl: 3600 } })
+		).json(),
 	});
 }
 
@@ -106,18 +99,20 @@ export async function getItem(req) {
 	if (manifest[req.params.category][req.params.item] === undefined) {
 		return error(404, 'Item Not Found');
 	}
-	let item = await (await fetch(`https://marketplace-data.muetab.com/${req.params.category}/${req.params.item}.json`, {
-		cf: {
-			cacheEverything: true,
-			cacheTtl: ms('1h'),
-		},
-	})).json();
+	let item = await (
+		await fetch(
+			`https://marketplace-data.muetab.com/${req.params.category}/${req.params.item}.json`,
+			{ cf: { cacheTtl: 3600 } },
+		)
+	).json();
 
-	item.in_collections = manifest[req.params.category][req.params.item].in_collections.map((name) => {
-		const collection = manifest.collections[name];
-		delete collection.items;
-		return collection;
-	});
+	item.in_collections = manifest[req.params.category][req.params.item].in_collections.map(
+		(name) => {
+			const collection = manifest.collections[name];
+			delete collection.items;
+			return collection;
+		},
+	);
 
 	const version = getVersion(req);
 	if (version === 2) {

@@ -17,7 +17,7 @@ import {
 	getItems,
 } from './marketplace';
 
-export default new Router({ base: '/v2' })
+export default Router({ base: '/v2' })
 	.get('/marketplace/collection/:collection', getCollection)
 	.get('/marketplace/collections', getCollections)
 	.get('/marketplace/curator/:curator', getCurator)
@@ -25,35 +25,39 @@ export default new Router({ base: '/v2' })
 	.get('/marketplace/featured', getFeatured)
 	.get('/marketplace/item/:category/:item', getItem)
 	.get('/marketplace/items/:category', getItems)
-	.get('/gps', withWeatherLanguage, async (req, env) => {
+	.get('/gps', withWeatherLanguage, async (req, env, ctx) => {
 		const { latitude, longitude } = req.query;
 		if (!latitude || !longitude) {
-			if (req.$umami) req.$umami.error(req, 'missing-params');
 			return error(400, '`latitude` and `longitude` params are required');
 		}
-		const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${env.OPENWEATHER_TOKEN}&lang=${req.$language}`;
+		const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${env.OPENWEATHER_TOKEN}&lang=${ctx.$language}`;
 		const data = await (await fetch(url)).json();
-		return json(data, { headers: { 'Cache-Control': 'max-age=604800, stale-while-revalidate=86400, immutable' } });
+		return json(data, {
+			headers: {
+				'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable',
+			},
+		});
 	})
-	.get('/images/categories', async (req) => {
-		const { data } = await req.$supabase.rpc('get_image_categories');
-		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
+	.get('/images/categories', async (req, env, ctx) => {
+		const { data } = await ctx.$supabase.rpc('get_image_categories');
+		return data;
 	})
-	.get('/images/pexels', async (req, ...rest) =>
-		json(await getPexelsImage(req.query.quality ?? 'normal', ...rest), { headers: { 'Cache-Control': 'no-cache' } }),
-	)
-	.get('/images/photographers', async (req) => {
-		const { data } = await req.$supabase.rpc('get_image_photographers');
-		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
+	.get('/images/pexels', async (req, ...rest) => {
+		const data = await getPexelsImage(req.query.quality ?? 'normal', ...rest);
+		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
 	})
-	.get('/images/random', async (req) => {
-		let { data: allowed } = await req.$supabase.rpc('get_image_categories');
+	.get('/images/photographers', async (req, env, ctx) => {
+		const { data } = await ctx.$supabase.rpc('get_image_photographers');
+		return data;
+	})
+	.get('/images/random', async (req, env, ctx) => {
+		let { data: allowed } = await ctx.$supabase.rpc('get_image_categories');
 		allowed = allowed.map((row) => row.name);
 		let categories =
 			req.query.categories?.split(',')?.filter((category) => allowed.includes(category)) ?? [];
 		if (categories.length === 0) categories = allowed;
 		const category = categories[Math.floor(Math.random() * categories.length)];
-		const { data } = await req.$supabase
+		const { data } = await ctx.$supabase
 			.rpc('get_random_image', {
 				_category: category,
 				_exclude: req.query.exclude,
@@ -88,70 +92,61 @@ export default new Router({ base: '/v2' })
 			landscapes: 'SxeKQtPuR0U',
 			plants: 'y15m5OvaD98',
 		};
-		let {
-			categories,
-			collections,
-			orientation,
-			topics,
-			username,
-		} = req.query;
+		let { categories, collections, orientation, topics, username } = req.query;
 		const unsplash_query = new URLSearchParams({ orientation: orientation ?? 'landscape' });
-		if (categories && categories.length > 0) collections = categories.split(',').map((category) => named_collections[category]).join(',');
+		if (categories && categories.length > 0) {
+			collections = categories
+				.split(',')
+				.map((category) => named_collections[category])
+				.join(',');
+		}
 		if (collections !== undefined) unsplash_query.set('collections', collections);
 		if (topics !== undefined) unsplash_query.set('topics', topics);
 		if (username !== undefined) unsplash_query.set('username', username);
-		return json(await getUnsplashImage(unsplash_query, req.query.quality ?? 'normal', ...rest), { headers: { 'Cache-Control': 'no-cache' } });
+		const data = await getUnsplashImage(unsplash_query, req.query.quality ?? 'normal', ...rest);
+		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
 	})
 	.get('/images/unsplash/topics', async (req, env) => {
 		const data = await (
-			await fetch(
-				`https://api.unsplash.com/topics?client_id=${env.UNSPLASH_TOKEN}`,
-			)
+			await fetch(`https://api.unsplash.com/topics?client_id=${env.UNSPLASH_TOKEN}`, {
+				cf: { cacheTtl: 86400 },
+			})
 		).json();
-		return json(data, { headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400' } });
+		return json(data, {
+			headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400' },
+		}); // 1 week
 	})
-	.get('/quotes/languages', async (req) => {
-		const { data } = await req.$supabase.rpc('get_quote_languages');
-		return json(data, { headers: { 'Cache-Control': 'max-age=3600' } });
+	.get('/quotes/languages', async (req, env, ctx) => {
+		const { data } = await ctx.$supabase.rpc('get_quote_languages');
+		return data;
 	})
 	.get('/map', async (req, env) => {
 		const { latitude, longitude } = req.query;
 		if (!latitude) return error(400, 'latitude is required');
 		if (!longitude) return error(400, 'longitude is required');
 		const url = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+555555(${longitude},${latitude})/${longitude},${latitude},9},0/450x200?access_token=${env.MAPBOX_TOKEN}`;
-		const res = await fetch(url, { cf: { cacheTtl: 31536000 } });
+		const res = await fetch(url, { cf: { cacheTtl: 31536000 } }); // 1 year
 		return new Response(res.body, res);
 	})
-	.get('/news', () => json(news, { headers: { 'Cache-Control': 'max-age=3600' } }))
-	.get('/quotes/random', async (req) => {
-		let { data: allowed } = await req.$supabase.rpc('get_quote_languages');
+	.get('/news', () => news)
+	.get('/quotes/random', async (req, env, ctx) => {
+		let { data: allowed } = await ctx.$supabase.rpc('get_quote_languages');
 		allowed = allowed.map((row) => row.name);
 		const language = req.query.language || 'en';
-		if (!allowed.includes(language)) {
-			if (req.$umami) req.$umami.error(req, 'unsupported-language');
-			return error(400, 'Unsupported language');
-		}
-		const { data } = await req.$supabase.rpc('get_random_quote', { _language: language }).single();
+		if (!allowed.includes(language)) return error(400, 'Unsupported language');
+		const { data } = await ctx.$supabase.rpc('get_random_quote', { _language: language }).single();
 		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
 	})
-	.get('/stats', async () =>
-		json(await getStats(), { headers: { 'Cache-Control': 'max-age=86400' } }),
-	)
+	.get('/stats', async () => getStats)
 	.get('/versions', async () => {
 		const browsers = await getVersions();
-		return json({ browsers }, { headers: { 'Cache-Control': 'max-age=86400' } });
+		return { browsers };
 	})
-	.get('/weather', withWeatherLanguage, async (req, env) => {
+	.get('/weather', withWeatherLanguage, async (req, env, ctx) => {
 		const { city } = req.query;
-		if (!city) {
-			if (req.$umami) req.$umami.error(req, 'missing-params');
-			return error(400, '`city` param is required');
-		}
-		const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${env.OPENWEATHER_TOKEN}&lang=${req.$language}`;
+		if (!city) return error(400, '`city` param is required');
+		const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${env.OPENWEATHER_TOKEN}&lang=${ctx.$language}`;
 		const data = await (await fetch(url)).json();
-		if (data.cod === '404') {
-			if (req.$umami) req.$umami.error(req, 'data-no-found');
-			return error(404, 'No data. Try another city?');
-		}
-		return json(data, { headers: { 'Cache-Control': 'max-age=900' } });
+		if (data.cod === '404') return error(404, 'No data. Try another city?');
+		return json(data, { headers: { 'Cache-Control': 'max-age=900' } }); // 15 minutes
 	});

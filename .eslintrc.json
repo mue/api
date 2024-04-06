@@ -159,11 +159,11 @@
 			"error"
 		],
 		"object-curly-newline": [
-			"error",
-			{
-				"minProperties": 3,
-				"multiline": true
-			}
+			"error"
+			// {
+			// 	"minProperties": 3,
+			// 	"multiline": true
+			// }
 		],
 		"object-curly-spacing": [
 			"error",

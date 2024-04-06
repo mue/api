@@ -1,14 +1,10 @@
 # Directories
 .idea/
 .vscode/
-.vercel/
 .history/
 .wrangler/
 node_modules/
 
 # Files
 .env
-.vercel
-yarn.lock
-package-lock.json
-pnpm-lock.yaml
+.dev.vars
