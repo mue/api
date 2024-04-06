@@ -137,7 +137,7 @@ export default Router({ base: '/v2' })
 		const { data } = await ctx.$supabase.rpc('get_random_quote', { _language: language }).single();
 		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
 	})
-	.get('/stats', async () => getStats)
+	.get('/stats', getStats)
 	.get('/versions', async () => {
 		const browsers = await getVersions();
 		return { browsers };
