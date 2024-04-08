@@ -32,6 +32,7 @@ export default Router({ base: '/v2' })
 		const data = await (await fetch(url)).json();
 		return json(data, {
 			headers: {
+				// 1w, stale 1d, no revalidate
 				'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable',
 			},
 		});
@@ -42,13 +43,14 @@ export default Router({ base: '/v2' })
 	})
 	.get('/images/pexels', async (req, ...rest) => {
 		const data = await getPexelsImage(req.query.quality ?? 'normal', ...rest);
-		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
+		return json(data, { headers: { 'Cache-Control': 'no-store' } });
 	})
 	.get('/images/photographers', async (req, env, ctx) => {
 		const { data } = await ctx.$supabase.rpc('get_image_photographers');
 		return data;
 	})
 	.get('/images/random', async (req, env, ctx) => {
+		// TODO: KV cache
 		let { data: allowed } = await ctx.$supabase.rpc('get_image_categories');
 		allowed = allowed.map((row) => row.name);
 		let categories =
@@ -80,7 +82,7 @@ export default Router({ base: '/v2' })
 				photographer: data.photographer,
 				pun: data.pun,
 			},
-			{ headers: { 'Cache-Control': 'no-cache' } },
+			{ headers: { 'Cache-Control': 'no-store' } },
 		);
 	})
 	.get('/images/unsplash', async (req, ...rest) => {
@@ -102,7 +104,7 @@ export default Router({ base: '/v2' })
 		if (topics !== undefined) unsplash_query.set('topics', topics);
 		if (username !== undefined) unsplash_query.set('username', username);
 		const data = await getUnsplashImage(unsplash_query, req.query.quality ?? 'normal', ...rest);
-		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
+		return json(data, { headers: { 'Cache-Control': 'no-store' } });
 	})
 	.get('/images/unsplash/topics', async (req, env) => {
 		const data = await (
@@ -111,8 +113,9 @@ export default Router({ base: '/v2' })
 			})
 		).json();
 		return json(data, {
-			headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400' },
-		}); // 1 week
+			// cdn 1w, client 1d, stale 1d
+			headers: { 'Cache-Control': 'public, s-max-age=604800, max-age=86400, stale-while-revalidate=86400' },
+		});
 	})
 	.get('/quotes/languages', async (req, env, ctx) => {
 		const { data } = await ctx.$supabase.rpc('get_quote_languages');
@@ -133,15 +136,22 @@ export default Router({ base: '/v2' })
 		const language = req.query.language || 'en';
 		if (!allowed.includes(language)) return error(400, 'Unsupported language');
 		const { data } = await ctx.$supabase.rpc('get_random_quote', { _language: language }).single();
-		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
+		return json(data, { headers: { 'Cache-Control': 'no-store' } });
 	})
-	.get('/stats', async (req, env) => env.WEBSTORES.fetch(req))
-	.get('/versions', async (req, env) => env.WEBSTORES.fetch(req))
+	.get('/stats', async (req, env) => {
+		const res = await env.WEBSTORES.fetch(req);
+		return new Response(res.body, res);
+	})
+	.get('/versions', async (req, env) => {
+		const res = await env.WEBSTORES.fetch(req);
+		return new Response(res.body, res);
+	})
 	.get('/weather', withWeatherLanguage, async (req, env, ctx) => {
 		const { city } = req.query;
 		if (!city) return error(400, '`city` param is required');
 		const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${env.OPENWEATHER_TOKEN}&lang=${ctx.$language}`;
 		const data = await (await fetch(url)).json();
 		if (data.cod === '404') return error(404, 'No data. Try another city?');
-		return json(data, { headers: { 'Cache-Control': 'max-age=900' } }); // 15 minutes
+		// cdn 10m, client 5m, stale 5m
+		return json(data, { headers: { 'Cache-Control': 'public, s-max-age=600, max-age=300, stale-while-revalidate=300' } });
 	});

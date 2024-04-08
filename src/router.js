@@ -32,7 +32,7 @@ export default Router()
 				location: data.location_name,
 				photographer: data.photographer,
 			},
-			{ headers: { 'Cache-Control': 'no-cache' } },
+			{ headers: { 'Cache-Control': 'no-store' } },
 		);
 	})
 	.get('/item/:category/:item', getItem)
@@ -46,7 +46,13 @@ export default Router()
 			.single();
 		return data;
 	})
-	.get('/stats', async (req, env) => await env.WEBSTORES.fetch(req))
-	.get('/versions', async (req, env) => await env.WEBSTORES.fetch(req))
+	.get('/stats', async (req, env) => {
+		const res = await env.WEBSTORES.fetch(req);
+		return new Response(res.body, res);
+	})
+	.get('/versions', async (req, env) => {
+		const res = await env.WEBSTORES.fetch(req);
+		return new Response(res.body, res);
+	})
 	.all('/v2/*', v2.handle)
 	.all('*', () => error(404, 'Not Found'));
