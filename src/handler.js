@@ -24,7 +24,9 @@ export default {
 		ctx.$logger = logger;
 		ctx.$supabase = createClient(env.SUPABASE_URL, env.SUPABASE_TOKEN);
 		logger.info('Request', {
+			method: req.method,
 			origin: req.headers.get('origin'),
+			query: req.query,
 			requestId,
 			url: req.url,
 		});
