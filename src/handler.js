@@ -26,6 +26,7 @@ export default {
 		logger.info('Request', {
 			origin: req.headers.get('origin'),
 			requestId,
+			url: req.url,
 		});
 
 		try {
