@@ -1,3 +1,7 @@
+create or replace index on "public"."images" using btree (category);
+
+create or replace index on "public"."quotes" using btree (language);
+
 create or replace function get_image_categories()
 returns table (
   name text,

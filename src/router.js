@@ -3,8 +3,6 @@ import { json, error } from 'itty-router-extras';
 import v2 from './v2';
 import sizes from './sizes';
 import news from '../news';
-import { getVersions } from './versions';
-import { getStats } from './stats';
 import { getCollection, getCollections, getFeatured, getItem, getItems } from './v2/marketplace';
 
 export default Router()
@@ -48,10 +46,7 @@ export default Router()
 			.single();
 		return data;
 	})
-	.get('/stats', getStats)
-	.get('/versions', async () => {
-		const browsers = await getVersions();
-		return { browsers };
-	})
+	.get('/stats', async (req, env) => await env.WEBSTORES.fetch(req))
+	.get('/versions', async (req, env) => await env.WEBSTORES.fetch(req))
 	.all('/v2/*', v2.handle)
 	.all('*', () => error(404, 'Not Found'));

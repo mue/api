@@ -2,13 +2,17 @@ account_id = "950e96e5beb222c4eeb9962512a6d6fc"
 name = "api"
 main = "src/index.js"
 compatibility_date = "2024-04-05"
+compatibility_flags = [ "nodejs_compat" ]
 upload_source_maps = true
-node_compat = true
 workers_dev = true
 routes = [
 	{ pattern = "api.muetab.com", custom_domain = true, zone_name = "muetab.com" },
 	{ pattern = "marketplace.muetab.com", custom_domain = true, zone_name = "muetab.com" }
 ]
+
+[[services]]
+  binding = "WEBSTORES"
+  service = "webstores-api"
 
 [vars]
   UNSPLASH_REFERRAL = "mue"

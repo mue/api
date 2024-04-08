@@ -2,8 +2,6 @@ import { Router } from 'itty-router';
 import { json, error } from 'itty-router-extras';
 import sizes from '../sizes';
 import news from '../../news';
-import { getStats } from '../stats';
-import { getVersions } from '../versions';
 import { getUnsplashImage } from './unsplash';
 import { getPexelsImage } from './pexels';
 import { withWeatherLanguage } from './weather';
@@ -137,11 +135,8 @@ export default Router({ base: '/v2' })
 		const { data } = await ctx.$supabase.rpc('get_random_quote', { _language: language }).single();
 		return json(data, { headers: { 'Cache-Control': 'no-cache' } });
 	})
-	.get('/stats', getStats)
-	.get('/versions', async () => {
-		const browsers = await getVersions();
-		return { browsers };
-	})
+	.get('/stats', async (req, env) => env.WEBSTORES.fetch(req))
+	.get('/versions', async (req, env) => env.WEBSTORES.fetch(req))
 	.get('/weather', withWeatherLanguage, async (req, env, ctx) => {
 		const { city } = req.query;
 		if (!city) return error(400, '`city` param is required');

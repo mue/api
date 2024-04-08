@@ -11,10 +11,11 @@
   "main": "src/",
   "version": "1.7.0",
   "scripts": {
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev",
     "dev": "wrangler dev",
     "test": "jest",
-    "pretty": "prettier --write \"./src/**/*.{js,json}\"",
-    "deploy": "wrangler deploy"
+    "pretty": "prettier --write \"./src/**/*.{js,json}\""
   },
   "dependencies": {
     "@baselime/edge-logger": "^0.2.2",
@@ -25,13 +26,12 @@
     "itty-router": "^2.6.6",
     "itty-router-extras": "^0.4.6",
     "node-fetch": "2.6.7",
-    "ua-parser-js": "1.0.32",
-    "webextension-store-meta": "1.0.5"
+    "ua-parser-js": "1.0.32"
   },
   "devDependencies": {
     "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
     "prettier": "^3.2.5",
-    "wrangler": "^3.22.2"
+    "wrangler": "^3.48.0"
   }
 }
