@@ -58,7 +58,7 @@ export default Router({ base: '/v2' })
 		if (!allowed) {
 			const { data } = await ctx.$supabase.rpc('get_image_categories');
 			// save for 1 day
-			ctx.waitUntil(env.cache.put(kv_id, data, { expirationTtl: 86400 }));
+			ctx.waitUntil(env.cache.put(kv_id, JSON.stringify(data), { expirationTtl: 86400 }));
 			allowed = data;
 		}
 		allowed = allowed.map((row) => row.name);
@@ -148,7 +148,7 @@ export default Router({ base: '/v2' })
 		if (!allowed) {
 			const { data } = await ctx.$supabase.rpc('get_quote_languages');
 			// save for 1 day
-			ctx.waitUntil(env.cache.put(kv_id, data, { expirationTtl: 86400 }));
+			ctx.waitUntil(env.cache.put(kv_id, JSON.stringify(data), { expirationTtl: 86400 }));
 			allowed = data;
 		}
 		allowed = allowed.map((row) => row.name);

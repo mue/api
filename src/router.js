@@ -27,7 +27,7 @@ export default Router()
 		if (!categories) {
 			const { data } = await ctx.$supabase.rpc('get_image_categories');
 			// save for 1 day
-			ctx.waitUntil(env.cache.put(kv_id, data, { expirationTtl: 86400 }));
+			ctx.waitUntil(env.cache.put(kv_id, JSON.stringify(data), { expirationTtl: 86400 }));
 			categories = data;
 		}
 		const category = categories[Math.floor(Math.random() * categories.length)].name;
