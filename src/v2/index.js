@@ -50,8 +50,17 @@ export default Router({ base: '/v2' })
 		return data;
 	})
 	.get('/images/random', async (req, env, ctx) => {
-		// TODO: KV cache
-		let { data: allowed } = await ctx.$supabase.rpc('get_image_categories');
+		const kv_id = 'v2_image_categories';
+		let allowed = await env.cache.get(kv_id, {
+			cacheTtl: 3600, // cache at this location for an hour
+			type: 'json',
+		});
+		if (!allowed) {
+			const { data } = await ctx.$supabase.rpc('get_image_categories');
+			// save for 1 day
+			ctx.waitUntil(env.cache.put(kv_id, data, { expirationTtl: 86400 }));
+			allowed = data;
+		}
 		allowed = allowed.map((row) => row.name);
 		let categories =
 			req.query.categories?.split(',')?.filter((category) => allowed.includes(category)) ?? [];
@@ -131,7 +140,17 @@ export default Router({ base: '/v2' })
 	})
 	.get('/news', () => news)
 	.get('/quotes/random', async (req, env, ctx) => {
-		let { data: allowed } = await ctx.$supabase.rpc('get_quote_languages');
+		const kv_id = 'v2_quote_languages';
+		let allowed = await env.cache.get(kv_id, {
+			cacheTtl: 3600, // cache at this location for an hour
+			type: 'json',
+		});
+		if (!allowed) {
+			const { data } = await ctx.$supabase.rpc('get_quote_languages');
+			// save for 1 day
+			ctx.waitUntil(env.cache.put(kv_id, data, { expirationTtl: 86400 }));
+			allowed = data;
+		}
 		allowed = allowed.map((row) => row.name);
 		const language = req.query.language || 'en';
 		if (!allowed.includes(language)) return error(400, 'Unsupported language');

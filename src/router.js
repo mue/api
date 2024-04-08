@@ -19,7 +19,17 @@ export default Router()
 		return data.map((row) => row.name);
 	})
 	.get('/images/random', async (req, env, ctx) => {
-		const { data: categories } = await ctx.$supabase.rpc('get_image_categories');
+		const kv_id = 'image_categories';
+		let categories = await env.cache.get(kv_id, {
+			cacheTtl: 3600, // cache at this location for an hour
+			type: 'json',
+		});
+		if (!categories) {
+			const { data } = await ctx.$supabase.rpc('get_image_categories');
+			// save for 1 day
+			ctx.waitUntil(env.cache.put(kv_id, data, { expirationTtl: 86400 }));
+			categories = data;
+		}
 		const category = categories[Math.floor(Math.random() * categories.length)].name;
 		const { data } = await ctx.$supabase.rpc('get_random_image', { _category: category }).single();
 		const format = req.headers.get('accept')?.includes('avif') ? 'avif' : 'webp';

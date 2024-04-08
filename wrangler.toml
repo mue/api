@@ -9,6 +9,9 @@ routes = [
 	{ pattern = "api.muetab.com", custom_domain = true, zone_name = "muetab.com" },
 	{ pattern = "marketplace.muetab.com", custom_domain = true, zone_name = "muetab.com" }
 ]
+kv_namespaces = [
+  { binding = "cache", id = "08c0008096b7486a9532c5be43e48a7f" }
+]
 
 [[services]]
   binding = "WEBSTORES"
