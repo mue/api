@@ -157,6 +157,14 @@ export default Router({ base: '/v2' })
 		const { data } = await ctx.$supabase.rpc('get_random_quote', { _language: language }).single();
 		return json(data, { headers: { 'Cache-Control': 'no-store' } });
 	})
+	.get('/search/autocomplete', async (req) => {
+		const search = new URLSearchParams(req.query).toString();
+		const url = 'https://ac.ecosia.org/?' + search;
+		const headers = new Headers(req.headers);
+		headers.append('x-forwarded-for', req.headers.get('cf-connecting-ip'));
+		const res = await fetch(new Request(url, { headers }));
+		return json(await res.json());
+	})
 	.get('/stats', async (req, env) => {
 		const res = await env.WEBSTORES.fetch(req);
 		return new Response(res.body, res);

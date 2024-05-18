@@ -17,6 +17,11 @@ kv_namespaces = [
   binding = "WEBSTORES"
   service = "webstores-api"
 
+# [[d1_databases]]
+#   binding = "DB"
+#   database_name = "mue-content"
+#   database_id = "5b6376e6-1d2a-4f3b-b463-0d6a1b387be1"
+
 [vars]
   UNSPLASH_REFERRAL = "mue"
   PEXELS_COLLECTION = "iwf78dt"
