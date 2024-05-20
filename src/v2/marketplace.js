@@ -1,4 +1,5 @@
 import { error, json } from 'itty-router-extras';
+import paginate from '../pagination.js';
 
 /**
  * @param {Request} req
@@ -46,13 +47,13 @@ export async function getCollection(req) {
 	return json({ data: collection });
 }
 
-export async function getCollections() {
+export async function getCollections(req) {
 	const manifest = await getManifest();
 	const collections = Object.values(manifest.collections).map((collection) => {
 		delete collection.items;
 		return collection;
 	});
-	return json({ data: collections });
+	return json({ data: paginate(collections, req.query) });
 }
 
 /**
@@ -74,10 +75,10 @@ export async function getCurator(req) {
 	return json({ data: { items } });
 }
 
-export async function getCurators() {
+export async function getCurators(req) {
 	const manifest = await getManifest();
 	const curators = Object.keys(manifest.curators);
-	return json({ data: curators });
+	return json({ data: paginate(curators, req.query) });
 }
 
 export async function getFeatured() {
@@ -133,31 +134,29 @@ export async function getItem(req) {
  * @param {Request} req
  */
 export async function getItems(req) {
+	let data;
 	const manifest = await getManifest();
 	if (req.params.category === 'all') {
-		return json({
-			data: [
-				...Object.values(manifest.preset_settings).map((item) => {
-					item.type = 'preset_settings';
-					return item;
-				}),
-				...Object.values(manifest.photo_packs).map((item) => {
-					item.type = 'photo_packs';
-					return item;
-				}),
-				...Object.values(manifest.quote_packs).map((item) => {
-					item.type = 'quote_packs';
-					return item;
-				}),
-			],
-		});
+		data = [
+			...Object.values(manifest.preset_settings).map((item) => {
+				item.type = 'preset_settings';
+				return item;
+			}),
+			...Object.values(manifest.photo_packs).map((item) => {
+				item.type = 'photo_packs';
+				return item;
+			}),
+			...Object.values(manifest.quote_packs).map((item) => {
+				item.type = 'quote_packs';
+				return item;
+			}),
+		];
 	} else {
 		const category = manifest[req.params.category];
 		if (!category) {
 			return error(404, 'Not Found');
 		}
-
-		let data = Object.values(category);
+		data = Object.values(category);
 		const version = getVersion(req);
 		if (version === 1) {
 			data = data.map((item) => {
@@ -165,7 +164,7 @@ export async function getItems(req) {
 				return item;
 			});
 		}
-
-		return json({ data });
 	}
+	data = paginate(data, req.query);
+	return json({ data });
 }
