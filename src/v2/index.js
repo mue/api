@@ -101,17 +101,19 @@ export default Router({ base: '/v2' })
 			landscapes: 'SxeKQtPuR0U',
 			plants: 'y15m5OvaD98',
 		};
-		let { categories, collections, orientation, topics, username } = req.query;
+		const { categories, collections, orientation, topics, username } = req.query;
 		const unsplash_query = new URLSearchParams({ orientation: orientation ?? 'landscape' });
 		if (categories && categories.length > 0) {
-			collections = categories
+			unsplash_query.set('collections', categories
 				.split(',')
 				.map((category) => named_collections[category])
-				.join(',');
+				.join(','));
 		}
+		// collections overwrites categories
 		if (collections !== undefined) unsplash_query.set('collections', collections);
 		if (topics !== undefined) unsplash_query.set('topics', topics);
 		if (username !== undefined) unsplash_query.set('username', username);
+		if (unsplash_query.get('collections') === null) unsplash_query.set('collections', Object.values(named_collections).join(','));
 		const data = await getUnsplashImage(unsplash_query, req.query.quality ?? 'normal', ...rest);
 		return json(data, { headers: { 'Cache-Control': 'no-store' } });
 	})
