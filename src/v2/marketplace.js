@@ -126,7 +126,7 @@ export async function getItem(req) {
 
 	return json({
 		data: item,
-		updated: 'unknown',
+		updated: item.updated_at,
 	});
 }
 
