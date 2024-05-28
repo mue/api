@@ -32,8 +32,8 @@ export default Router({ base: '/v2' })
 		const data = await (await fetch(url)).json();
 		return json(data, {
 			headers: {
-				// 1w, stale 1d, no revalidate
-				'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable',
+				// 1w
+				'Cache-Control': 'public, max-age=604800, immutable', // stale-while-revalidate=86400
 			},
 		});
 	})
@@ -124,8 +124,8 @@ export default Router({ base: '/v2' })
 			})
 		).json();
 		return json(data, {
-			// cdn 1w, client 1d, stale 1d
-			headers: { 'Cache-Control': 'public, s-max-age=604800, max-age=86400, stale-while-revalidate=86400' },
+			// cdn 1w, client 1d
+			headers: { 'Cache-Control': 'public, s-max-age=604800, max-age=86400' }, // stale-while-revalidate=86400
 		});
 	})
 	.get('/quotes/languages', async (req, env, ctx) => {
@@ -181,6 +181,6 @@ export default Router({ base: '/v2' })
 		const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${env.OPENWEATHER_TOKEN}&lang=${ctx.$language}`;
 		const data = await (await fetch(url)).json();
 		if (data.cod === '404') return error(404, 'No data. Try another city?');
-		// cdn 10m, client 5m, stale 5m
-		return json(data, { headers: { 'Cache-Control': 'public, s-max-age=600, max-age=300, stale-while-revalidate=300' } });
+		// cdn 15m, client 5m
+		return json(data, { headers: { 'Cache-Control': 'public, s-max-age=900, max-age=300' } }); // stale-while-revalidate=300
 	});
