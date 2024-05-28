@@ -182,5 +182,5 @@ export default Router({ base: '/v2' })
 		const data = await (await fetch(url)).json();
 		if (data.cod === '404') return error(404, 'No data. Try another city?');
 		// 10m (too short for cf), stale 5m
-		return json(data, { headers: { 'Cache-Control': 'public, max-age=600, stale-while-revalidate=300' } });
+		return json(data, { headers: { 'Cache-Control': 'private, max-age=600, stale-while-revalidate=300' } });
 	});
