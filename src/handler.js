@@ -47,8 +47,8 @@ export default {
 
 			if (!(res instanceof Response)) {
 				res = json(res, {
-					// cdn 1d, client 1h
-					headers: { 'Cache-Control': 'public, s-max-age=86400, max-age=3600' }, // stale-while-revalidate=3600
+					// cdn 1d, client 1h, stale 1h
+					headers: { 'Cache-Control': 'public, s-max-age=86400, max-age=3600, stale-while-revalidate=3600' },
 				});
 			}
 
