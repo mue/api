@@ -1,9 +1,10 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
-	"net/http/pprof" // Import pprof
+	"net/http/pprof"
 	"os"
 
 	"quote-api/internal/database"
@@ -14,6 +15,22 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// loadAndConnectDB loads environment variables and connects to the database
+func loadAndConnectDB(envVar string) *sql.DB {
+	dbPath := os.Getenv(envVar)
+	if dbPath == "" {
+		log.Fatalf("%s environment variable is not set", envVar)
+	}
+
+	db, err := database.ConnectDB(dbPath)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	database.InitDB(db)
+	return db
+}
+
 func main() {
 	// Load environment variables from .env file
 	err := godotenv.Load()
@@ -21,20 +38,17 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		log.Fatal("DB_PATH environment variable is not set")
-	}
+	// Connect to quotes_db
+	quotesDB := loadAndConnectDB("QUOTES_DB_PATH")
+	log.Println(os.Getenv("QUOTES_DB_PATH"))
+	defer quotesDB.Close()
 
-	db, err := database.ConnectDB(dbPath)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-	defer db.Close()
+	// Connect to images_db
+	imagesDB := loadAndConnectDB("IMAGES_DB_PATH")
+	defer imagesDB.Close()
 
-	database.InitDB(db)
-
-	quoteHandler := &handlers.QuoteHandler{DB: db}
+	quoteHandler := &handlers.QuoteHandler{DB: quotesDB}
+	imageHandler := &handlers.ImageHandler{DB: imagesDB}
 
 	r := chi.NewRouter()
 
@@ -45,10 +59,17 @@ func main() {
 	// Routes
 	r.Get("/", handlers.RootHandler)
 
+	// Quote routes
 	r.Get("/quotes", quoteHandler.GetAllQuotes)
 	r.Get("/quotes/{id}", quoteHandler.GetQuoteByID)
 	r.Get("/quotes/random", quoteHandler.GetRandomQuote)
 	r.Get("/quotes/languages", quoteHandler.GetQuoteLanguages)
+
+	// Image routes
+	r.Get("/images", imageHandler.GetImages)
+	// r.Get("/images/{id}", imageHandler.GetImageByID)
+	// r.Get("/images/random", imageHandler.GetRandomImage)
+	r.Get("/images/photographers", imageHandler.GetImagePhotographers)
 
 	// pprof routes
 	r.HandleFunc("/debug/pprof/*", pprof.Index)
