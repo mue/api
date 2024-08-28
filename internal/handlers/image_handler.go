@@ -35,3 +35,5 @@ func (h *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(images)
 }
+
+// End of code
