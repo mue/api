@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"quote-api/internal/models"
+	"mue-api/internal/models"
 
 	"github.com/go-chi/chi/v5"
 )

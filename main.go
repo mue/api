@@ -7,8 +7,8 @@ import (
 	"net/http/pprof"
 	"os"
 
-	"quote-api/internal/database"
-	"quote-api/internal/handlers"
+	"mue-api/internal/database"
+	"mue-api/internal/handlers"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

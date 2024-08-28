@@ -1,4 +1,4 @@
-module quote-api
+module mue-api
 
 go 1.23.0
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"quote-api/internal/models"
+	"mue-api/internal/models"
 
 	"github.com/go-chi/chi/v5"
 )
