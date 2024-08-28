@@ -40,11 +40,12 @@ func main() {
 
 	// Connect to quotes_db
 	quotesDB := loadAndConnectDB("QUOTES_DB_PATH")
-	log.Println(os.Getenv("QUOTES_DB_PATH"))
+	log.Println("Connected to quotes_db")
 	defer quotesDB.Close()
 
 	// Connect to images_db
 	imagesDB := loadAndConnectDB("IMAGES_DB_PATH")
+	log.Println("Connected to images_db")
 	defer imagesDB.Close()
 
 	quoteHandler := &handlers.QuoteHandler{DB: quotesDB}

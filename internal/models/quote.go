@@ -15,8 +15,8 @@ import (
 type Quote struct {
 	ID         string
 	Quote      string
-	Author     string
-	Occupation string
+	Author     *string
+	Occupation *string
 }
 
 // LanguageCount represents a language and its quote count.

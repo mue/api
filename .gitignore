@@ -19,6 +19,7 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 *.db
+*.zip
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
