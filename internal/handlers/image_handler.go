@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"quote-api/internal/models"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type ImageHandler struct {
@@ -22,6 +24,17 @@ func (h *ImageHandler) GetImagePhotographers(w http.ResponseWriter, r *http.Requ
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(photographers)
+}
+
+func (h *ImageHandler) GetImageByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	image, err := models.GetImageByID(ctx, h.DB, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(image)
 }
 
 func (h *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {

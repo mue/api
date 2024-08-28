@@ -15,24 +15,34 @@ type ApiInfo struct {
 	Name             string     `json:"name"`
 	Version          string     `json:"version"`
 	Description      string     `json:"description"`
-	Endpoints        []Endpoint `json:"endpoints"`
+	QuoteEndpoints   []Endpoint `json:"quote_endpoints"`
+	ImageEndpoints   []Endpoint `json:"image_endpoints"`
 	DocumentationURL string     `json:"documentation_url"`
 }
 
 // rootHandler handles requests to the root endpoint.
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 	apiInfo := ApiInfo{
-		Name:        "Quote API",
-		Version:     "1.0.0",
-		Description: "A simple API for fetching inspirational quotes.",
-		Endpoints: []Endpoint{
-			{Method: "GET", Path: "/quotes", Description: "Retrieve a list of all quotes"},
-			{Method: "GET", Path: "/quotes/{id}", Description: "Retrieve a quote by its ID"},
-			{Method: "GET", Path: "/quotes/random", Description: "Retrieve a random quote"},
+		Name:        "Mue API",
+		Version:     "0.0.1",
+		Description: "This API provides quotes and images for the Mue Tab browser extension.",
+		QuoteEndpoints: []Endpoint{
+			{Method: "GET", Path: "/quotes", Description: "Retrieve all quotes."},
+			{Method: "GET", Path: "/quotes/{id}", Description: "Retrieve a specific quote by ID."},
+			{Method: "GET", Path: "/quotes/random", Description: "Retrieve a random quote."},
+			{Method: "GET", Path: "/quotes/language", Description: "Retrieve all available languages and the count of quotes in each."},
+		},
+		ImageEndpoints: []Endpoint{
+			{Method: "GET", Path: "/images", Description: "Retrieve all images."},
+			{Method: "GET", Path: "/images/{id}", Description: "Retrieve a specific image by ID."},
+			{Method: "GET", Path: "/images/random", Description: "Retrieve a random image."},
+			{Method: "GET", Path: "/images/photographers", Description: "Retrieve all photographers and the count of images by each."},
 		},
 		DocumentationURL: "https://docs.muetab.com/",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(apiInfo)
+	if err := json.NewEncoder(w).Encode(apiInfo); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
 }

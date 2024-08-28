@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 )
 
@@ -57,6 +58,22 @@ func GetImagePhotographers(ctx context.Context, db *sql.DB) ([]PhotographerCount
 	return photographers, nil
 }
 
+func GetImageByID(ctx context.Context, db *sql.DB, id string) (Image, error) {
+	var image Image
+	query := "SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash FROM images_rows WHERE id = ?"
+	err := db.QueryRowContext(ctx, query, id).Scan(&image.ID, &image.Camera, &image.CreatedAt, &image.LocationData, &image.Photographer, &image.Category, &image.OriginalFileName, &image.Colour, &image.PUN, &image.Version, &image.BlurHash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("No image found with id %s", id)
+			return image, errors.New("no image found")
+		}
+		log.Printf("Error querying imag by ID: %v", err)
+		return image, err
+	}
+
+	return image, nil
+}
+
 func GetImages(ctx context.Context, db *sql.DB, photographer, category string) ([]Image, error) {
 	query := `
         SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash
@@ -90,12 +107,12 @@ func GetImages(ctx context.Context, db *sql.DB, photographer, category string) (
 
 	var images []Image
 	for rows.Next() {
-		var img Image
-		if err := rows.Scan(&img.ID, &img.Camera, &img.CreatedAt, &img.LocationData, &img.Photographer, &img.Category, &img.OriginalFileName, &img.Colour, &img.PUN, &img.Version, &img.BlurHash); err != nil {
+		var image Image
+		if err := rows.Scan(&image.ID, &image.Camera, &image.CreatedAt, &image.LocationData, &image.Photographer, &image.Category, &image.OriginalFileName, &image.Colour, &image.PUN, &image.Version, &image.BlurHash); err != nil {
 			log.Printf("Error scanning image: %v", err)
 			return nil, err
 		}
-		images = append(images, img)
+		images = append(images, image)
 	}
 
 	if err = rows.Err(); err != nil {

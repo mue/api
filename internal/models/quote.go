@@ -98,17 +98,13 @@ func GetAllQuotes(ctx context.Context, db *sql.DB, language string) ([]Quote, er
 }
 
 // GetQuoteByID fetches a quote by its ID in the specified language.
-func GetQuoteByID(ctx context.Context, db *sql.DB, id string, language string) (Quote, error) {
-	if language == "" {
-		language = "en"
-	}
-
+func GetQuoteByID(ctx context.Context, db *sql.DB, id string) (Quote, error) {
 	var quote Quote
-	query := "SELECT id, quote, author, author_occupation FROM quotes_rows WHERE id = ? AND language = ?"
-	err := db.QueryRowContext(ctx, query, id, language).Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation)
+	query := "SELECT id, quote, author, author_occupation FROM quotes_rows WHERE id = ?"
+	err := db.QueryRowContext(ctx, query, id).Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("No quote found with id %s and language %s", id, language)
+			log.Printf("No quote found with id %s", id)
 			return quote, errors.New("no quote found")
 		}
 		log.Printf("Error querying quote by ID: %v", err)

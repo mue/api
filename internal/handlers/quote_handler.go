@@ -42,8 +42,7 @@ func (h *QuoteHandler) GetAllQuotes(w http.ResponseWriter, r *http.Request) {
 func (h *QuoteHandler) GetQuoteByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
-	language := r.URL.Query().Get("language")
-	quote, err := models.GetQuoteByID(ctx, h.DB, id, language)
+	quote, err := models.GetQuoteByID(ctx, h.DB, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

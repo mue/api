@@ -68,7 +68,7 @@ func main() {
 
 	// Image routes
 	r.Get("/images", imageHandler.GetImages)
-	// r.Get("/images/{id}", imageHandler.GetImageByID)
+	r.Get("/images/{id}", imageHandler.GetImageByID)
 	// r.Get("/images/random", imageHandler.GetRandomImage)
 	r.Get("/images/photographers", imageHandler.GetImagePhotographers)
 
