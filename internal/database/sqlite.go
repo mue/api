@@ -38,7 +38,7 @@ func InitDB(db *sql.DB) {
 	}
 
 	// Optional: Insert sample data if the table is empty
-	row := db.QueryRow("SELECT COUNT(*) FROM quotes")
+	row := db.QueryRow("SELECT COUNT(*) FROM quotes_rows")
 	var count int
 	if err := row.Scan(&count); err != nil {
 		log.Fatalf("Failed to count rows: %v", err)

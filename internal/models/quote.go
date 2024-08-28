@@ -36,7 +36,7 @@ func init() {
 func GetQuoteLanguages(ctx context.Context, db *sql.DB) ([]LanguageCount, error) {
 	query := `
         SELECT language, COUNT(*) as count
-        FROM quotes
+        FROM quotes_rows
         GROUP BY language
     `
 
@@ -71,7 +71,7 @@ func GetAllQuotes(ctx context.Context, db *sql.DB, language string) ([]Quote, er
 		language = "en"
 	}
 
-	query := "SELECT id, quote, author, author_occupation FROM quotes WHERE language = ?"
+	query := "SELECT id, quote, author, author_occupation FROM quotes_rows WHERE language = ?"
 	rows, err := db.QueryContext(ctx, query, language)
 	if err != nil {
 		log.Printf("Error querying all quotes: %v", err)
@@ -104,7 +104,7 @@ func GetQuoteByID(ctx context.Context, db *sql.DB, id string, language string) (
 	}
 
 	var quote Quote
-	query := "SELECT id, quote, author, author_occupation FROM quotes WHERE id = ? AND language = ?"
+	query := "SELECT id, quote, author, author_occupation FROM quotes_rows WHERE id = ? AND language = ?"
 	err := db.QueryRowContext(ctx, query, id, language).Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -125,7 +125,7 @@ func GetRandomQuote(ctx context.Context, db *sql.DB, language string) (Quote, er
 	}
 
 	var quote Quote
-	query := "SELECT id, quote, author, author_occupation FROM quotes WHERE language = ? ORDER BY RANDOM() LIMIT 1"
+	query := "SELECT id, quote, author, author_occupation FROM quotes_rows WHERE language = ? ORDER BY RANDOM() LIMIT 1"
 	err := db.QueryRowContext(ctx, query, language).Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -148,7 +148,7 @@ func GetRandomQuoteExcluding(ctx context.Context, db *sql.DB, language string, e
 
 	query := fmt.Sprintf(`
         SELECT id, quote, author, author_occupation
-        FROM quotes
+        FROM quotes_rows
         WHERE language = ? %s
         ORDER BY RANDOM()
         LIMIT 1
