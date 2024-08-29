@@ -101,10 +101,6 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 		seenQuotes = append(seenQuotes, quote.ID)
 	}
 
-	// Debugging: Log the updated list of seen quotes
-	log.Printf("Selected quote ID: %s", quote.ID)
-	log.Printf("Updated seen quotes list: %s", strings.Join(seenQuotes, ","))
-
 	// Update the cookie with the new list of seen quote IDs
 	seenQuotesStr := strings.Join(seenQuotes, ",")
 	newCookie := &http.Cookie{
@@ -113,9 +109,6 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 		Path:  "/",
 		// Consider setting MaxAge or Expires if you want the cookie to persist across sessions
 	}
-
-	// Debugging: Log the cookie value before setting it
-	log.Printf("Setting seen_quotes cookie with value: %s", seenQuotesStr)
 
 	http.SetCookie(w, newCookie)
 
