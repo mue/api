@@ -26,6 +26,11 @@ type PhotographerCount struct {
 	Count        int
 }
 
+type CategoryCount struct {
+	Category string
+	Count    int
+}
+
 func GetImagePhotographers(ctx context.Context, db *sql.DB) ([]PhotographerCount, error) {
 	query := `
         SELECT photographer, COUNT(*) as count
@@ -56,6 +61,38 @@ func GetImagePhotographers(ctx context.Context, db *sql.DB) ([]PhotographerCount
 	}
 
 	return photographers, nil
+}
+
+func GetImageCategories(ctx context.Context, db *sql.DB) ([]CategoryCount, error) {
+	query := `
+	SELECT category, COUNT(*) as count
+	FROM images_rows
+	GROUP BY category
+`
+
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		log.Printf("Error querying image categories: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []CategoryCount
+	for rows.Next() {
+		var lc CategoryCount
+		if err := rows.Scan(&lc.Category, &lc.Count); err != nil {
+			log.Printf("Error scanning category count: %v", err)
+			return nil, err
+		}
+		categories = append(categories, lc)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Printf("Error iterating over rows: %v", err)
+		return nil, err
+	}
+
+	return categories, nil
 }
 
 func GetImageByID(ctx context.Context, db *sql.DB, id string) (Image, error) {

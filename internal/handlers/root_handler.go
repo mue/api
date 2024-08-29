@@ -37,6 +37,8 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 			{Method: "GET", Path: "/images/{id}", Description: "Retrieve a specific image by ID."},
 			{Method: "GET", Path: "/images/random", Description: "Retrieve a random image."},
 			{Method: "GET", Path: "/images/photographers", Description: "Retrieve all photographers and the count of images by each."},
+			{Method: "GET", Path: "/images/categories", Description: "Retrieve all image categories."},
+			{Method: "GET", Path: "/images/sizes", Description: "Retrieve all image sizes."},
 		},
 		DocumentationURL: "https://docs.muetab.com/",
 	}

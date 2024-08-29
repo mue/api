@@ -14,6 +14,11 @@ type ImageHandler struct {
 	DB *sql.DB
 }
 
+type Sizes struct {
+	ID    string `json:"id"`
+	Label string `json:"label"`
+}
+
 func (h *ImageHandler) GetImagePhotographers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	photographers, err := models.GetImagePhotographers(ctx, h.DB)
@@ -47,6 +52,32 @@ func (h *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(images)
+}
+
+func (h *ImageHandler) GetImageCategories(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	categories, err := models.GetImageCategories(ctx, h.DB)
+	if err != nil {
+		http.Error(w, "Failed to get categories", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categories)
+}
+
+func (h *ImageHandler) GetImageSizes(w http.ResponseWriter, r *http.Request) {
+	sizes := []Sizes{
+		{ID: "original", Label: "original"},
+		{ID: "qhd", Label: "high"},
+		{ID: "fhd", Label: "normal"},
+		{ID: "hd", Label: "datasaver"},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(sizes); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
 }
 
 // End of code

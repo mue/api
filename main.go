@@ -71,6 +71,8 @@ func main() {
 	r.Get("/images/{id}", imageHandler.GetImageByID)
 	// r.Get("/images/random", imageHandler.GetRandomImage)
 	r.Get("/images/photographers", imageHandler.GetImagePhotographers)
+	r.Get("/images/sizes", imageHandler.GetImageSizes)
+	r.Get("/images/categories", imageHandler.GetImageCategories)
 
 	// pprof routes
 	r.HandleFunc("/debug/pprof/*", pprof.Index)
