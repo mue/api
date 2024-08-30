@@ -6,10 +6,13 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
-func ConnectDB(dbPath string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", dbPath)
+func ConnectDB(dbURL string, token string) (*sql.DB, error) {
+	url := dbURL + "?authToken=" + token
+
+	db, err := sql.Open("libsql", url)
 	if err != nil {
 		return nil, err
 	}
@@ -32,20 +35,24 @@ func InitDB(db *sql.DB) {
 }
 
 // loadAndConnectDB loads environment variables and connects to the database
-func LoadAndConnectDB(dbPath string) *sql.DB {
+func LoadAndConnectDB(dbURL string, token string) *sql.DB {
 	log := logrus.New()
 
-	if dbPath == "" {
+	if dbURL == "" {
 		log.Fatalf("Database path is not set")
 	}
 
-	db, err := ConnectDB(dbPath)
+	if token == "" {
+		log.Fatalf("Token is not set")
+	}
+
+	db, err := ConnectDB(dbURL, token)
 	if err != nil {
-		log.Fatalf("Failed to connect to database %s: %v", dbPath, err)
+		log.Fatalf("Failed to connect to database %s: %v", dbURL, err)
 	}
 
 	log.WithFields(logrus.Fields{
-		"dbPath": dbPath,
+		"dbPath": dbURL,
 	}).Info("Connected to database")
 
 	InitDB(db)

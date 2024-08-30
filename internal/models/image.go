@@ -34,7 +34,7 @@ type CategoryCount struct {
 func GetImagePhotographers(ctx context.Context, db *sql.DB) ([]PhotographerCount, error) {
 	query := `
         SELECT photographer, COUNT(*) as count
-        FROM images_rows
+        FROM images
         GROUP BY photographer
     `
 
@@ -66,7 +66,7 @@ func GetImagePhotographers(ctx context.Context, db *sql.DB) ([]PhotographerCount
 func GetImageCategories(ctx context.Context, db *sql.DB) ([]CategoryCount, error) {
 	query := `
 	SELECT category, COUNT(*) as count
-	FROM images_rows
+	FROM images
 	GROUP BY category
 `
 
@@ -97,7 +97,7 @@ func GetImageCategories(ctx context.Context, db *sql.DB) ([]CategoryCount, error
 
 func GetImageByID(ctx context.Context, db *sql.DB, id string) (Image, error) {
 	var image Image
-	query := "SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash FROM images_rows WHERE id = ?"
+	query := "SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash FROM images WHERE id = ?"
 	err := db.QueryRowContext(ctx, query, id).Scan(&image.ID, &image.Camera, &image.CreatedAt, &image.LocationData, &image.Photographer, &image.Category, &image.OriginalFileName, &image.Colour, &image.PUN, &image.Version, &image.BlurHash)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -114,7 +114,7 @@ func GetImageByID(ctx context.Context, db *sql.DB, id string) (Image, error) {
 func GetImages(ctx context.Context, db *sql.DB, photographer, category string) ([]Image, error) {
 	query := `
         SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash
-        FROM images_rows
+        FROM images
     `
 	var args []interface{}
 	var conditions []string
