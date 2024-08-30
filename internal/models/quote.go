@@ -33,12 +33,12 @@ func init() {
 }
 
 // GetQuoteLanguages returns the available languages and the count of quotes for each language.
-func GetQuoteLanguages(ctx context.Context, db *sql.DB) ([]LanguageCount, error) {
-	query := `
+func GetQuoteLanguages(ctx context.Context, db *sql.DB, tableName string) ([]LanguageCount, error) {
+	query := fmt.Sprintf(`
         SELECT language, COUNT(*) as count
-        FROM quotes
+        FROM %s
         GROUP BY language
-    `
+    `, tableName)
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
@@ -66,12 +66,12 @@ func GetQuoteLanguages(ctx context.Context, db *sql.DB) ([]LanguageCount, error)
 }
 
 // GetAllQuotes fetches all quotes in the specified language.
-func GetAllQuotes(ctx context.Context, db *sql.DB, language string) ([]Quote, error) {
+func GetAllQuotes(ctx context.Context, db *sql.DB, tableName string, language string) ([]Quote, error) {
 	if language == "" {
 		language = "en"
 	}
 
-	query := "SELECT id, quote, author, author_occupation FROM quotes WHERE language = ?"
+	query := fmt.Sprintf("SELECT id, quote, author, author_occupation FROM %s WHERE language = ?", tableName)
 	rows, err := db.QueryContext(ctx, query, language)
 	if err != nil {
 		log.Printf("Error querying all quotes: %v", err)
@@ -98,9 +98,9 @@ func GetAllQuotes(ctx context.Context, db *sql.DB, language string) ([]Quote, er
 }
 
 // GetQuoteByID fetches a quote by its ID in the specified language.
-func GetQuoteByID(ctx context.Context, db *sql.DB, id string) (Quote, error) {
+func GetQuoteByID(ctx context.Context, db *sql.DB, tableName string, id string) (Quote, error) {
 	var quote Quote
-	query := "SELECT id, quote, author, author_occupation FROM quotes WHERE id = ?"
+	query := fmt.Sprintf("SELECT id, quote, author, author_occupation FROM %s WHERE id = ?", tableName)
 	err := db.QueryRowContext(ctx, query, id).Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -115,13 +115,13 @@ func GetQuoteByID(ctx context.Context, db *sql.DB, id string) (Quote, error) {
 }
 
 // GetRandomQuote fetches a random quote in the specified language.
-func GetRandomQuote(ctx context.Context, db *sql.DB, language string) (Quote, error) {
+func GetRandomQuote(ctx context.Context, db *sql.DB, tableName string, language string) (Quote, error) {
 	if language == "" {
 		language = "en"
 	}
 
 	var quote Quote
-	query := "SELECT id, quote, author, author_occupation FROM quotes WHERE language = ? ORDER BY RANDOM() LIMIT 1"
+	query := fmt.Sprintf("SELECT id, quote, author, author_occupation FROM %s WHERE language = ? ORDER BY RANDOM() LIMIT 1", tableName)
 	err := db.QueryRowContext(ctx, query, language).Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -135,7 +135,7 @@ func GetRandomQuote(ctx context.Context, db *sql.DB, language string) (Quote, er
 	return quote, nil
 }
 
-func GetRandomQuoteExcluding(ctx context.Context, db *sql.DB, language string, exclude []string) (*Quote, error) {
+func GetRandomQuoteExcluding(ctx context.Context, db *sql.DB, tableName string, language string, exclude []string) (*Quote, error) {
 	excludeClause := ""
 	if len(exclude) > 0 {
 		placeholders := strings.Repeat("?,", len(exclude)-1) + "?"
@@ -144,11 +144,11 @@ func GetRandomQuoteExcluding(ctx context.Context, db *sql.DB, language string, e
 
 	query := fmt.Sprintf(`
         SELECT id, quote, author, author_occupation
-        FROM quotes
+        FROM %s
         WHERE language = ? %s
         ORDER BY RANDOM()
         LIMIT 1
-    `, excludeClause)
+    `, tableName, excludeClause)
 
 	args := make([]interface{}, len(exclude)+1)
 	args[0] = language

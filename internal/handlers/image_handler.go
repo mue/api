@@ -11,7 +11,8 @@ import (
 )
 
 type ImageHandler struct {
-	DB *sql.DB
+	DB        *sql.DB
+	TableName string
 }
 
 type Sizes struct {

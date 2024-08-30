@@ -13,12 +13,13 @@ import (
 )
 
 type QuoteHandler struct {
-	DB *sql.DB
+	DB        *sql.DB
+	TableName string
 }
 
 func (h *QuoteHandler) GetQuoteLanguages(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	languages, err := models.GetQuoteLanguages(ctx, h.DB)
+	languages, err := models.GetQuoteLanguages(ctx, h.DB, h.TableName)
 	if err != nil {
 		http.Error(w, "Failed to get quote languages", http.StatusInternalServerError)
 		return
@@ -31,7 +32,7 @@ func (h *QuoteHandler) GetQuoteLanguages(w http.ResponseWriter, r *http.Request)
 func (h *QuoteHandler) GetAllQuotes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	language := r.URL.Query().Get("language")
-	quotes, err := models.GetAllQuotes(ctx, h.DB, language)
+	quotes, err := models.GetAllQuotes(ctx, h.DB, h.TableName, language)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -42,7 +43,7 @@ func (h *QuoteHandler) GetAllQuotes(w http.ResponseWriter, r *http.Request) {
 func (h *QuoteHandler) GetQuoteByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
-	quote, err := models.GetQuoteByID(ctx, h.DB, id)
+	quote, err := models.GetQuoteByID(ctx, h.DB, h.TableName, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -75,12 +76,12 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 
 	// Function to fetch a random quote with fallback to English
 	fetchQuote := func(language string) (*models.Quote, error) {
-		quote, err := models.GetRandomQuoteExcluding(ctx, h.DB, language, seenQuotes)
+		quote, err := models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, language, seenQuotes)
 		if err != nil && strings.Contains(err.Error(), "no quotes found") {
 			// If no quotes are found, reset the seenQuotes list and try again
 			log.Println("No quotes found, resetting seenQuotes list")
 			seenQuotes = []string{}
-			quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, language, seenQuotes)
+			quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, language, seenQuotes)
 		}
 		return quote, err
 	}

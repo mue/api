@@ -24,6 +24,8 @@ type Config struct {
 	DatabaseURL    string
 	TursoAuthToken string
 	ServerPort     string
+	QuotesTable    string
+	ImagesTable    string
 }
 
 // loadConfig loads configuration from environment variables
@@ -32,6 +34,8 @@ func loadConfig() *Config {
 		DatabaseURL:    utils.GetEnv("TURSO_DATABASE_URL", ""),
 		TursoAuthToken: utils.GetEnv("TURSO_AUTH_TOKEN", ""),
 		ServerPort:     utils.GetEnv("SERVER_PORT", "8080"),
+		QuotesTable:    utils.GetEnv("QUOTES_TABLE", "quotes"),
+		ImagesTable:    utils.GetEnv("IMAGES_TABLE", "images"),
 	}
 }
 
@@ -48,8 +52,8 @@ func main() {
 	db := utils.LoadAndConnectDB(config.DatabaseURL, config.TursoAuthToken)
 	defer db.Close()
 	// Initialize handlers
-	quoteHandler := &handlers.QuoteHandler{DB: db}
-	imageHandler := &handlers.ImageHandler{DB: db}
+	quoteHandler := &handlers.QuoteHandler{DB: db, TableName: config.QuotesTable}
+	imageHandler := &handlers.ImageHandler{DB: db, TableName: config.ImagesTable}
 
 	// Setup router and middleware
 	r := chi.NewRouter()
