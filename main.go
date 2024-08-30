@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -11,13 +10,13 @@ import (
 	"syscall"
 	"time"
 
+	"mue-api/internal/handlers"
+	local_middleware "mue-api/internal/middleware"
+	"mue-api/internal/utils"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
-
-	"mue-api/internal/database"
-	"mue-api/internal/handlers"
 )
 
 // Config holds the application configuration
@@ -30,39 +29,10 @@ type Config struct {
 // loadConfig loads configuration from environment variables
 func loadConfig() *Config {
 	return &Config{
-		QuotesDBPath: getEnv("QUOTES_DB_PATH", "default_quotes_db_path"),
-		ImagesDBPath: getEnv("IMAGES_DB_PATH", "default_images_db_path"),
-		ServerPort:   getEnv("SERVER_PORT", "8080"),
+		QuotesDBPath: utils.GetEnv("QUOTES_DB_PATH", "default_quotes_db_path"),
+		ImagesDBPath: utils.GetEnv("IMAGES_DB_PATH", "default_images_db_path"),
+		ServerPort:   utils.GetEnv("SERVER_PORT", "8080"),
 	}
-}
-
-// getEnv retrieves an environment variable or returns a fallback value
-func getEnv(key, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return fallback
-}
-
-// loadAndConnectDB loads environment variables and connects to the database
-func loadAndConnectDB(dbPath string) *sql.DB {
-	log := logrus.New()
-
-	if dbPath == "" {
-		log.Fatalf("Database path is not set")
-	}
-
-	db, err := database.ConnectDB(dbPath)
-	if err != nil {
-		log.Fatalf("Failed to connect to database %s: %v", dbPath, err)
-	}
-
-	log.WithFields(logrus.Fields{
-		"dbPath": dbPath,
-	}).Info("Connected to database")
-
-	database.InitDB(db)
-	return db
 }
 
 // main is the entry point of the application
@@ -75,11 +45,11 @@ func main() {
 	config := loadConfig()
 
 	// Connect to quotes_db
-	quotesDB := loadAndConnectDB(config.QuotesDBPath)
+	quotesDB := utils.LoadAndConnectDB(config.QuotesDBPath)
 	defer quotesDB.Close()
 
 	// Connect to images_db
-	imagesDB := loadAndConnectDB(config.ImagesDBPath)
+	imagesDB := utils.LoadAndConnectDB(config.ImagesDBPath)
 	defer imagesDB.Close()
 
 	// Initialize handlers
@@ -88,8 +58,11 @@ func main() {
 
 	// Setup router and middleware
 	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(local_middleware.NoCookieMiddleware)
 
 	// Define routes
 	r.Get("/", handlers.RootHandler)
@@ -99,19 +72,31 @@ func main() {
 	})
 
 	// Quote routes
-	r.Get("/quotes", quoteHandler.GetAllQuotes)
-	r.Get("/quotes/{id}", quoteHandler.GetQuoteByID)
-	r.Get("/quotes/random", quoteHandler.GetRandomQuote)
-	r.Get("/quotes/languages", quoteHandler.GetQuoteLanguages)
+	r.Route("/quotes", func(r chi.Router) {
+		r.Get("/", quoteHandler.GetAllQuotes)
+		r.Get("/random", quoteHandler.GetRandomQuote)
+		r.Get("/languages", quoteHandler.GetQuoteLanguages)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", quoteHandler.GetQuoteByID)
+			// r.Put("/", quoteHandler.UpdateQuote)
+			// r.Delete("/", quoteHandler.DeleteQuote)
+		})
+	})
 
 	// Image routes
-	r.Get("/images", imageHandler.GetImages)
-	r.Get("/images/{id}", imageHandler.GetImageByID)
-	r.Get("/images/photographers", imageHandler.GetImagePhotographers)
-	//r.Get("/images/random", imageHandler.GetRandomImage)
-	r.Get("/images/sizes", imageHandler.GetImageSizes)
-	r.Get("/images/categories", imageHandler.GetImageCategories)
-
+	r.Route("/images", func(r chi.Router) {
+		r.Get("/", imageHandler.GetImages)
+		r.Get("/photographers", imageHandler.GetImagePhotographers)
+		//r.Get("/random", imageHandler.GetRandomImage)
+		r.Get("/sizes", imageHandler.GetImageSizes)
+		r.Get("/categories", imageHandler.GetImageCategories)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", imageHandler.GetImageByID)
+			// r.Put("/", imageHandler.UpdateImage)
+			// r.Delete("/", imageHandler.DeleteImage)
+		})
+	})
 	// pprof routes
 	r.HandleFunc("/debug/pprof/", pprof.Index)
 	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
