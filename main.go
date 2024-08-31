@@ -16,6 +16,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 )
 
@@ -29,95 +30,135 @@ type Config struct {
 }
 
 // loadConfig loads configuration from environment variables
-func loadConfig() *Config {
-	return &Config{
+func loadConfig() (*Config, error) {
+	config := &Config{
 		DatabaseURL:    utils.GetEnv("TURSO_DATABASE_URL", ""),
 		TursoAuthToken: utils.GetEnv("TURSO_AUTH_TOKEN", ""),
 		ServerPort:     utils.GetEnv("SERVER_PORT", "8080"),
 		QuotesTable:    utils.GetEnv("QUOTES_TABLE", "quotes"),
 		ImagesTable:    utils.GetEnv("IMAGES_TABLE", "images"),
 	}
+
+	// Validate configuration
+	if err := validator.New().Struct(config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
-// main is the entry point of the applicationx
+// main is the entry point of the application
 func main() {
 	// Load environment variables from .env file
 	err := godotenv.Load()
 	checkErr(err, "Error loading .env file")
 
 	// Load the configuration
-	config := loadConfig()
+	config, err := loadConfig()
+	checkErr(err, "Invalid configuration")
 
-	// Connect to quotes_db
+	// Connect to db
 	db := utils.LoadAndConnectDB(config.DatabaseURL, config.TursoAuthToken)
+	//checkErr(err, "Failed to connect to database")
 	defer db.Close()
+
 	// Initialize handlers
 	quoteHandler := &handlers.QuoteHandler{DB: db, TableName: config.QuotesTable}
 	imageHandler := &handlers.ImageHandler{DB: db, TableName: config.ImagesTable}
 
 	// Setup router and middleware
+	r := setupRouter(quoteHandler, imageHandler)
+
+	// Start the server with graceful shutdown
+	startServer(r, config.ServerPort)
+}
+
+// setupRouter configures the router and sub-routers
+func setupRouter(quoteHandler *handlers.QuoteHandler, imageHandler *handlers.ImageHandler) *chi.Mux {
 	r := chi.NewRouter()
+
+	// Global middleware
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(local_middleware.NoCookieMiddleware)
 
-	// Define routes
+	// Root and health check routes
 	r.Get("/", handlers.RootHandler)
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
 
-	// Quote routes
-	r.Route("/quotes", func(r chi.Router) {
-		r.Get("/", quoteHandler.GetAllQuotes)
-		r.Get("/random", quoteHandler.GetRandomQuote)
-		r.Get("/languages", quoteHandler.GetQuoteLanguages)
+	// Mount sub-routers
+	r.Mount("/quotes", quotesRouter(quoteHandler))
+	r.Mount("/images", imagesRouter(imageHandler))
+	r.Mount("/debug", debugRouter())
 
-		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", quoteHandler.GetQuoteByID)
-			// r.Put("/", quoteHandler.UpdateQuote)
-			// r.Delete("/", quoteHandler.DeleteQuote)
-		})
+	return r
+}
+
+// quotesRouter creates a sub-router for quote-related routes
+func quotesRouter(handler *handlers.QuoteHandler) chi.Router {
+	r := chi.NewRouter()
+	r.Get("/", handler.GetAllQuotes)
+	r.Get("/random", handler.GetRandomQuote)
+	r.Get("/languages", handler.GetQuoteLanguages)
+	r.Route("/{id}", func(r chi.Router) {
+		r.Get("/", handler.GetQuoteByID)
+		// Add more quote-specific routes here (e.g., PUT, DELETE)
 	})
+	return r
+}
 
-	// Image routes
-	r.Route("/images", func(r chi.Router) {
-		r.Get("/", imageHandler.GetImages)
-		r.Get("/photographers", imageHandler.GetImagePhotographers)
-		//r.Get("/random", imageHandler.GetRandomImage)
-		r.Get("/sizes", imageHandler.GetImageSizes)
-		r.Get("/categories", imageHandler.GetImageCategories)
-		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", imageHandler.GetImageByID)
-			// r.Put("/", imageHandler.UpdateImage)
-			// r.Delete("/", imageHandler.DeleteImage)
-		})
+// imagesRouter creates a sub-router for image-related routes
+func imagesRouter(handler *handlers.ImageHandler) chi.Router {
+	r := chi.NewRouter()
+	r.Get("/", handler.GetImages)
+	r.Get("/photographers", handler.GetImagePhotographers)
+	//r.Get("/random", handler.GetRandomImage)
+	r.Get("/sizes", handler.GetImageSizes)
+	r.Get("/categories", handler.GetImageCategories)
+	r.Route("/{id}", func(r chi.Router) {
+		r.Get("/", handler.GetImageByID)
+		// Add more image-specific routes here (e.g., PUT, DELETE)
 	})
-	// pprof routes
-	r.HandleFunc("/debug/pprof/", pprof.Index)
-	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	return r
+}
 
-	// Set up the server
+// debugRouter creates a sub-router for debugging routes like pprof
+func debugRouter() chi.Router {
+	r := chi.NewRouter()
+	r.HandleFunc("/pprof/", pprof.Index)
+	r.HandleFunc("/pprof/cmdline", pprof.Cmdline)
+	r.HandleFunc("/pprof/profile", pprof.Profile)
+	r.HandleFunc("/pprof/symbol", pprof.Symbol)
+	r.HandleFunc("/pprof/trace", pprof.Trace)
+	return r
+}
+
+// startServer initializes and starts the server with graceful shutdown
+func startServer(handler http.Handler, port string) {
 	srv := &http.Server{
-		Addr:    ":" + config.ServerPort,
-		Handler: r,
+		Addr:    ":" + port,
+		Handler: handler,
 	}
 
-	// Graceful shutdown
+	// Start server in a goroutine
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
-	log.Printf("Server started on :%s", config.ServerPort)
+	log.Printf("Server started on :%s", port)
 
-	// Wait for interrupt signal to gracefully shutdown the server
+	// Graceful shutdown on interrupt signal
+	waitForShutdown(srv)
+}
+
+// waitForShutdown handles graceful shutdown
+func waitForShutdown(srv *http.Server) {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
