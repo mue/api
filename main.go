@@ -117,7 +117,7 @@ func imagesRouter(handler *handlers.ImageHandler) chi.Router {
 	r := chi.NewRouter()
 	r.Get("/", handler.GetImages)
 	r.Get("/photographers", handler.GetImagePhotographers)
-	//r.Get("/random", handler.GetRandomImage)
+	r.Get("/random", handler.GetRandomImage)
 	r.Get("/sizes", handler.GetImageSizes)
 	r.Get("/categories", handler.GetImageCategories)
 	r.Route("/{id}", func(r chi.Router) {
