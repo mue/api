@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 )
 
@@ -31,12 +32,12 @@ type CategoryCount struct {
 	Count    int
 }
 
-func GetImagePhotographers(ctx context.Context, db *sql.DB) ([]PhotographerCount, error) {
-	query := `
+func GetImagePhotographers(ctx context.Context, db *sql.DB, tableName string) ([]PhotographerCount, error) {
+	query := fmt.Sprintf(`
         SELECT photographer, COUNT(*) as count
-        FROM images
+        FROM %s
         GROUP BY photographer
-    `
+    `, tableName)
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
@@ -63,12 +64,12 @@ func GetImagePhotographers(ctx context.Context, db *sql.DB) ([]PhotographerCount
 	return photographers, nil
 }
 
-func GetImageCategories(ctx context.Context, db *sql.DB) ([]CategoryCount, error) {
-	query := `
+func GetImageCategories(ctx context.Context, db *sql.DB, tableName string) ([]CategoryCount, error) {
+	query := fmt.Sprintf(`
 	SELECT category, COUNT(*) as count
-	FROM images
+	FROM %s
 	GROUP BY category
-`
+`, tableName)
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
@@ -95,9 +96,9 @@ func GetImageCategories(ctx context.Context, db *sql.DB) ([]CategoryCount, error
 	return categories, nil
 }
 
-func GetImageByID(ctx context.Context, db *sql.DB, id string) (Image, error) {
+func GetImageByID(ctx context.Context, db *sql.DB, tableName, id string) (Image, error) {
 	var image Image
-	query := "SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash FROM images WHERE id = ?"
+	query := fmt.Sprintf("SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash FROM %s WHERE id = ?", tableName)
 	err := db.QueryRowContext(ctx, query, id).Scan(&image.ID, &image.Camera, &image.CreatedAt, &image.LocationData, &image.Photographer, &image.Category, &image.OriginalFileName, &image.Colour, &image.PUN, &image.Version, &image.BlurHash)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -111,11 +112,11 @@ func GetImageByID(ctx context.Context, db *sql.DB, id string) (Image, error) {
 	return image, nil
 }
 
-func GetImages(ctx context.Context, db *sql.DB, photographer, category string) ([]Image, error) {
-	query := `
+func GetImages(ctx context.Context, db *sql.DB, tableName, photographer, category string) ([]Image, error) {
+	query := fmt.Sprintf(`
         SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash
-        FROM images
-    `
+        FROM %s
+    `, tableName)
 	var args []interface{}
 	var conditions []string
 

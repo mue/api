@@ -22,7 +22,7 @@ type Sizes struct {
 
 func (h *ImageHandler) GetImagePhotographers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	photographers, err := models.GetImagePhotographers(ctx, h.DB)
+	photographers, err := models.GetImagePhotographers(ctx, h.DB, h.TableName)
 	if err != nil {
 		http.Error(w, "Failed to get photographers", http.StatusInternalServerError)
 		return
@@ -35,7 +35,7 @@ func (h *ImageHandler) GetImagePhotographers(w http.ResponseWriter, r *http.Requ
 func (h *ImageHandler) GetImageByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
-	image, err := models.GetImageByID(ctx, h.DB, id)
+	image, err := models.GetImageByID(ctx, h.DB, h.TableName, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -47,7 +47,7 @@ func (h *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	photographer := r.URL.Query().Get("photographer")
 	category := r.URL.Query().Get("category")
-	images, err := models.GetImages(ctx, h.DB, photographer, category)
+	images, err := models.GetImages(ctx, h.DB, h.TableName, photographer, category)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -57,7 +57,7 @@ func (h *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {
 
 func (h *ImageHandler) GetImageCategories(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	categories, err := models.GetImageCategories(ctx, h.DB)
+	categories, err := models.GetImageCategories(ctx, h.DB, h.TableName)
 	if err != nil {
 		http.Error(w, "Failed to get categories", http.StatusInternalServerError)
 		return
