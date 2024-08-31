@@ -21,11 +21,11 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	DatabaseURL    string
-	TursoAuthToken string
-	ServerPort     string
-	QuotesTable    string
-	ImagesTable    string
+	DatabaseURL    string `validate:"required,url"`
+	TursoAuthToken string `validate:"required"`
+	ServerPort     string `validate:"required,numeric"`
+	QuotesTable    string `validate:"required"`
+	ImagesTable    string `validate:"required"`
 }
 
 // loadConfig loads configuration from environment variables
@@ -39,7 +39,7 @@ func loadConfig() *Config {
 	}
 }
 
-// main is the entry point of the application
+// main is the entry point of the applicationx
 func main() {
 	// Load environment variables from .env file
 	err := godotenv.Load()
