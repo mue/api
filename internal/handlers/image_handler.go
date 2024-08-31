@@ -3,7 +3,9 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
+	"strings"
 
 	"mue-api/internal/models"
 
@@ -78,6 +80,55 @@ func (h *ImageHandler) GetImageSizes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sizes); err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
+}
+
+func (h *ImageHandler) GetRandomImage(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	cookie, err := r.Cookie("image-seen")
+	var seenImages []string
+	if err == nil {
+		seenImages = strings.Split(cookie.Value, ",")
+	} else {
+		// If the cookie does not exist, start with an empty list
+		seenImages = []string{}
+		log.Println("No seen_images cookie found, starting with an empty list")
+	}
+
+	fetchImage := func() (*models.Image, error) {
+		image, err := models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages)
+		if err != nil && strings.Contains(err.Error(), "no images found") {
+			// If no quotes are found, reset the seenQuotes list and try again
+			log.Println("No quotes found, resetting seenImages list")
+			seenImages = []string{}
+			image, err = models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages)
+		}
+		return image, err
+	}
+
+	image, err := fetchImage()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	seenImages = append(seenImages, image.ID)
+
+	seenImagesStr := strings.Join(seenImages, ",")
+	newCookie := &http.Cookie{
+		Name:  "seen_quotes",
+		Value: seenImagesStr,
+		Path:  "/",
+		// Consider setting MaxAge or Expires if you want the cookie to persist across sessions
+	}
+	http.SetCookie(w, newCookie)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(image); err != nil {
+		log.Printf("Error encoding response: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 

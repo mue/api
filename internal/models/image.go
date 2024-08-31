@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 )
 
 type Image struct {
@@ -159,4 +160,38 @@ func GetImages(ctx context.Context, db *sql.DB, tableName, photographer, categor
 	}
 
 	return images, nil
+}
+
+func GetRandomImageExcluding(ctx context.Context, db *sql.DB, tableName string, exclude []string) (*Image, error) {
+	excludeClause := ""
+
+	if len(exclude) > 0 {
+		placeholders := strings.Repeat("?,", len(exclude)-1) + "?"
+		excludeClause = fmt.Sprintf("AND id NOT IN (%s)", placeholders)
+	}
+
+	query := fmt.Sprintf(`
+        SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash
+        FROM %s
+        WHERE id NOT in (%s)
+        ORDER BY RANDOM()
+        LIMIT 1
+    `, tableName, excludeClause)
+
+	args := make([]interface{}, len(exclude)+1)
+	for i, id := range exclude {
+		args[i] = id
+	}
+
+	row := db.QueryRowContext(ctx, query, args...)
+	var image Image
+	if err := row.Scan(&image.ID, &image.Camera, &image.CreatedAt, &image.LocationData, &image.Photographer, &image.Category, &image.OriginalFileName, &image.Colour, &image.PUN, &image.Version, &image.BlurHash); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("No image found")
+		}
+		return nil, err
+	}
+
+	return &image, nil
+
 }
