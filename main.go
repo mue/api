@@ -51,7 +51,9 @@ func loadConfig() (*Config, error) {
 func main() {
 	// Load environment variables from .env file
 	err := godotenv.Load()
-	checkErr(err, "Error loading .env file")
+	if err != nil {
+		log.Printf("%s: %v", "Error loading .env file", err)
+	}
 
 	// Load the configuration
 	config, err := loadConfig()
