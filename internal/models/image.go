@@ -10,17 +10,17 @@ import (
 )
 
 type Image struct {
-	ID               string
-	Camera           *string
-	CreatedAt        *string
-	LocationData     *string
-	Photographer     string
-	Category         string
-	OriginalFileName string
-	Colour           string
-	PUN              int
-	Version          int
-	BlurHash         string
+	ID               string  `json:"id"`
+	Camera           *string `json:"camera,omitempty"`
+	CreatedAt        *string `json:"created_at,omitempty"`
+	LocationData     *string `json:"location_data,omitempty"`
+	Photographer     string  `json:"photographer"`
+	Category         string  `json:"category"`
+	OriginalFileName string  `json:"original_file_name"`
+	Colour           string  `json:"colour"`
+	PUN              int     `json:"pun"`
+	Version          int     `json:"version"`
+	BlurHash         string  `json:"blur_hash"`
 }
 
 type PhotographerCount struct {

@@ -13,10 +13,10 @@ import (
 
 // Quote represents a quote with its details.
 type Quote struct {
-	ID         string
-	Quote      string
-	Author     *string
-	Occupation *string
+	ID         string  `json:"id"`
+	Quote      string  `json:"quote"`
+	Author     *string `json:"author,omitempty"`
+	Occupation *string `json:"occupation,omitempty"`
 }
 
 // LanguageCount represents a language and its quote count.
