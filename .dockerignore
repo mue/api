@@ -30,3 +30,6 @@
 **\go.work.sum
 
 fly.toml
+
+.git/
+.github/

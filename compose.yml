@@ -1,0 +1,17 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: ./dev.Dockerfile
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /app
+          ignore: []
+        - action: sync+restart
+          path: .env
+          target: /app/.env
+        - action: rebuild
+          path: go.mod
+    env_file: .env
