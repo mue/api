@@ -22,21 +22,25 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	DatabaseURL    string `validate:"required,url"`
-	TursoAuthToken string `validate:"required"`
-	ServerPort     string `validate:"required,numeric"`
-	QuotesTable    string `validate:"required"`
-	ImagesTable    string `validate:"required"`
+	LocalDatabase        string `validate:"required"`
+	// DatabaseSyncInterval string `validate:"required,url"`
+	PrimaryDatabaseURL   string `validate:"required,url"`
+	TursoAuthToken       string `validate:"required"`
+	ServerPort           string `validate:"required,numeric"`
+	QuotesTable          string `validate:"required"`
+	ImagesTable          string `validate:"required"`
 }
 
 // loadConfig loads configuration from environment variables
 func loadConfig() (*Config, error) {
 	config := &Config{
-		DatabaseURL:    utils.GetEnv("TURSO_DATABASE_URL", ""),
-		TursoAuthToken: utils.GetEnv("TURSO_AUTH_TOKEN", ""),
-		ServerPort:     utils.GetEnv("SERVER_PORT", "8080"),
-		QuotesTable:    utils.GetEnv("QUOTES_TABLE", "quotes"),
-		ImagesTable:    utils.GetEnv("IMAGES_TABLE", "images"),
+		LocalDatabase:        utils.GetEnv("DATABASE_CACHE_FILE", "replica.db"),
+		// DatabaseSyncInterval: utils.GetEnv("DATABASE_SYNC_INTERVAL", ""),
+		PrimaryDatabaseURL:   utils.GetEnv("TURSO_DATABASE_URL", ""),
+		TursoAuthToken:       utils.GetEnv("TURSO_AUTH_TOKEN", ""),
+		ServerPort:           utils.GetEnv("SERVER_PORT", "8080"),
+		QuotesTable:          utils.GetEnv("QUOTES_TABLE", "quotes"),
+		ImagesTable:          utils.GetEnv("IMAGES_TABLE", "images"),
 	}
 
 	// Validate configuration
@@ -52,7 +56,7 @@ func main() {
 	// Load environment variables from .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("%s: %v", "Error loading .env file", err)
+		log.Println(err)
 	}
 
 	// Load the configuration
@@ -60,7 +64,7 @@ func main() {
 	checkErr(err, "Invalid configuration")
 
 	// Connect to db
-	db := utils.LoadAndConnectDB(config.DatabaseURL, config.TursoAuthToken)
+	db := utils.LoadAndConnectDB(config.LocalDatabase, config.PrimaryDatabaseURL, config.TursoAuthToken)
 	//checkErr(err, "Failed to connect to database")
 	defer db.Close()
 

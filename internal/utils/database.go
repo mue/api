@@ -2,20 +2,37 @@ package utils
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"os"
+	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	"github.com/tursodatabase/go-libsql"
 )
 
-func ConnectDB(dbURL string, token string) (*sql.DB, error) {
-	url := dbURL + "?authToken=" + token
+func ConnectDB(localFile string, dbURL string, token string) (*sql.DB, error) {
+	primaryUrl := dbURL + "?authToken=" + token
 
-	db, err := sql.Open("libsql", url)
+	connector, err := libsql.NewEmbeddedReplicaConnector(
+		localFile,
+		primaryUrl,
+		libsql.WithAuthToken(token),
+		libsql.WithSyncInterval(time.Minute),
+	)
 	if err != nil {
-		return nil, err
+		fmt.Println("Error creating connector:", err)
+		os.Exit(1)
 	}
+	defer connector.Close()
+
+	db := sql.OpenDB(connector)
+	defer db.Close()
+
+	// db, err := sql.Open("libsql", url)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// Ping the database to ensure the connection is established
 	if err := db.Ping(); err != nil {
@@ -35,7 +52,7 @@ func InitDB(db *sql.DB) {
 }
 
 // loadAndConnectDB loads environment variables and connects to the database
-func LoadAndConnectDB(dbURL string, token string) *sql.DB {
+func LoadAndConnectDB(localFile string, dbURL string, token string) *sql.DB {
 	log := logrus.New()
 
 	if dbURL == "" {
@@ -46,7 +63,7 @@ func LoadAndConnectDB(dbURL string, token string) *sql.DB {
 		log.Fatalf("Token is not set")
 	}
 
-	db, err := ConnectDB(dbURL, token)
+	db, err := ConnectDB(localFile, dbURL, token)
 	if err != nil {
 		log.Fatalf("Failed to connect to database %s: %v", dbURL, err)
 	}
