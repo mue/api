@@ -22,25 +22,25 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	LocalDatabase        string `validate:"required"`
+	LocalDatabase string `validate:"required"`
 	// DatabaseSyncInterval string `validate:"required,url"`
-	PrimaryDatabaseURL   string `validate:"required,url"`
-	TursoAuthToken       string `validate:"required"`
-	ServerPort           string `validate:"required,numeric"`
-	QuotesTable          string `validate:"required"`
-	ImagesTable          string `validate:"required"`
+	PrimaryDatabaseURL string `validate:"required,url"`
+	TursoAuthToken     string `validate:"required"`
+	ServerPort         string `validate:"required,numeric"`
+	QuotesTable        string `validate:"required"`
+	ImagesTable        string `validate:"required"`
 }
 
 // loadConfig loads configuration from environment variables
 func loadConfig() (*Config, error) {
 	config := &Config{
-		LocalDatabase:        utils.GetEnv("DATABASE_CACHE_FILE", "replica.db"),
+		LocalDatabase: utils.GetEnv("DATABASE_CACHE_FILE", "replica.db"),
 		// DatabaseSyncInterval: utils.GetEnv("DATABASE_SYNC_INTERVAL", ""),
-		PrimaryDatabaseURL:   utils.GetEnv("TURSO_DATABASE_URL", ""),
-		TursoAuthToken:       utils.GetEnv("TURSO_AUTH_TOKEN", ""),
-		ServerPort:           utils.GetEnv("SERVER_PORT", "8080"),
-		QuotesTable:          utils.GetEnv("QUOTES_TABLE", "quotes"),
-		ImagesTable:          utils.GetEnv("IMAGES_TABLE", "images"),
+		PrimaryDatabaseURL: utils.GetEnv("TURSO_DATABASE_URL", ""),
+		TursoAuthToken:     utils.GetEnv("TURSO_AUTH_TOKEN", ""),
+		ServerPort:         utils.GetEnv("SERVER_PORT", "8080"),
+		QuotesTable:        utils.GetEnv("QUOTES_TABLE", "quotes"),
+		ImagesTable:        utils.GetEnv("IMAGES_TABLE", "images"),
 	}
 
 	// Validate configuration

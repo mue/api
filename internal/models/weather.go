@@ -40,16 +40,16 @@ type WeatherLocation struct {
 var apiToken string = "c1b3b3b"
 
 // get weather data
-func GetLocationWeather(ctx context.Context, lat float64, lon float64) (*Weather, error) {
+func GetLocationWeather(ctx context.Context, lat, lon string) (*Weather, error) {
 	// build url
-	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s", lat, lon, apiToken)
+	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&appid=%s", lat, lon, apiToken)
 
 	// create request
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 
 	if err != nil {
 		log.Printf("Error creating request: %v", err)
-		return
+		return nil, err
 	}
 
 	// send request
@@ -59,13 +59,13 @@ func GetLocationWeather(ctx context.Context, lat float64, lon float64) (*Weather
 
 	if err != nil {
 		log.Printf("Error sending request: %v", err)
-		return
+		return nil, err
 	}
 
 	// check response
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("Error response: %v", resp.Status)
-		return
+		return nil, err
 	}
 
 	// read response
@@ -76,7 +76,7 @@ func GetLocationWeather(ctx context.Context, lat float64, lon float64) (*Weather
 
 	if err := json.NewDecoder(resp.Body).Decode(&weather); err != nil {
 		log.Printf("Error decoding response: %v", err)
-		return
+		return nil, err
 	}
 
 	return &weather, nil
@@ -91,7 +91,7 @@ func GetWeather(ctx context.Context, city string) (*Weather, error) {
 
 	if err != nil {
 		log.Printf("Error creating request: %v", err)
-		return
+		return nil, err
 	}
 
 	// send request
@@ -101,13 +101,13 @@ func GetWeather(ctx context.Context, city string) (*Weather, error) {
 
 	if err != nil {
 		log.Printf("Error sending request: %v", err)
-		return
+		return nil, err
 	}
 
 	// check response
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("Error response: %v", resp.Status)
-		return
+		return nil, err
 	}
 
 	// read response
@@ -118,7 +118,7 @@ func GetWeather(ctx context.Context, city string) (*Weather, error) {
 
 	if err := json.NewDecoder(resp.Body).Decode(&weather); err != nil {
 		log.Printf("Error decoding response: %v", err)
-		return
+		return nil, err
 	}
 
 	/*
