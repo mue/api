@@ -1,15 +1,10 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
-	"strings"
 
 	"mue-api/internal/models"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type WeatherHandler struct {
