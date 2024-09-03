@@ -64,7 +64,7 @@ func main() {
 	checkErr(err, "Invalid configuration")
 
 	// Connect to db
-	db := utils.LoadAndConnectDB(config.LocalDatabase, config.PrimaryDatabaseURL, config.TursoAuthToken)
+	db := utils.LoadAndConnectDB(config.PrimaryDatabaseURL, config.TursoAuthToken)
 	//checkErr(err, "Failed to connect to database")
 	defer db.Close()
 
