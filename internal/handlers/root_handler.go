@@ -17,6 +17,7 @@ type ApiInfo struct {
 	Description      string     `json:"description"`
 	QuoteEndpoints   []Endpoint `json:"quote_endpoints"`
 	ImageEndpoints   []Endpoint `json:"image_endpoints"`
+	WeatherEndpoints []Endpoint `json:"weather_endpoints"`
 	DocumentationURL string     `json:"documentation_url"`
 }
 
@@ -39,6 +40,10 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 			{Method: "GET", Path: "/images/photographers", Description: "Retrieve all photographers and the count of images by each."},
 			{Method: "GET", Path: "/images/categories", Description: "Retrieve all image categories."},
 			{Method: "GET", Path: "/images/sizes", Description: "Retrieve all image sizes."},
+		},
+		WeatherEndpoints: []Endpoint{
+			{Method: "GET", Path: "/weather", Description: "Retrieve the weather for a specific location."},
+			{Method: "GET", Path: "/weather/autolocation", Description: "Retrieve the city for the user's current location."},
 		},
 		DocumentationURL: "https://docs.muetab.com/",
 	}
