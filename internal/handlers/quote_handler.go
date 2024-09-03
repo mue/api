@@ -64,15 +64,7 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the list of quote IDs from the client's cookies
-	cookie, err := r.Cookie("seen_quotes")
-	var seenQuotes []string
-	if err == nil {
-		seenQuotes = strings.Split(cookie.Value, ",")
-	} else {
-		// If the cookie does not exist, start with an empty list
-		seenQuotes = []string{}
-		log.Println("No seen_quotes cookie found, starting with an empty list")
-	}
+	var seenQuotes = models.GetCookieValueAsList(r, "seen_quotes")
 
 	// Function to fetch a random quote with fallback to English
 	fetchQuote := func(language string) (*models.Quote, error) {
@@ -97,21 +89,13 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Add the new quote ID to the seenQuotes list if it’s not already there
-	if !contains(seenQuotes, quote.ID) {
-		seenQuotes = append(seenQuotes, quote.ID)
-	}
+	//Add the seen quote ID to the list of seen quotes
+	seenQuotes = append(seenQuotes, quote.ID)
+
+	seenQuotesStr := strings.Join(seenQuotes, ",")
 
 	// Update the cookie with the new list of seen quote IDs
-	seenQuotesStr := strings.Join(seenQuotes, ",")
-	newCookie := &http.Cookie{
-		Name:  "seen_quotes",
-		Value: seenQuotesStr,
-		Path:  "/",
-		// Consider setting MaxAge or Expires if you want the cookie to persist across sessions
-	}
-
-	http.SetCookie(w, newCookie)
+	models.SetCookie(w, "seen_quotes", seenQuotesStr)
 
 	// Return the quote as JSON
 	w.Header().Set("Content-Type", "application/json")

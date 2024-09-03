@@ -87,15 +87,7 @@ func (h *ImageHandler) GetRandomImage(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	cookie, err := r.Cookie("image-seen")
-	var seenImages []string
-	if err == nil {
-		seenImages = strings.Split(cookie.Value, ",")
-	} else {
-		// If the cookie does not exist, start with an empty list
-		seenImages = []string{}
-		log.Println("No seen_images cookie found, starting with an empty list")
-	}
+	var seenImages = models.GetCookieValueAsList(r, "seen_images")
 
 	fetchImage := func() (*models.Image, error) {
 		image, err := models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages)
@@ -117,13 +109,8 @@ func (h *ImageHandler) GetRandomImage(w http.ResponseWriter, r *http.Request) {
 	seenImages = append(seenImages, image.ID)
 
 	seenImagesStr := strings.Join(seenImages, ",")
-	newCookie := &http.Cookie{
-		Name:  "seen_quotes",
-		Value: seenImagesStr,
-		Path:  "/",
-		// Consider setting MaxAge or Expires if you want the cookie to persist across sessions
-	}
-	http.SetCookie(w, newCookie)
+
+	models.SetCookie(w, "seen_images", seenImagesStr)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(image); err != nil {
