@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -8,6 +9,8 @@ import (
 )
 
 type WeatherHandler struct {
+	DB       *sql.DB
+	APIToken string
 }
 
 func (h *WeatherHandler) GetLocationWeather(w http.ResponseWriter, r *http.Request) {

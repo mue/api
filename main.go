@@ -29,6 +29,7 @@ type Config struct {
 	ServerPort         string `validate:"required,numeric"`
 	QuotesTable        string `validate:"required"`
 	ImagesTable        string `validate:"required"`
+	WeatherAPIToken    string `validate:"required"`
 }
 
 // loadConfig loads configuration from environment variables
@@ -41,6 +42,7 @@ func loadConfig() (*Config, error) {
 		ServerPort:         utils.GetEnv("SERVER_PORT", "8080"),
 		QuotesTable:        utils.GetEnv("QUOTES_TABLE", "quotes"),
 		ImagesTable:        utils.GetEnv("IMAGES_TABLE", "images"),
+		WeatherAPIToken:    utils.GetEnv("WEATHER_API_TOKEN", ""),
 	}
 
 	// Validate configuration
@@ -71,16 +73,17 @@ func main() {
 	// Initialize handlers
 	quoteHandler := &handlers.QuoteHandler{DB: db, TableName: config.QuotesTable}
 	imageHandler := &handlers.ImageHandler{DB: db, TableName: config.ImagesTable}
+	weatherHandler := &handlers.WeatherHandler{DB: db, APIToken: config.WeatherAPIToken}
 
 	// Setup router and middleware
-	r := setupRouter(quoteHandler, imageHandler)
+	r := setupRouter(quoteHandler, imageHandler, weatherHandler)
 
 	// Start the server with graceful shutdown
 	startServer(r, config.ServerPort)
 }
 
 // setupRouter configures the router and sub-routers
-func setupRouter(quoteHandler *handlers.QuoteHandler, imageHandler *handlers.ImageHandler) *chi.Mux {
+func setupRouter(quoteHandler *handlers.QuoteHandler, imageHandler *handlers.ImageHandler, weatherHandler *handlers.WeatherHandler) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Global middleware
@@ -100,6 +103,7 @@ func setupRouter(quoteHandler *handlers.QuoteHandler, imageHandler *handlers.Ima
 	// Mount sub-routers
 	r.Mount("/quotes", quotesRouter(quoteHandler))
 	r.Mount("/images", imagesRouter(imageHandler))
+	r.Mount("/weather", weatherRouter(weatherHandler))
 	r.Mount("/debug", debugRouter())
 
 	return r
@@ -130,6 +134,13 @@ func imagesRouter(handler *handlers.ImageHandler) chi.Router {
 		r.Get("/", handler.GetImageByID)
 		// Add more image-specific routes here (e.g., PUT, DELETE)
 	})
+	return r
+}
+
+func weatherRouter(handler *handlers.WeatherHandler) chi.Router {
+	r := chi.NewRouter()
+	r.Get("/weather", handler.GetWeather)
+	r.Get("/location", handler.GetLocationWeather)
 	return r
 }
 
