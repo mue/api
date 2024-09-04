@@ -6,9 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
 	"strings"
-	"time"
 )
 
 // Quote represents a quote with its details.
@@ -23,13 +21,6 @@ type Quote struct {
 type LanguageCount struct {
 	Language string
 	Count    int
-}
-
-var rng *rand.Rand
-
-// Initialize the random generator once at package initialization.
-func init() {
-	rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
 // GetQuoteLanguages returns the available languages and the count of quotes for each language.
