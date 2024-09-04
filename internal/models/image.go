@@ -162,7 +162,7 @@ func GetImages(ctx context.Context, db *sql.DB, tableName, photographer, categor
 	return images, nil
 }
 
-func GetRandomImageExcluding(ctx context.Context, db *sql.DB, tableName string, exclude []string) (*Image, error) {
+func GetRandomImageExcluding(ctx context.Context, db *sql.DB, tableName string, exclude []string, category string) (*Image, error) {
 	excludeClause := ""
 
 	if len(exclude) > 0 {
@@ -173,10 +173,10 @@ func GetRandomImageExcluding(ctx context.Context, db *sql.DB, tableName string, 
 	query := fmt.Sprintf(`
         SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash
         FROM %s
-        WHERE id NOT in (%s)
+        WHERE id NOT in (%s) AND category = %s
         ORDER BY RANDOM()
         LIMIT 1
-    `, tableName, excludeClause)
+    `, tableName, excludeClause, category)
 
 	args := make([]interface{}, len(exclude)+1)
 	for i, id := range exclude {

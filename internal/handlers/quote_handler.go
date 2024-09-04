@@ -66,32 +66,23 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 	// Retrieve the list of quote IDs from the client's cookies
 	var seenQuotes = models.GetCookieValueAsList(r, "seen_quotes")
 
-	// Function to fetch a random quote with fallback to English
-	fetchQuote := func(language string) (*models.Quote, error) {
-		quote, err := models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, language, seenQuotes)
-		if err != nil && strings.Contains(err.Error(), "no quotes found") {
-			// If no quotes are found, reset the seenQuotes list and try again
-			log.Println("No quotes found, resetting seenQuotes list")
-			seenQuotes = []string{}
-			quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, language, seenQuotes)
-		}
-		return quote, err
-	}
-
-	// Try to fetch a quote in the requested language
-	quote, err := fetchQuote(language)
-	if err != nil {
-		// If no quotes found, default to English
-		quote, err = fetchQuote("en")
+	// Fetch a random quote with fallback to reset seenList and default to english
+	quote, err := models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, language, seenQuotes)
+	if err != nil && strings.Contains(err.Error(), "no quotes found") {
+		log.Println("No quotes found, resetting seenQuotes list")
+		seenQuotes = []string{}
+		quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, language, seenQuotes)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, "en", seenQuotes)
 		}
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	//Add the seen quote ID to the list of seen quotes
 	seenQuotes = append(seenQuotes, quote.ID)
-
 	seenQuotesStr := strings.Join(seenQuotes, ",")
 
 	// Update the cookie with the new list of seen quote IDs
@@ -103,16 +94,6 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error encoding response: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-// Helper function to check if a slice contains a string
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
 }
 
 // parseAcceptLanguage simplifies the Accept-Language header to a basic language code

@@ -86,28 +86,23 @@ func (h *ImageHandler) GetImageSizes(w http.ResponseWriter, r *http.Request) {
 func (h *ImageHandler) GetRandomImage(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
+	category := r.URL.Query().Get("category")
 
 	var seenImages = models.GetCookieValueAsList(r, "seen_images")
 
-	fetchImage := func() (*models.Image, error) {
-		image, err := models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages)
-		if err != nil && strings.Contains(err.Error(), "no images found") {
-			// If no quotes are found, reset the seenQuotes list and try again
-			log.Println("No quotes found, resetting seenImages list")
-			seenImages = []string{}
-			image, err = models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages)
-		}
-		return image, err
+	image, err := models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages, category)
+	if err != nil && strings.Contains(err.Error(), "no images found") {
+		// If no quotes are found, reset the seenQuotes list and try again
+		log.Println("No quotes found, resetting seenImages list")
+		seenImages = []string{}
+		image, err = models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages, category)
 	}
-
-	image, err := fetchImage()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	seenImages = append(seenImages, image.ID)
-
 	seenImagesStr := strings.Join(seenImages, ",")
 
 	models.SetCookie(w, "seen_images", seenImagesStr)
