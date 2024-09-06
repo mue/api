@@ -16,6 +16,6 @@ COPY --chown=app ./ ./
 ENV SERVER_PORT=8080
 ENV CGO_ENABLED=1
 
-CMD go run -ldflags '-extldflags "-static"' .
+CMD go run .
 
 EXPOSE 8080
