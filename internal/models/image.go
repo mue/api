@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
+	"mue-api/internal/utils"
 )
 
 type Image struct {
@@ -162,26 +162,40 @@ func GetImages(ctx context.Context, db *sql.DB, tableName, photographer, categor
 	return images, nil
 }
 
-func GetRandomImageExcluding(ctx context.Context, db *sql.DB, tableName string, exclude []string, category string) (*Image, error) {
-	excludeClause := ""
+func GetRandomImageExcluding(ctx context.Context, db *sql.DB, tableName string, excludeIDs []string, includeCategories []string, includePhotographers []string) (*Image, error) {
+	//Creates an interface which is filled with the excluded values and a placeholder for whereConditions
+	var args []interface{}
+	var whereConditions []string
 
-	if len(exclude) > 0 {
-		placeholders := strings.Repeat("?,", len(exclude)-1) + "?"
-		excludeClause = fmt.Sprintf("AND id NOT IN (%s)", placeholders)
+	//Builds the where clause dependent on what exclusions and inclusions apply
+	if len(excludeIDs) > 0 {
+		excludeClause := utils.BuildWhereClause("id NOT IN", excludeIDs, &args)
+		if excludeClause != "" {
+			whereConditions = append(whereConditions, excludeClause)
+		}
 	}
+	if len(includeCategories) > 0 {
+		categoryClause := utils.BuildWhereClause("category IN", includeCategories, &args)
+		if categoryClause != "" {
+			whereConditions = append(whereConditions, categoryClause)
+		}
+	}
+	if len(includePhotographers) > 0 {
+		photographerClause := utils.BuildWhereClause("photographer IN", includePhotographers, &args)
+		if photographerClause != "" {
+			whereConditions = append(whereConditions, photographerClause)
+		}
+	}
+
+	whereClause := utils.CombineWhereClause(whereConditions)
 
 	query := fmt.Sprintf(`
         SELECT id, camera, created_at, location_data, photographer, category, original_file_name, colour, pun, version, blur_hash
         FROM %s
-        WHERE id NOT in (%s) AND category = %s
+        %s
         ORDER BY RANDOM()
         LIMIT 1
-    `, tableName, excludeClause, category)
-
-	args := make([]interface{}, len(exclude)+1)
-	for i, id := range exclude {
-		args[i] = id
-	}
+    `, tableName, whereClause)
 
 	row := db.QueryRowContext(ctx, query, args...)
 	var image Image
@@ -191,7 +205,5 @@ func GetRandomImageExcluding(ctx context.Context, db *sql.DB, tableName string, 
 		}
 		return nil, err
 	}
-
 	return &image, nil
-
 }

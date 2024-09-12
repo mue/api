@@ -84,18 +84,21 @@ func (h *ImageHandler) GetImageSizes(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ImageHandler) GetRandomImage(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
-	category := r.URL.Query().Get("category")
+	queryParams := r.URL.Query()
+
+	// Get categories from the query parameters
+	categories := queryParams["category"]
+	photographers := queryParams["photographer"]
 
 	var seenImages = models.GetCookieValueAsList(r, "seen_images")
 
-	image, err := models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages, category)
+	image, err := models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages, categories, photographers)
 	if err != nil && strings.Contains(err.Error(), "no images found") {
 		// If no quotes are found, reset the seenQuotes list and try again
 		log.Println("No quotes found, resetting seenImages list")
 		seenImages = []string{}
-		image, err = models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages, category)
+		image, err = models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages, categories, photographers)
 	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

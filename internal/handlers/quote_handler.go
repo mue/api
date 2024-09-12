@@ -53,13 +53,19 @@ func (h *QuoteHandler) GetQuoteByID(w http.ResponseWriter, r *http.Request) {
 
 func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	language := r.URL.Query().Get("language")
+	defaultLanguage := []string{"en"}
+	queryParams := r.URL.Query()
+
+	languages := queryParams["language"]
+	authors := queryParams["author"]
 
 	// If no language query parameter is provided, use the Accept-Language header
-	if language == "" {
-		language = parseAcceptLanguage(r.Header.Get("Accept-Language"))
+	if len(languages) == 0 {
+		language := parseAcceptLanguage(r.Header.Get("Accept-Language"))
 		if language == "" {
-			language = "en" // Default to English if no Accept-Language header is present
+			languages = append(languages, "en") // Default to English if no Accept-Language header is present
+		} else {
+			languages = append(languages, parseAcceptLanguage(r.Header.Get("Accept-Language")))
 		}
 	}
 
@@ -67,13 +73,13 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 	var seenQuotes = models.GetCookieValueAsList(r, "seen_quotes")
 
 	// Fetch a random quote with fallback to reset seenList and default to english
-	quote, err := models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, language, seenQuotes)
+	quote, err := models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, seenQuotes, languages, authors)
 	if err != nil && strings.Contains(err.Error(), "no quotes found") {
 		log.Println("No quotes found, resetting seenQuotes list")
 		seenQuotes = []string{}
-		quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, language, seenQuotes)
+		quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, seenQuotes, languages, authors)
 		if err != nil {
-			quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, "en", seenQuotes)
+			quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, seenQuotes, defaultLanguage, authors)
 		}
 	}
 	if err != nil {

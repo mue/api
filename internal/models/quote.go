@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
+	"mue-api/internal/utils"
 )
 
 // Quote represents a quote with its details.
@@ -105,53 +105,47 @@ func GetQuoteByID(ctx context.Context, db *sql.DB, tableName string, id string) 
 	return quote, nil
 }
 
-// GetRandomQuote fetches a random quote in the specified language.
-func GetRandomQuote(ctx context.Context, db *sql.DB, tableName string, language string) (Quote, error) {
-	if language == "" {
-		language = "en"
-	}
+func GetRandomQuoteExcluding(ctx context.Context, db *sql.DB, tableName string, excludeIDs []string, includeLanguages []string, includeAuthours []string) (*Quote, error) {
+	//Creates an interface which is filled with the excluded values and a placeholder for whereConditions
 
-	var quote Quote
-	query := fmt.Sprintf("SELECT id, quote, author, author_occupation FROM %s WHERE language = ? ORDER BY RANDOM() LIMIT 1", tableName)
-	err := db.QueryRowContext(ctx, query, language).Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("No quotes found for language %s", language)
-			return quote, errors.New("no quotes found")
+	var args []interface{}
+	var whereConditions []string
+
+	//Builds the where clause dependent on what exclusions and inclusions apply
+	if len(excludeIDs) > 0 {
+		excludeClause := utils.BuildWhereClause("id NOT IN", excludeIDs, &args)
+		if excludeClause != "" {
+			whereConditions = append(whereConditions, excludeClause)
 		}
-		log.Printf("Error querying random quote: %v", err)
-		return quote, err
+	}
+	if len(includeLanguages) > 0 {
+		languagesClause := utils.BuildWhereClause("language IN", includeLanguages, &args)
+		if languagesClause != "" {
+			whereConditions = append(whereConditions, languagesClause)
+		}
+	}
+	if len(includeAuthours) > 0 {
+		authoursClause := utils.BuildWhereClause("author IN", includeAuthours, &args)
+		if authoursClause != "" {
+			whereConditions = append(whereConditions, authoursClause)
+		}
 	}
 
-	return quote, nil
-}
-
-func GetRandomQuoteExcluding(ctx context.Context, db *sql.DB, tableName string, language string, exclude []string) (*Quote, error) {
-	excludeClause := ""
-	if len(exclude) > 0 {
-		placeholders := strings.Repeat("?,", len(exclude)-1) + "?"
-		excludeClause = fmt.Sprintf("AND id NOT IN (%s)", placeholders)
-	}
+	whereClause := utils.CombineWhereClause(whereConditions)
 
 	query := fmt.Sprintf(`
         SELECT id, quote, author, author_occupation
         FROM %s
-        WHERE language = ? %s
+        %s
         ORDER BY RANDOM()
         LIMIT 1
-    `, tableName, excludeClause)
-
-	args := make([]interface{}, len(exclude)+1)
-	args[0] = language
-	for i, id := range exclude {
-		args[i+1] = id
-	}
+    `, tableName, whereClause)
 
 	row := db.QueryRowContext(ctx, query, args...)
 	var quote Quote
 	if err := row.Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("no quotes found for language %s excluding provided IDs", language)
+			return nil, fmt.Errorf("no quotes found")
 		}
 		return nil, err
 	}

@@ -34,7 +34,7 @@ func InitDB(db *sql.DB) {
 	}
 }
 
-// loadAndConnectDB loads environment variables and connects to the database
+// LoadAndConnectDB loads environment variables and connects to the database
 func LoadAndConnectDB(dbURL string, token string) *sql.DB {
 	log := logrus.New()
 
