@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@baselime/edge-logger": "^0.2.2",
-    "@microlabs/otel-cf-workers": "1.0.0-rc.32",
+    "@microlabs/otel-cf-workers": "1.0.0-rc.43",
     "@opentelemetry/api": "^1.8.0",
     "@supabase/supabase-js": "^2.0.5",
     "cheerio": "1.0.0-rc.12",
