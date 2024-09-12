@@ -74,7 +74,7 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch a random quote with fallback to reset seenList and default to english
 	quote, err := models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, seenQuotes, languages, authors)
-	if err != nil && strings.Contains(err.Error(), "no quotes found") {
+	if err != nil && strings.Contains(err.Error(), "no quote found") {
 		log.Println("No quotes found, resetting seenQuotes list")
 		seenQuotes = []string{}
 		quote, err = models.GetRandomQuoteExcluding(ctx, h.DB, h.TableName, seenQuotes, languages, authors)

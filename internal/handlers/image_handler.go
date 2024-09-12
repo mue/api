@@ -94,13 +94,13 @@ func (h *ImageHandler) GetRandomImage(w http.ResponseWriter, r *http.Request) {
 	var seenImages = models.GetCookieValueAsList(r, "seen_images")
 
 	image, err := models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages, categories, photographers)
-	if err != nil && strings.Contains(err.Error(), "no images found") {
+	if err != nil && strings.Contains(err.Error(), "no image found") {
 		// If no quotes are found, reset the seenQuotes list and try again
-		log.Println("No quotes found, resetting seenImages list")
+		log.Println("No images found, resetting seenImages list")
 		seenImages = []string{}
+		models.SetCookie(w, "seen_images", "")
 		image, err = models.GetRandomImageExcluding(ctx, h.DB, h.TableName, seenImages, categories, photographers)
-	}
-	if err != nil {
+	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -145,7 +145,7 @@ func GetRandomQuoteExcluding(ctx context.Context, db *sql.DB, tableName string, 
 	var quote Quote
 	if err := row.Scan(&quote.ID, &quote.Quote, &quote.Author, &quote.Occupation); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("no quotes found")
+			return nil, fmt.Errorf("no quote found")
 		}
 		return nil, err
 	}
