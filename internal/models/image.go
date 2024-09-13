@@ -200,7 +200,7 @@ func GetRandomImageExcluding(ctx context.Context, db *sql.DB, tableName string, 
 	row := db.QueryRowContext(ctx, query, args...)
 	var image Image
 	if err := row.Scan(&image.ID, &image.Camera, &image.CreatedAt, &image.LocationData, &image.Photographer, &image.Category, &image.OriginalFileName, &image.Colour, &image.PUN, &image.Version, &image.BlurHash); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("no image found")
 		}
 		return nil, err

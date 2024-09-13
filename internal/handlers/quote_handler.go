@@ -57,7 +57,7 @@ func (h *QuoteHandler) GetRandomQuote(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 
 	languages := queryParams["language"]
-	authors := queryParams["author"]
+	authors := queryParams["quotes"]
 
 	// If no language query parameter is provided, use the Accept-Language header
 	if len(languages) == 0 {

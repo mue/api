@@ -88,8 +88,8 @@ func (h *ImageHandler) GetRandomImage(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 
 	// Get categories from the query parameters
-	categories := queryParams["category"]
-	photographers := queryParams["photographer"]
+	categories := queryParams["categories"]
+	photographers := queryParams["photographers"]
 
 	var seenImages = models.GetCookieValueAsList(r, "seen_images")
 
