@@ -1,8 +1,7 @@
-<p align="center">
-  <img src="https://github.com/mue/api/blob/v3/public/assets/images/logo/full/werewolves-logo.png?raw=true" width="400" alt="logo"/>
-</p>
+![mue-api-logo-banner](https://github.com/user-attachments/assets/e3747494-4034-41a2-b632-c4a7083b4585)
 
 ## Table Of Contents
+
 
 1. What is this API?
 2. Installation
