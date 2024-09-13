@@ -1,24 +1,46 @@
-# Mue API
-Source code for the Mue API. This API is the default for random images and quotes in Mue.
+<p align="center">
+  <img src="https://github.com/mue/api/blob/v3/public/assets/images/logo/full/werewolves-logo.png?raw=true" width="400" alt="logo"/>
+</p>
+
+## Table Of Contents
+
+1. What is this API?
+2. Installation
+3. Env Variables
+4. License
+
+## What is this API?
+
+The Mue API is created to serve HTTP requests for photos, quotes, weather and marketplace data to users.
+
+This API is used by the **[Mue Tab](https://github.com/mue/mue)** browser extension.
 
 ## Installation
-See the [documentation](https://docs.muetab.com/development#api).
 
-## Environment
+To install this project, you will need the following on your machine:
 
-Non-secret variables are in `wrangler.toml`.
-Secrets are deployed with Wrangler but a `.dev.vars` file can be used in development:
+![Go](https://img.shields.io/badge/Go-00ADD8?logo=Go&logoColor=white&style=for-the-badge)
 
-```sh
-IS_LOCAL_MODE=1
-BASELIME_API_KEY=
-MAPBOX_TOKEN=
-OPENWEATHER_TOKEN=
-PEXELS_TOKEN=
-SUPABASE_TOKEN=
-SUPABASE_URL=
-UNSPLASH_TOKEN=
+Then run the commands:
+
+```bash
+go get
+
+go run .
 ```
 
+## Env Variables
+
+|         Name          |                  Description                  | Required | Default value |                   Limitations                    |
+| :-------------------: | :-------------------------------------------: | :------: | :-----------: | :----------------------------------------------: |
+| `DATABASE_CACHE_FILE` |         Local Cache Database Replica          |    ✅    | `replica.db`  |        Must be a string, must end in .db         |
+| `TURSO_DATABASE_URL`  |       The primary external database URL       |    ✅    |      ❌       |                 Cannot be empty                  |
+|  `TURSO_AUTH_TOKEN`   | Authentication token required to use Turso DB |    ✅    |      ❌       |                 Cannot be empty                  |
+|     `SERVER_PORT`     |       Default Server Port API hosted on       |    ❌    |    `8080`     | If set, must be a number between `0` and `65535` |
+|    `QUOTES_TABLE`     |             Name of Quotes Table              |    ❌    |   `quotes`    |                 Must be a string                 |
+|    `IMAGES_TABLE`     |             Name of Images Table              |    ❌    |   `images`    |                 Must be a string                 |
+|  `WEATHER_API_TOKEN`  |             OpenWeather API Token             |    ✅    |      ❌       |              Can't be empty string               |
+
 ## License
-[MIT](LICENSE)
+
+This project is licensed under the [MIT License](http://opensource.org/licenses/MIT).
