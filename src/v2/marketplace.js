@@ -148,31 +148,35 @@ export async function getFeatured() {
  */
 export async function getItem(req) {
 	const manifest = await getManifest();
-	
-	// Resolve the item identifier (could be name or stable ID)
-	const resolved = resolveIdentifier(manifest, req.params.item, req.params.category);
+
+	// If category is not provided, treat item as an ID and resolve it
+	const category = req.params.category;
+	const resolved = category
+		? resolveIdentifier(manifest, req.params.item, category)
+		: resolveIdentifier(manifest, req.params.item);
+
 	if (!resolved) {
 		return error(404, 'Item Not Found');
 	}
-	
-	const { key: itemKey, category } = resolved;
-	
-	if (!manifest[category]) {
+
+	const { key: itemKey, category: resolvedCategory } = resolved;
+
+	if (!manifest[resolvedCategory]) {
 		return error(404, 'Category Not Found');
 	}
-	
-	if (manifest[category][itemKey] === undefined) {
+
+	if (manifest[resolvedCategory][itemKey] === undefined) {
 		return error(404, 'Item Not Found');
 	}
-	
+
 	let item = await (
 		await fetch(
-			`https://marketplace-data.muetab.com/${category}/${itemKey}.json`,
+			`https://marketplace-data.muetab.com/${resolvedCategory}/${itemKey}.json`,
 			{ cf: { cacheTtl: 3600 } },
 		)
 	).json();
 
-	item.in_collections = manifest[category][itemKey].in_collections.map(
+	item.in_collections = manifest[resolvedCategory][itemKey].in_collections.map(
 		(name) => {
 			const collection = manifest.collections[name];
 			delete collection.items;
