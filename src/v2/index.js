@@ -13,6 +13,7 @@ import {
 	getFeatured,
 	getItem,
 	getItems,
+	incrementItemView,
 } from './marketplace';
 
 export default Router({ base: '/v2' })
@@ -23,6 +24,8 @@ export default Router({ base: '/v2' })
 	.get('/marketplace/featured', getFeatured)
 	.get('/marketplace/item/:item', getItem)
 	.get('/marketplace/item/:category/:item', getItem)
+	.post('/marketplace/item/:item/view', incrementItemView)
+	.post('/marketplace/item/:category/:item/view', incrementItemView)
 	.get('/marketplace/items/:category', getItems)
 	.get('/gps', withWeatherLanguage, async (req, env, ctx) => {
 		const { latitude, longitude } = req.query;
