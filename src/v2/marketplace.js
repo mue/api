@@ -184,24 +184,6 @@ export async function getItem(req, env, ctx) {
 		},
 	);
 
-	// Fetch current view count
-	const { data: analyticsData } = await ctx.$supabase
-		.from('marketplace_analytics')
-		.select('views')
-		.eq('item_id', itemKey)
-		.eq('category', resolvedCategory)
-		.single();
-
-	item.views = analyticsData?.views || 0;
-
-	// Increment view count asynchronously (non-blocking)
-	ctx.waitUntil(
-		ctx.$supabase.rpc('increment_marketplace_views', {
-			_item_id: itemKey,
-			_category: resolvedCategory,
-		})
-	);
-
 	const version = getVersion(req);
 	if (version === 2) {
 		item = {
@@ -215,6 +197,56 @@ export async function getItem(req, env, ctx) {
 		data: item,
 		updated: item.updated_at,
 	});
+}
+
+/**
+ * @param {Request} req
+ */
+export async function incrementItemView(req, env, ctx) {
+	const manifest = await getManifest();
+
+	// If category is not provided, treat item as an ID and resolve it
+	const category = req.params.category;
+	const resolved = category
+		? resolveIdentifier(manifest, req.params.item, category)
+		: resolveIdentifier(manifest, req.params.item);
+
+	if (!resolved) {
+		return error(404, 'Item Not Found');
+	}
+
+	const { key: itemKey, category: resolvedCategory } = resolved;
+
+	if (!manifest[resolvedCategory]) {
+		return error(404, 'Category Not Found');
+	}
+
+	if (manifest[resolvedCategory][itemKey] === undefined) {
+		return error(404, 'Item Not Found');
+	}
+
+	// Increment view count
+	await ctx.$supabase.rpc('increment_marketplace_views', {
+		_item_id: itemKey,
+		_category: resolvedCategory,
+	});
+
+	// Fetch updated view count
+	const { data: analyticsData } = await ctx.$supabase
+		.from('marketplace_analytics')
+		.select('views')
+		.eq('item_id', itemKey)
+		.eq('category', resolvedCategory)
+		.single();
+
+	return json(
+		{
+			views: analyticsData?.views || 1,
+		},
+		{
+			headers: { 'Cache-Control': 'no-store' },
+		}
+	);
 }
 
 /**

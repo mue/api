@@ -3,7 +3,7 @@ import { json, error } from 'itty-router-extras';
 import v2 from './v2';
 import sizes from './sizes';
 import news from '../news';
-import { getCollection, getCollections, getFeatured, getItem, getItems } from './v2/marketplace';
+import { getCollection, getCollections, getFeatured, getItem, getItems, incrementItemView } from './v2/marketplace';
 
 export default Router()
 	.get('/', () => 'Hello World! API docs: https://docs.muetab.com/api/introduction')
@@ -46,6 +46,7 @@ export default Router()
 		);
 	})
 	.get('/item/:category/:item', getItem)
+	.post('/item/:category/:item/view', incrementItemView)
 	.get('/items/:category', getItems)
 	.get('/news', () => ({ news }))
 	.get('/quotes/languages', () => ['English', 'French'])
