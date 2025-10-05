@@ -106,3 +106,34 @@ begin
     order by random()
     limit 1;
 end;$$;
+
+
+-- Marketplace analytics table
+create table if not exists marketplace_analytics (
+  item_id text not null,
+  category text not null,
+  views bigint default 0,
+  updated_at timestamp with time zone default now(),
+  constraint marketplace_analytics_pkey primary key (item_id, category)
+);
+
+create index if not exists idx_marketplace_analytics_category on marketplace_analytics(category);
+create index if not exists idx_marketplace_analytics_views on marketplace_analytics(views desc);
+
+
+-- Function to increment marketplace item views
+create or replace function increment_marketplace_views(
+  _item_id text,
+  _category text
+)
+returns void
+language plpgsql
+as $$
+begin
+  insert into marketplace_analytics (item_id, category, views, updated_at)
+  values (_item_id, _category, 1, now())
+  on conflict (item_id, category)
+  do update set
+    views = marketplace_analytics.views + 1,
+    updated_at = now();
+end;$$;

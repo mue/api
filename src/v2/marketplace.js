@@ -146,7 +146,7 @@ export async function getFeatured() {
 /**
  * @param {Request} req
  */
-export async function getItem(req) {
+export async function getItem(req, env, ctx) {
 	const manifest = await getManifest();
 
 	// If category is not provided, treat item as an ID and resolve it
@@ -182,6 +182,24 @@ export async function getItem(req) {
 			delete collection.items;
 			return collection;
 		},
+	);
+
+	// Fetch current view count
+	const { data: analyticsData } = await ctx.$supabase
+		.from('marketplace_analytics')
+		.select('views')
+		.eq('item_id', itemKey)
+		.eq('category', resolvedCategory)
+		.single();
+
+	item.views = analyticsData?.views || 0;
+
+	// Increment view count asynchronously (non-blocking)
+	ctx.waitUntil(
+		ctx.$supabase.rpc('increment_marketplace_views', {
+			_item_id: itemKey,
+			_category: resolvedCategory,
+		})
 	);
 
 	const version = getVersion(req);
