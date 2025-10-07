@@ -6,14 +6,22 @@ import { getUnsplashImage } from './unsplash';
 import { getPexelsImage } from './pexels';
 import { withWeatherLanguage } from './weather';
 import {
+	batchGetItems,
+	getCategoryStats,
 	getCollection,
 	getCollections,
 	getCurator,
 	getCurators,
 	getFeatured,
+	getGlobalStats,
 	getItem,
 	getItems,
+	getRandom,
+	getRecent,
+	getRelatedItems,
+	getTrending,
 	incrementItemView,
+	search,
 } from './marketplace';
 
 export default Router({ base: '/v2' })
@@ -27,6 +35,16 @@ export default Router({ base: '/v2' })
 	.post('/marketplace/item/:item/view', incrementItemView)
 	.post('/marketplace/item/:category/:item/view', incrementItemView)
 	.get('/marketplace/items/:category', getItems)
+	.get('/marketplace/item/:item/related', getRelatedItems)
+	.get('/marketplace/item/:category/:item/related', getRelatedItems)
+	.get('/marketplace/random/:category', getRandom)
+	.get('/marketplace/random', getRandom)
+	.get('/marketplace/search', search)
+	.post('/marketplace/batch', batchGetItems)
+	.get('/marketplace/stats/global', getGlobalStats)
+	.get('/marketplace/stats/category/:category', getCategoryStats)
+	.get('/marketplace/trending', getTrending)
+	.get('/marketplace/recent', getRecent)
 	.get('/gps', withWeatherLanguage, async (req, env, ctx) => {
 		const { latitude, longitude } = req.query;
 		if (!latitude || !longitude) {
@@ -108,16 +126,20 @@ export default Router({ base: '/v2' })
 		const { categories, collections, orientation, topics, username } = req.query;
 		const unsplash_query = new URLSearchParams({ orientation: orientation ?? 'landscape' });
 		if (categories && categories.length > 0) {
-			unsplash_query.set('collections', categories
-				.split(',')
-				.map((category) => named_collections[category])
-				.join(','));
+			unsplash_query.set(
+				'collections',
+				categories
+					.split(',')
+					.map((category) => named_collections[category])
+					.join(','),
+			);
 		}
 		// collections overwrites categories
 		if (collections !== undefined) unsplash_query.set('collections', collections);
 		if (topics !== undefined) unsplash_query.set('topics', topics);
 		if (username !== undefined) unsplash_query.set('username', username);
-		if (unsplash_query.get('collections') === null) unsplash_query.set('collections', Object.values(named_collections).join(','));
+		if (unsplash_query.get('collections') === null)
+			unsplash_query.set('collections', Object.values(named_collections).join(','));
 		const data = await getUnsplashImage(unsplash_query, req.query.quality ?? 'normal', ...rest);
 		return json(data, { headers: { 'Cache-Control': 'no-store' } });
 	})
@@ -129,7 +151,9 @@ export default Router({ base: '/v2' })
 		).json();
 		return json(data, {
 			// cdn 1w, client 1d, stale 1d
-			headers: { 'Cache-Control': 'public, s-max-age=604800, max-age=86400, stale-while-revalidate=86400' },
+			headers: {
+				'Cache-Control': 'public, s-max-age=604800, max-age=86400, stale-while-revalidate=86400',
+			},
 		});
 	})
 	.get('/quotes/languages', async (req, env, ctx) => {
@@ -186,5 +210,7 @@ export default Router({ base: '/v2' })
 		const data = await (await fetch(url)).json();
 		if (data.cod === '404') return error(404, 'No data. Try another city?');
 		// 10m (too short for cf), stale 5m
-		return json(data, { headers: { 'Cache-Control': 'private, max-age=600, stale-while-revalidate=300' } });
+		return json(data, {
+			headers: { 'Cache-Control': 'private, max-age=600, stale-while-revalidate=300' },
+		});
 	});
