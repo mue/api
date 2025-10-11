@@ -113,11 +113,25 @@ export function resolveIdentifier(manifest, identifier, category = null) {
 export function applyFilters(items, query) {
 	let filtered = [...items];
 
-	// Filter by tags
+	// Filter by tags (deprecated - ignored for backward compatibility)
+	// Tags have been removed in schema v3.0
 	if (query.tags) {
-		const tags = Array.isArray(query.tags) ? query.tags : query.tags.split(',');
+		console.warn('Tag filtering is deprecated and will be ignored (schema v3.0)');
+	}
+
+	// Filter by keywords (new in schema v3.0)
+	if (query.keywords) {
+		const keywords = Array.isArray(query.keywords) ? query.keywords : query.keywords.split(',');
 		filtered = filtered.filter(
-			(item) => item.tags && tags.some((tag) => item.tags.includes(tag.toLowerCase())),
+			(item) => item.keywords && keywords.some((kw) => item.keywords.includes(kw.toLowerCase())),
+		);
+	}
+
+	// Filter by category_tags (new in schema v3.0)
+	if (query.category_tags) {
+		const tags = Array.isArray(query.category_tags) ? query.category_tags : query.category_tags.split(',');
+		filtered = filtered.filter(
+			(item) => item.category_tags && tags.some((tag) => item.category_tags.includes(tag)),
 		);
 	}
 

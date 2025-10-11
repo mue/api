@@ -29,19 +29,24 @@ export async function search(req) {
 					score += 10;
 				}
 
-				// Match in tags (high weight)
-				if (item.tags.some((tag) => tag.includes(term))) {
+				// Match in keywords (very high weight - curated content)
+				if (item.keywords && item.keywords.some((kw) => kw.toLowerCase().includes(term))) {
+					score += 8;
+				}
+
+				// Match in category_tags (high weight - predefined tags)
+				if (item.category_tags && item.category_tags.some((tag) => tag.includes(term))) {
+					score += 6;
+				}
+
+				// Match in author (high weight)
+				if (item.author.toLowerCase().includes(term)) {
 					score += 5;
 				}
 
-				// Match in author (medium weight)
-				if (item.author.toLowerCase().includes(term)) {
-					score += 3;
-				}
-
-				// Match in search text (low weight)
+				// Match in search text (medium weight)
 				if (item.search_text.includes(term)) {
-					score += 1;
+					score += 2;
 				}
 			}
 

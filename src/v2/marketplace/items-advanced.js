@@ -27,12 +27,12 @@ export async function getRelatedItems(req) {
 	}
 
 	// Find related items based on:
-	// 1. Same collections
+	// 1. Same collections (highest priority)
 	// 2. Same author
-	// 3. Similar tags
+	// 3. Same category (type)
 	const relatedByCollection = new Set();
 	const relatedByAuthor = new Set();
-	const relatedByTags = new Set();
+	const relatedByCategory = new Set();
 
 	// Items in same collections
 	for (const collectionName of item.in_collections) {
@@ -57,20 +57,12 @@ export async function getRelatedItems(req) {
 		relatedByAuthor.add(authorItem.id);
 	}
 
-	// Items with similar tags
-	if (item.tags && item.tags.length > 0) {
-		const allItems = Object.values(manifest.preset_settings)
-			.concat(Object.values(manifest.photo_packs))
-			.concat(Object.values(manifest.quote_packs));
+	// Items in same category (type)
+	const categoryItems = Object.values(manifest[resolvedCategory])
+		.filter((i) => i.id !== item.id);
 
-		for (const otherItem of allItems) {
-			if (otherItem.id !== item.id && otherItem.tags) {
-				const commonTags = otherItem.tags.filter((tag) => item.tags.includes(tag));
-				if (commonTags.length > 0) {
-					relatedByTags.add(otherItem.id);
-				}
-			}
-		}
+	for (const categoryItem of categoryItems) {
+		relatedByCategory.add(categoryItem.id);
 	}
 
 	// Combine and score related items
@@ -84,8 +76,8 @@ export async function getRelatedItems(req) {
 		scoredRelated.set(id, (scoredRelated.get(id) || 0) + 5);
 	}
 
-	for (const id of relatedByTags) {
-		scoredRelated.set(id, (scoredRelated.get(id) || 0) + 3);
+	for (const id of relatedByCategory) {
+		scoredRelated.set(id, (scoredRelated.get(id) || 0) + 2);
 	}
 
 	// Get top related items
