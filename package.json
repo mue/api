@@ -21,7 +21,7 @@
     "@baselime/edge-logger": "^0.2.2",
     "@microlabs/otel-cf-workers": "1.0.0-rc.32",
     "@opentelemetry/api": "^1.8.0",
-    "@supabase/supabase-js": "^2.0.5",
+    "@supabase/supabase-js": "^2.47.6",
     "cheerio": "1.0.0-rc.12",
     "itty-router": "^2.6.6",
     "itty-router-extras": "^0.4.6",
