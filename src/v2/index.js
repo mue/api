@@ -59,6 +59,30 @@ export default Router({ base: '/v2' })
 			},
 		});
 	})
+	.get('/geocode', withWeatherLanguage, async (req, env, ctx) => {
+		const { q, limit = 5 } = req.query;
+		if (!q) return error(400, '`q` param is required');
+		if (q.length < 2) return error(400, '`q` must be at least 2 characters');
+
+		const url = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q)}&limit=${limit}&appid=${env.OPENWEATHER_TOKEN}`;
+		const data = await (await fetch(url)).json();
+
+		const locations = data.map((loc) => ({
+			name: loc.name,
+			state: loc.state || null,
+			country: loc.country,
+			lat: loc.lat,
+			lon: loc.lon,
+			displayName: [loc.name, loc.state, loc.country].filter(Boolean).join(', '),
+		}));
+
+		return json(locations, {
+			headers: {
+				// 1w, stale 1d
+				'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable',
+			},
+		});
+	})
 	.get('/images/categories', async (req, env, ctx) => {
 		const { data } = await ctx.$supabase.rpc('get_image_categories');
 		return data;
@@ -204,9 +228,30 @@ export default Router({ base: '/v2' })
 		return new Response(res.body, res);
 	})
 	.get('/weather', withWeatherLanguage, async (req, env, ctx) => {
-		const { city } = req.query;
-		if (!city) return error(400, '`city` param is required');
-		const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${env.OPENWEATHER_TOKEN}&lang=${ctx.$language}`;
+		const { city, lat, lon } = req.query;
+
+		let url;
+		if (lat && lon) {
+			// Coordinate-based lookup (preferred)
+			const latitude = parseFloat(lat);
+			const longitude = parseFloat(lon);
+			if (isNaN(latitude) || isNaN(longitude)) {
+				return error(400, 'Invalid coordinates: `lat` and `lon` must be numbers');
+			}
+			if (latitude < -90 || latitude > 90) {
+				return error(400, 'Invalid latitude: must be between -90 and 90');
+			}
+			if (longitude < -180 || longitude > 180) {
+				return error(400, 'Invalid longitude: must be between -180 and 180');
+			}
+			url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${env.OPENWEATHER_TOKEN}&lang=${ctx.$language}`;
+		} else if (city) {
+			// Backwards compatible: city name lookup
+			url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${env.OPENWEATHER_TOKEN}&lang=${ctx.$language}`;
+		} else {
+			return error(400, 'Either `city` param or `lat` and `lon` params are required');
+		}
+
 		const data = await (await fetch(url)).json();
 		if (data.cod === '404') return error(404, 'No data. Try another city?');
 		// 10m (too short for cf), stale 5m
