@@ -201,8 +201,10 @@ export async function incrementItemDownload(req, env, ctx) {
 
 /**
  * @param {Request} req
+ * @param {Object} env
+ * @param {Object} ctx
  */
-export async function getItems(req) {
+export async function getItems(req, env, ctx) {
 	let data;
 	const manifest = await getManifest();
 	if (req.params.category === 'all') {
@@ -232,6 +234,44 @@ export async function getItems(req) {
 				...item,
 				type: req.params.category,
 			}));
+		}
+	}
+
+	// Conditionally fetch and merge analytics data
+	const includeAnalytics = req.query.include_analytics === 'true';
+	if (includeAnalytics && ctx.$supabase) {
+		try {
+			// Get item identifiers
+			const itemIds = data.map(item => item.name || item.id);
+
+			// Fetch analytics for all items in single query
+			const { data: analyticsData, error: dbError } = await ctx.$supabase
+				.from('marketplace_analytics')
+				.select('item_id, views, downloads')
+				.in('item_id', itemIds);
+
+			if (!dbError && analyticsData) {
+				// Create lookup map for O(1) access
+				const analyticsMap = new Map(
+					analyticsData.map(row => [
+						row.item_id,
+						{ views: row.views || 0, downloads: row.downloads || 0 }
+					])
+				);
+
+				// Merge analytics into items
+				data = data.map(item => {
+					const itemKey = item.name || item.id;
+					const analytics = analyticsMap.get(itemKey);
+					if (analytics) {
+						return { ...item, views: analytics.views, downloads: analytics.downloads };
+					}
+					return { ...item, views: 0, downloads: 0 };
+				});
+			}
+		} catch (error) {
+			// Graceful degradation - log but don't fail the request
+			ctx.$logger?.warn('Failed to fetch analytics data', { error });
 		}
 	}
 
