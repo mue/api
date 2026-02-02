@@ -38,7 +38,7 @@ export async function getCategoryStats(req) {
 }
 
 /**
- * Get trending items (based on view counts)
+ * Get trending items (based on weighted score of views and downloads)
  * @param {Request} req
  */
 export async function getTrending(req, env, ctx) {
@@ -48,9 +48,9 @@ export async function getTrending(req, env, ctx) {
 	// Fetch trending from analytics DB
 	let query = ctx.$supabase
 		.from('marketplace_analytics')
-		.select('item_id, category, views')
+		.select('item_id, category, views, downloads')
 		.order('views', { ascending: false })
-		.limit(limit);
+		.limit(limit * 3); // Fetch more items to ensure we have enough after weighting
 
 	if (category) {
 		query = query.eq('category', category);
@@ -63,15 +63,29 @@ export async function getTrending(req, env, ctx) {
 		return error(500, 'Failed to fetch trending items');
 	}
 
-	// Fetch full item data
+	// Fetch full item data and calculate weighted scores
 	const manifest = await getManifest();
 	const trendingItems = analyticsData
 		.map((row) => {
 			const item = manifest[row.category]?.[row.item_id];
 			if (!item) return null;
-			return { ...item, views: row.views };
+
+			// Calculate weighted score: views * 0.3 + downloads * 0.7
+			const views = row.views || 0;
+			const downloads = row.downloads || 0;
+			const weightedScore = views * 0.3 + downloads * 0.7;
+
+			return {
+				...item,
+				views,
+				downloads,
+				_score: weightedScore,
+			};
 		})
-		.filter(Boolean);
+		.filter(Boolean)
+		.sort((a, b) => b._score - a._score) // Sort by weighted score
+		.slice(0, limit) // Take only the requested limit
+		.map(({ _score, ...item }) => item); // Remove internal _score field
 
 	return json({
 		data: trendingItems,

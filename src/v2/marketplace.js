@@ -8,7 +8,12 @@ export {
 	getFeatured,
 } from './marketplace/collections.js';
 
-export { getItem, incrementItemView, getItems } from './marketplace/items-basic.js';
+export {
+	getItem,
+	incrementItemView,
+	incrementItemDownload,
+	getItems,
+} from './marketplace/items-basic.js';
 
 export { getRelatedItems, getRandom } from './marketplace/items-advanced.js';
 

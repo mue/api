@@ -98,10 +98,10 @@ export async function incrementItemView(req, env, ctx) {
 		});
 	}
 
-	// Fetch updated view count
+	// Fetch updated view count and download count
 	const { data: analyticsData, error: fetchError } = await ctx.$supabase
 		.from('marketplace_analytics')
-		.select('views')
+		.select('views, downloads')
 		.eq('item_id', itemKey)
 		.eq('category', resolvedCategory)
 		.single();
@@ -121,6 +121,77 @@ export async function incrementItemView(req, env, ctx) {
 				rpcError,
 			}, // Temporary debug info
 			views: analyticsData?.views || 1,
+			downloads: analyticsData?.downloads || 0,
+		},
+		{
+			headers: { 'Cache-Control': 'no-store' },
+		},
+	);
+}
+
+/**
+ * @param {Request} req
+ */
+export async function incrementItemDownload(req, env, ctx) {
+	const manifest = await getManifest();
+
+	// If category is not provided, treat item as an ID and resolve it
+	const category = req.params.category;
+	const resolved = category
+		? resolveIdentifier(manifest, req.params.item, category)
+		: resolveIdentifier(manifest, req.params.item);
+
+	if (!resolved) {
+		return error(404, 'Item Not Found');
+	}
+
+	const { key: itemKey, category: resolvedCategory } = resolved;
+
+	if (!manifest[resolvedCategory]) {
+		return error(404, 'Category Not Found');
+	}
+
+	if (manifest[resolvedCategory][itemKey] === undefined) {
+		return error(404, 'Item Not Found');
+	}
+
+	// Increment download count
+	const { error: rpcError } = await ctx.$supabase.rpc('increment_marketplace_downloads', {
+		_category: resolvedCategory,
+		_item_id: itemKey,
+	});
+
+	if (rpcError) {
+		ctx.$logger?.error('Failed to increment downloads', {
+			category: resolvedCategory,
+			error: rpcError,
+			item_id: itemKey,
+		});
+	}
+
+	// Fetch updated download count
+	const { data: analyticsData, error: fetchError } = await ctx.$supabase
+		.from('marketplace_analytics')
+		.select('downloads')
+		.eq('item_id', itemKey)
+		.eq('category', resolvedCategory)
+		.single();
+
+	if (fetchError) {
+		ctx.$logger?.error('Failed to fetch downloads', {
+			category: resolvedCategory,
+			error: fetchError,
+			item_id: itemKey,
+		});
+	}
+
+	return json(
+		{
+			debug: {
+				fetchError,
+				rpcError,
+			}, // Temporary debug info
+			downloads: analyticsData?.downloads || 1,
 		},
 		{
 			headers: { 'Cache-Control': 'no-store' },

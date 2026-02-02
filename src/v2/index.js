@@ -21,6 +21,7 @@ import {
 	getRelatedItems,
 	getTrending,
 	incrementItemView,
+	incrementItemDownload,
 	search,
 } from './marketplace';
 
@@ -36,6 +37,8 @@ export default Router({ base: '/v2' })
 	.get('/marketplace/item/:category/:item', getItem)
 	.post('/marketplace/item/:item/view', incrementItemView)
 	.post('/marketplace/item/:category/:item/view', incrementItemView)
+	.post('/marketplace/item/:item/download', incrementItemDownload)
+	.post('/marketplace/item/:category/:item/download', incrementItemDownload)
 	.get('/marketplace/items/:category', getItems)
 	.get('/marketplace/random/:category', getRandom)
 	.get('/marketplace/random', getRandom)

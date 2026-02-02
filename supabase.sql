@@ -113,12 +113,14 @@ create table if not exists marketplace_analytics (
   item_id text not null,
   category text not null,
   views bigint default 0,
+  downloads bigint default 0,
   updated_at timestamp with time zone default now(),
   constraint marketplace_analytics_pkey primary key (item_id, category)
 );
 
 create index if not exists idx_marketplace_analytics_category on marketplace_analytics(category);
 create index if not exists idx_marketplace_analytics_views on marketplace_analytics(views desc);
+create index if not exists idx_marketplace_analytics_downloads on marketplace_analytics(downloads desc);
 
 
 -- Function to increment marketplace item views
@@ -135,5 +137,23 @@ begin
   on conflict (item_id, category)
   do update set
     views = marketplace_analytics.views + 1,
+    updated_at = now();
+end;$$;
+
+
+-- Function to increment marketplace item downloads
+create or replace function increment_marketplace_downloads(
+  _item_id text,
+  _category text
+)
+returns void
+language plpgsql
+as $$
+begin
+  insert into marketplace_analytics (item_id, category, downloads, updated_at)
+  values (_item_id, _category, 1, now())
+  on conflict (item_id, category)
+  do update set
+    downloads = marketplace_analytics.downloads + 1,
     updated_at = now();
 end;$$;
