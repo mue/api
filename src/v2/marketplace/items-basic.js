@@ -264,9 +264,9 @@ export async function getItems(req, env, ctx) {
 					const itemKey = item.name || item.id;
 					const analytics = analyticsMap.get(itemKey);
 					if (analytics) {
-						return { ...item, views: analytics.views, downloads: analytics.downloads };
+						return { ...item, downloads: analytics.downloads, views: analytics.views };
 					}
-					return { ...item, views: 0, downloads: 0 };
+					return { ...item, downloads: 0, views: 0 };
 				});
 			}
 		} catch (error) {
