@@ -162,10 +162,12 @@ export default Router({ base: '/v2' })
 			);
 		}
 		// collections overwrites categories
-		if (collections !== undefined) unsplash_query.set('collections', collections);
+		if (collections !== undefined && collections.trim?.()) {
+			unsplash_query.set('collections', collections.trim());
+		}
 		if (topics !== undefined) unsplash_query.set('topics', topics);
 		if (username !== undefined) unsplash_query.set('username', username);
-		if (unsplash_query.get('collections') === null)
+		if (!unsplash_query.get('collections'))
 			unsplash_query.set('collections', Object.values(named_collections).join(','));
 		const data = await getUnsplashImage(unsplash_query, req.query.quality ?? 'normal', ...rest);
 		return json(data, { headers: { 'Cache-Control': 'no-store' } });
