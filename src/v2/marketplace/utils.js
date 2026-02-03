@@ -3,7 +3,7 @@
 // Cache strategy: use stale-while-revalidate
 const CACHE_CONFIG = {
 	full: {
-		cacheTtl: 43200, // 12 hours - analytics data doesn't change frequently
+		cacheTtl: 3600, // 1 hour - analytics data doesn't change frequently
 		cacheEverything: true,
 	},
 	lite: {
