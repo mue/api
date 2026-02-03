@@ -3,7 +3,6 @@ import { json, error } from 'itty-router-extras';
 import sizes from '../sizes';
 import news from '../../news';
 import { getUnsplashImage } from './unsplash';
-import { getPexelsImage } from './pexels';
 import { withWeatherLanguage } from './weather';
 import {
 	batchGetItems,
@@ -89,10 +88,6 @@ export default Router({ base: '/v2' })
 	.get('/images/categories', async (req, env, ctx) => {
 		const { data } = await ctx.$supabase.rpc('get_image_categories');
 		return data;
-	})
-	.get('/images/pexels', async (req, ...rest) => {
-		const data = await getPexelsImage(req.query.quality ?? 'normal', ...rest);
-		return json(data, { headers: { 'Cache-Control': 'no-store' } });
 	})
 	.get('/images/photographers', async (req, env, ctx) => {
 		const { data } = await ctx.$supabase.rpc('get_image_photographers');
