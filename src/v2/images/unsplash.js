@@ -7,11 +7,14 @@ const sizes = {
 
 export const getUnsplashImage = async (query, quality, env) => {
 	query.set('client_id', env.UNSPLASH_TOKEN);
+
 	const ref = `?utm_source=${env.UNSPLASH_REFERRAL}&utm_medium=referral`;
 	const size = sizes[quality];
+
 	const data = await (
 		await fetch(`https://api.unsplash.com/photos/random?${query.toString()}`)
 	).json();
+
 	return {
 		blur_hash: data.blur_hash,
 		camera: data.exif.model ?? null,

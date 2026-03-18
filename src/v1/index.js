@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
+
 import marketplace from './marketplace/index';
 import images from './images';
 import quotes from './quotes';
 import news from './news';
 
 export default new Hono()
-	.get('/', (c) => c.text('Hello World! API docs: https://docs.muetab.com/api/introduction'))
+	.get('/', (c) => c.text('Hello World! API docs: https://muetab.com/docs/api/introduction'))
 	.route('/', marketplace)
 	.route('/images', images)
 	.route('/quotes', quotes)
