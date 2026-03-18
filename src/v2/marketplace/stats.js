@@ -1,4 +1,4 @@
-/* eslint-disable indent */
+
 import { error, json } from 'itty-router-extras';
 import { getManifest, getStats } from './utils.js';
 

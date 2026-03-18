@@ -1,4 +1,4 @@
-/* eslint-disable indent */
+
 import { error, json } from 'itty-router-extras';
 import { getManifest, getSearchIndex } from './utils.js';
 
@@ -138,9 +138,11 @@ export async function batchGetItems(req) {
 				return collectionWithoutItems;
 			});
 
-			return { id, data: item };
+			return { id,
+				data: item };
 		} catch (err) {
-			return { id, error: 'Failed to fetch' };
+			return { id,
+				error: 'Failed to fetch' };
 		}
 	});
 

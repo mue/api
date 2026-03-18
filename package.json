@@ -14,7 +14,7 @@
     "deploy": "wrangler deploy",
     "start": "wrangler dev",
     "dev": "wrangler dev",
-    "test": "jest",
+    "lint:fix": "eslint --fix \"./src/**/*.{js,json}\"",
     "pretty": "prettier --write \"./src/**/*.{js,json}\""
   },
   "dependencies": {
@@ -29,8 +29,11 @@
     "ua-parser-js": "1.0.32"
   },
   "devDependencies": {
-    "eslint": "^8.27.0",
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
+    "eslint": "9",
     "eslint-config-prettier": "^8.5.0",
+    "globals": "^17.4.0",
     "prettier": "^3.2.5",
     "wrangler": "^3.114.15"
   }
