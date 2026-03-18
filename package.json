@@ -21,8 +21,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
     "cheerio": "^1.2.0",
-    "hono": "^4.12.8",
-    "node-fetch": "2.6.7"
+    "hono": "^4.12.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
