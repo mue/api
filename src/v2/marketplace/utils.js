@@ -3,20 +3,20 @@
 // Cache strategy: use stale-while-revalidate
 const CACHE_CONFIG = {
 	full: {
-		cacheTtl: 3600, // 1 hour - analytics data doesn't change frequently
 		cacheEverything: true,
+		cacheTtl: 3600, // 1 hour - analytics data doesn't change frequently
 	},
 	lite: {
-		cacheTtl: 1800,
 		cacheEverything: true,
+		cacheTtl: 1800,
 	},
 	search: {
-		cacheTtl: 3600,
 		cacheEverything: true,
+		cacheTtl: 3600,
 	},
 	stats: {
-		cacheTtl: 1800,
 		cacheEverything: true,
+		cacheTtl: 1800,
 	},
 };
 
@@ -212,7 +212,7 @@ export function applySorting(items, query) {
 				comparison = b.in_collections.length - a.in_collections.length;
 				break;
 			default:
-				comparison = 0;
+				break;
 		}
 
 		return sortOrder === 'asc' ? -comparison : comparison;

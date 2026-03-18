@@ -1,4 +1,4 @@
-import { error, json } from 'itty-router-extras';
+import { error, json } from '../../util/response.js';
 import paginate from '../../util/pagination.js';
 import { getManifest, getVersion, resolveIdentifier } from './utils.js';
 

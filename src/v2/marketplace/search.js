@@ -1,4 +1,4 @@
-import { error, json } from 'itty-router-extras';
+import { error, json } from '../../util/response.js';
 import { getManifest, getSearchIndex } from './utils.js';
 
 /**
@@ -67,12 +67,12 @@ export async function search(req) {
 	return json({
 		data: paginatedResults,
 		meta: {
-			total: results.length,
+			has_more: page < totalPages,
 			page,
 			per_page: perPage,
-			total_pages: totalPages,
-			has_more: page < totalPages,
 			query,
+			total: results.length,
+			total_pages: totalPages,
 		},
 	});
 }
@@ -137,9 +137,11 @@ export async function batchGetItems(req) {
 				return collectionWithoutItems;
 			});
 
-			return { id, data: item };
-		} catch (err) {
-			return { id, error: 'Failed to fetch' };
+			return { data: item,
+				id };
+		} catch {
+			return { error: 'Failed to fetch',
+				id };
 		}
 	});
 
@@ -148,9 +150,9 @@ export async function batchGetItems(req) {
 	return json({
 		data: items,
 		meta: {
-			requested: ids.length,
-			found: items.filter((i) => i.data).length,
 			errors: items.filter((i) => i.error).length,
+			found: items.filter((i) => i.data).length,
+			requested: ids.length,
 		},
 	});
 }

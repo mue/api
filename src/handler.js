@@ -1,52 +1,54 @@
-import router from './v1';
-import { json, error } from 'itty-router-extras';
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { createClient } from '@supabase/supabase-js';
+import v1 from './v1';
+import v2 from './v2';
 
-export default {
-	/**
-	 * @param {Request} req
-	 */
-	async fetch(req, env, ctx) {
-		ctx.$supabase = createClient(env.SUPABASE_URL, env.SUPABASE_TOKEN);
-		try {
-			const cache = caches.default;
-			const cacheKey = new Request(new URL(req.url).toString(), req);
+const app = new Hono();
 
-			// attempt to serve from cache
-			if (req.method === 'GET') {
-				const res = await cache.match(cacheKey);
-				if (res) return res;
-			}
+app.use('*', cors({ origin: '*' }));
 
-			// if not cached
+app.use('*', async (c, next) => {
+	c.set('supabase', createClient(c.env.SUPABASE_URL, c.env.SUPABASE_TOKEN));
+	await next();
+});
 
-			/** @type {Response} */
-			let res = await router.handle(req, env, ctx);
+app.use('*', async (c, next) => {
+	const cache = caches.default;
+	const cacheKey = new Request(c.req.url);
 
-			if (!(res instanceof Response)) {
-				res = json(res, {
-					// cdn 1d, client 1h, stale 1h
-					headers: {
-						'Cache-Control': 'public, s-max-age=86400, max-age=3600, stale-while-revalidate=3600',
-					},
-				});
-			}
+	if (c.req.method === 'GET') {
+		const cached = await cache.match(cacheKey);
+		if (cached) return cached;
+	}
 
-			res.headers.set('Access-Control-Allow-Origin', '*');
+	await next();
 
-			if (res.headers.has('Cache-Control') && res.headers.get('Cache-Control') !== 'no-store') {
-				ctx.waitUntil(cache.put(cacheKey, res.clone()));
-			}
+	const res = c.res;
+	if (!res.headers.has('Cache-Control')) {
+		const newHeaders = new Headers(res.headers);
+		newHeaders.set(
+			'Cache-Control',
+			'public, s-max-age=86400, max-age=3600, stale-while-revalidate=3600',
+		);
+		c.res = new Response(res.body, { headers: newHeaders,
+			status: res.status,
+			statusText: res.statusText });
+	}
 
-			return res;
-		} catch (err) {
-			const res = error(500, {
-				error: err?.message,
-				message: 'Internal Serverless Error',
-				stack: err?.stack,
-			});
-			res.headers.set('Access-Control-Allow-Origin', '*');
-			return res;
-		}
-	},
-};
+	if (c.res.headers.get('Cache-Control') !== 'no-store') {
+		c.executionCtx.waitUntil(cache.put(cacheKey, c.res.clone()));
+	}
+});
+
+app.route('/', v1);
+app.route('/v2', v2);
+
+app.onError((err, c) => c.json(
+	{ error: err?.message,
+		message: 'Internal Serverless Error',
+		stack: err?.stack },
+	500,
+));
+
+export default app;

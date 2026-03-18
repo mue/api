@@ -1,4 +1,4 @@
-import { error, json } from 'itty-router-extras';
+import { error, json } from '../../util/response.js';
 import { getManifest, getStats } from './utils.js';
 
 /**
@@ -23,10 +23,8 @@ export async function getCategoryStats(req) {
 	const items = Object.values(manifest[category]);
 
 	const stats = {
-		category,
-		total_items: items.length,
-		total_item_count: items.reduce((sum, item) => sum + (item.item_count || 0), 0),
 		authors: [...new Set(items.map((item) => item.author))].length,
+		category,
 		languages: [...new Set(items.map((item) => item.language).filter(Boolean))],
 		recent_items: items
 			.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -76,14 +74,15 @@ export async function getTrending(req, env, ctx) {
 
 			return {
 				...item,
-				views,
-				downloads,
 				_score: weightedScore,
+				downloads,
+				views,
 			};
 		})
 		.filter(Boolean)
 		.sort((a, b) => b._score - a._score) // Sort by weighted score
 		.slice(0, limit) // Take only the requested limit
+		// eslint-disable-next-line no-unused-vars
 		.map(({ _score, ...item }) => item); // Remove internal _score field
 
 	return json({

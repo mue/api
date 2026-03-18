@@ -5,8 +5,7 @@ const sizes = {
 	datasaver: '&w=1280', // eslint-disable-line sort-keys
 };
 
-export const getUnsplashImage = async (query, quality, ...rest) => {
-	const [env] = rest;
+export const getUnsplashImage = async (query, quality, env) => {
 	query.set('client_id', env.UNSPLASH_TOKEN);
 	const ref = `?utm_source=${env.UNSPLASH_REFERRAL}&utm_medium=referral`;
 	const size = sizes[quality];
@@ -30,7 +29,7 @@ export const getUnsplashImage = async (query, quality, ...rest) => {
 		},
 		photo_page: data.links.html + ref,
 		photographer: data.user.name,
-		photographer_page: data.user.links.html + ref, // api requirement
+		photographer_page: data.user.links.html + ref,
 		views: data.views,
 	};
 };
