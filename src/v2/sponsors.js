@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import cheerio from 'cheerio';
+import { load } from 'cheerio';
 
 export default new Hono()
 	.get('/', async (c) => {
@@ -9,7 +9,7 @@ export default new Hono()
 			)
 		).text();
 
-		const $ = cheerio.load(data);
+		const $ = load(data);
 		const sponsors = [];
 
 		$('.d-inline-block').each((_i, el) => {
