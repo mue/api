@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import { json } from '../../util/response';
 import sizes from '../../util/sizes';
 import { getUnsplashImage } from './unsplash';
 
@@ -53,7 +52,7 @@ export default new Hono()
 		const quality = sizes[c.req.query('quality')] ?? 'fhd';
 		const coordinates = data.location_data?.split(',');
 
-		return Response.json(
+		return c.json(
 			{
 				blur_hash: data.blur_hash,
 				camera: data.camera,
@@ -69,7 +68,8 @@ export default new Hono()
 				photographer: data.photographer,
 				pun: data.pun,
 			},
-			{ headers: { 'Cache-Control': 'no-store' } },
+			200,
+			{ 'Cache-Control': 'no-store' },
 		);
 	})
 	.get('/unsplash/topics', async (c) => {
@@ -79,11 +79,8 @@ export default new Hono()
 			})
 		).json();
 
-		return json(data, {
-			headers: {
-				'Cache-Control':
-					'public, s-max-age=604800, max-age=86400, stale-while-revalidate=86400',
-			},
+		return c.json(data, 200, {
+			'Cache-Control': 'public, s-max-age=604800, max-age=86400, stale-while-revalidate=86400',
 		});
 	})
 	.get('/unsplash', async (c) => {
@@ -129,5 +126,5 @@ export default new Hono()
 			c.env,
 		);
 
-		return Response.json(data, { headers: { 'Cache-Control': 'no-store' } });
+		return c.json(data, 200, { 'Cache-Control': 'no-store' });
 	});

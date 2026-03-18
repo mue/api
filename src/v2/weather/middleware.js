@@ -10,7 +10,9 @@ export const withWeatherLanguage = async (c, next) => {
 		['tr_TR', 'tr'],
 		['id_ID', 'id'],
 	]);
+
 	let language = c.req.query('language');
+
 	if (!language) {
 		language = 'en';
 	} else if (map.has(language)) {
@@ -18,6 +20,7 @@ export const withWeatherLanguage = async (c, next) => {
 	} else if (!allowed.includes(language)) {
 		return c.json({ error: 'Unsupported language' }, 400);
 	}
+
 	c.set('language', language);
 	await next();
 };

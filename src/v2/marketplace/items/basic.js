@@ -1,31 +1,26 @@
-import { error, json } from '../../../util/response.js';
 import paginate from '../../../util/pagination.js';
 import { getManifest, getVersion, resolveIdentifier, applyFilters, applySorting } from '../utils.js';
 
-/**
- * @param {Request} req
- */
-export async function getItem(req) {
+export async function getItem(c) {
 	const manifest = await getManifest();
 
-	// If category is not provided, treat item as an ID and resolve it
-	const category = req.params.category;
+	const category = c.req.param('category');
 	const resolved = category
-		? resolveIdentifier(manifest, req.params.item, category)
-		: resolveIdentifier(manifest, req.params.item);
+		? resolveIdentifier(manifest, c.req.param('item'), category)
+		: resolveIdentifier(manifest, c.req.param('item'));
 
 	if (!resolved) {
-		return error(404, 'Item Not Found');
+		return c.json({ error: 'Item Not Found' }, 404);
 	}
 
 	const { key: itemKey, category: resolvedCategory } = resolved;
 
 	if (!manifest[resolvedCategory]) {
-		return error(404, 'Category Not Found');
+		return c.json({ error: 'Category Not Found' }, 404);
 	}
 
 	if (manifest[resolvedCategory][itemKey] === undefined) {
-		return error(404, 'Item Not Found');
+		return c.json({ error: 'Item Not Found' }, 404);
 	}
 
 	let item = await (
@@ -34,7 +29,6 @@ export async function getItem(req) {
 		})
 	).json();
 
-	// Clone collections to avoid mutation
 	item.in_collections = manifest[resolvedCategory][itemKey].in_collections.map((name) => {
 		const collection = manifest.collections[name];
 		// eslint-disable-next-line no-unused-vars
@@ -42,7 +36,7 @@ export async function getItem(req) {
 		return collectionWithoutItems;
 	});
 
-	const version = getVersion(req);
+	const version = getVersion(c.req);
 	if (version === 2) {
 		item = {
 			display_name: item.name,
@@ -51,206 +45,142 @@ export async function getItem(req) {
 		};
 	}
 
-	return json({
-		data: item,
-		updated: item.updated_at,
-	});
+	return c.json({ data: item,
+		updated: item.updated_at });
 }
 
-/**
- * @param {Request} req
- */
-export async function incrementItemView(req, env, ctx) {
+export async function incrementItemView(c) {
 	const manifest = await getManifest();
+	const supabase = c.get('supabase');
 
-	// If category is not provided, treat item as an ID and resolve it
-	const category = req.params.category;
+	const category = c.req.param('category');
 	const resolved = category
-		? resolveIdentifier(manifest, req.params.item, category)
-		: resolveIdentifier(manifest, req.params.item);
+		? resolveIdentifier(manifest, c.req.param('item'), category)
+		: resolveIdentifier(manifest, c.req.param('item'));
 
 	if (!resolved) {
-		return error(404, 'Item Not Found');
+		return c.json({ error: 'Item Not Found' }, 404);
 	}
 
 	const { key: itemKey, category: resolvedCategory } = resolved;
 
 	if (!manifest[resolvedCategory]) {
-		return error(404, 'Category Not Found');
+		return c.json({ error: 'Category Not Found' }, 404);
 	}
 
 	if (manifest[resolvedCategory][itemKey] === undefined) {
-		return error(404, 'Item Not Found');
+		return c.json({ error: 'Item Not Found' }, 404);
 	}
 
-	// Increment view count
-	const { error: rpcError } = await ctx.$supabase.rpc('increment_marketplace_views', {
+	const { error: rpcError } = await supabase.rpc('increment_marketplace_views', {
 		_category: resolvedCategory,
 		_item_id: itemKey,
 	});
 
-	if (rpcError) {
-		ctx.$logger?.error('Failed to increment views', {
-			category: resolvedCategory,
-			error: rpcError,
-			item_id: itemKey,
-		});
-	}
-
-	// Fetch updated view count and download count
-	const { data: analyticsData, error: fetchError } = await ctx.$supabase
+	const { data: analyticsData, error: fetchError } = await supabase
 		.from('marketplace_analytics')
 		.select('views, downloads')
 		.eq('item_id', itemKey)
 		.eq('category', resolvedCategory)
 		.single();
 
-	if (fetchError) {
-		ctx.$logger?.error('Failed to fetch views', {
-			category: resolvedCategory,
-			error: fetchError,
-			item_id: itemKey,
-		});
-	}
-
-	return json(
+	return c.json(
 		{
-			debug: {
-				fetchError,
-				rpcError,
-			}, // Temporary debug info
+			debug: { fetchError,
+				rpcError },
 			downloads: analyticsData?.downloads || 0,
 			views: analyticsData?.views || 1,
 		},
-		{
-			headers: { 'Cache-Control': 'no-store' },
-		},
+		200,
+		{ 'Cache-Control': 'no-store' },
 	);
 }
 
-/**
- * @param {Request} req
- */
-export async function incrementItemDownload(req, env, ctx) {
+export async function incrementItemDownload(c) {
 	const manifest = await getManifest();
+	const supabase = c.get('supabase');
 
-	// If category is not provided, treat item as an ID and resolve it
-	const category = req.params.category;
+	const category = c.req.param('category');
 	const resolved = category
-		? resolveIdentifier(manifest, req.params.item, category)
-		: resolveIdentifier(manifest, req.params.item);
+		? resolveIdentifier(manifest, c.req.param('item'), category)
+		: resolveIdentifier(manifest, c.req.param('item'));
 
 	if (!resolved) {
-		return error(404, 'Item Not Found');
+		return c.json({ error: 'Item Not Found' }, 404);
 	}
 
 	const { key: itemKey, category: resolvedCategory } = resolved;
 
 	if (!manifest[resolvedCategory]) {
-		return error(404, 'Category Not Found');
+		return c.json({ error: 'Category Not Found' }, 404);
 	}
 
 	if (manifest[resolvedCategory][itemKey] === undefined) {
-		return error(404, 'Item Not Found');
+		return c.json({ error: 'Item Not Found' }, 404);
 	}
 
-	// Increment download count
-	const { error: rpcError } = await ctx.$supabase.rpc('increment_marketplace_downloads', {
+	const { error: rpcError } = await supabase.rpc('increment_marketplace_downloads', {
 		_category: resolvedCategory,
 		_item_id: itemKey,
 	});
 
-	if (rpcError) {
-		ctx.$logger?.error('Failed to increment downloads', {
-			category: resolvedCategory,
-			error: rpcError,
-			item_id: itemKey,
-		});
-	}
-
-	// Fetch updated download count
-	const { data: analyticsData, error: fetchError } = await ctx.$supabase
+	const { data: analyticsData, error: fetchError } = await supabase
 		.from('marketplace_analytics')
 		.select('downloads')
 		.eq('item_id', itemKey)
 		.eq('category', resolvedCategory)
 		.single();
 
-	if (fetchError) {
-		ctx.$logger?.error('Failed to fetch downloads', {
-			category: resolvedCategory,
-			error: fetchError,
-			item_id: itemKey,
-		});
-	}
-
-	return json(
+	return c.json(
 		{
-			debug: {
-				fetchError,
-				rpcError,
-			}, // Temporary debug info
+			debug: { fetchError,
+				rpcError },
 			downloads: analyticsData?.downloads || 1,
 		},
-		{
-			headers: { 'Cache-Control': 'no-store' },
-		},
+		200,
+		{ 'Cache-Control': 'no-store' },
 	);
 }
 
-/**
- * @param {Request} req
- * @param {Object} env
- * @param {Object} ctx
- */
-export async function getItems(req, env, ctx) {
+export async function getItems(c) {
 	let data;
 	const manifest = await getManifest();
-	if (req.params.category === 'all') {
+	const supabase = c.get('supabase');
+	const query = c.req.query();
+
+	if (c.req.param('category') === 'all') {
 		data = [
-			...Object.values(manifest.preset_settings).map((item) => ({
-				...item,
-				type: 'preset_settings',
-			})),
-			...Object.values(manifest.photo_packs).map((item) => ({
-				...item,
-				type: 'photo_packs',
-			})),
-			...Object.values(manifest.quote_packs).map((item) => ({
-				...item,
-				type: 'quote_packs',
-			})),
+			...Object.values(manifest.preset_settings).map((item) => ({ ...item,
+				type: 'preset_settings' })),
+			...Object.values(manifest.photo_packs).map((item) => ({ ...item,
+				type: 'photo_packs' })),
+			...Object.values(manifest.quote_packs).map((item) => ({ ...item,
+				type: 'quote_packs' })),
 		];
 	} else {
-		const category = manifest[req.params.category];
+		const category = manifest[c.req.param('category')];
 		if (!category) {
-			return error(404, 'Not Found');
+			return c.json({ error: 'Not Found' }, 404);
 		}
+
 		data = Object.values(category);
-		const version = getVersion(req);
+		const version = getVersion(c.req);
+
 		if (version === 1) {
-			data = data.map((item) => ({
-				...item,
-				type: req.params.category,
-			}));
+			data = data.map((item) => ({ ...item,
+				type: c.req.param('category') }));
 		}
 	}
 
-	// Conditionally fetch and merge analytics data
-	const includeAnalytics = req.query.include_analytics === 'true';
-	if (includeAnalytics && ctx.$supabase) {
+	if (query.include_analytics === 'true' && supabase) {
 		try {
-			// Get item identifiers
 			const itemIds = data.map((item) => item.name || item.id);
-
-			// Fetch analytics for all items in single query
-			const { data: analyticsData, error: dbError } = await ctx.$supabase
+			const { data: analyticsData, error: dbError } = await supabase
 				.from('marketplace_analytics')
 				.select('item_id, views, downloads')
 				.in('item_id', itemIds);
 
 			if (!dbError && analyticsData) {
-				// Create lookup map for O(1) access
 				const analyticsMap = new Map(
 					analyticsData.map((row) => [
 						row.item_id,
@@ -259,41 +189,29 @@ export async function getItems(req, env, ctx) {
 					]),
 				);
 
-				// Merge analytics into items
 				data = data.map((item) => {
 					const itemKey = item.name || item.id;
 					const analytics = analyticsMap.get(itemKey);
-					if (analytics) {
-						return { ...item,
-							downloads: analytics.downloads,
-							views: analytics.views };
-					}
-					return { ...item,
+					return analytics ? { ...item,
+						...analytics } : { ...item,
 						downloads: 0,
 						views: 0 };
 				});
 			}
-		} catch (error) {
-			// Graceful degradation - log but don't fail the request
-			ctx.$logger?.warn('Failed to fetch analytics data', { error });
+		} catch (err) {
+			console.warn('Failed to fetch analytics data', err);
 		}
 	}
 
-	// Apply filters
-	data = applyFilters(data, req.query);
+	data = applyFilters(data, query);
+	data = applySorting(data, query);
 
-	// Apply sorting
-	data = applySorting(data, req.query);
-
-	// Apply pagination
-	const paginatedData = paginate(data, req.query);
-
-	// Enhanced pagination metadata
-	const page = parseInt(req.query.page) || 1;
-	const perPage = parseInt(req.query.per_page) || 20;
+	const paginatedData = paginate(data, query);
+	const page = parseInt(query.page) || 1;
+	const perPage = parseInt(query.per_page) || 20;
 	const totalPages = Math.ceil(data.length / perPage);
 
-	return json({
+	return c.json({
 		data: paginatedData,
 		meta: {
 			has_more: page < totalPages,

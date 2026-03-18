@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { cache } from 'hono/cache';
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -15,37 +16,11 @@ app.use('*', async (c, next) => {
 	await next();
 });
 
-app.use('*', async (c, next) => {
-	const cache = caches.default;
-	const cacheKey = new Request(c.req.url);
-
-	if (c.req.method === 'GET') {
-		const cached = await cache.match(cacheKey);
-
-		if (cached) {
-			return cached;
-		}
-	}
-
-	await next();
-
-	const res = c.res;
-	if (!res.headers.has('Cache-Control')) {
-		const newHeaders = new Headers(res.headers);
-		newHeaders.set(
-			'Cache-Control',
-			'public, s-max-age=86400, max-age=3600, stale-while-revalidate=3600',
-		);
-
-		c.res = new Response(res.body, { headers: newHeaders,
-			status: res.status,
-			statusText: res.statusText });
-	}
-
-	if (c.res.headers.get('Cache-Control') !== 'no-store') {
-		c.executionCtx.waitUntil(cache.put(cacheKey, c.res.clone()));
-	}
-});
+app.use('*', cache({
+	cacheControl: 'public, s-max-age=86400, max-age=3600, stale-while-revalidate=3600',
+	cacheName: 'api',
+	wait: true,
+}));
 
 app.route('/', v1);
 app.route('/v2', v2);

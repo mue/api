@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import { json } from '../../util/response';
 import { withWeatherLanguage } from './middleware';
 
 export default new Hono()
@@ -13,9 +12,7 @@ export default new Hono()
 		const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${c.env.OPENWEATHER_TOKEN}&lang=${c.get('language')}`;
 		const data = await (await fetch(url)).json();
 
-		return json(data, {
-			headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable' },
-		});
+		return c.json(data, 200, { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable' });
 	})
 	.get('/geocode', withWeatherLanguage, async (c) => {
 		const { q, limit = 5 } = c.req.query();
@@ -39,9 +36,7 @@ export default new Hono()
 			state: loc.state || null,
 		}));
 
-		return json(locations, {
-			headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable' },
-		});
+		return c.json(locations, 200, { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable' });
 	})
 	.get('/map', async (c) => {
 		const { latitude, longitude } = c.req.query();
@@ -89,7 +84,5 @@ export default new Hono()
 			return c.json({ error: 'No data. Try another city?' }, 404);
 		}
 
-		return json(data, {
-			headers: { 'Cache-Control': 'private, max-age=600, stale-while-revalidate=300' },
-		});
+		return c.json(data, 200, { 'Cache-Control': 'private, max-age=600, stale-while-revalidate=300' });
 	});

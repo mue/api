@@ -26,9 +26,14 @@ const CACHE_CONFIG = {
 export function getVersion(req) {
 	const url = new URL(req.url);
 	const path = url.pathname;
+
 	let version = path.split('/')[1];
-	if (!version.startsWith('v')) version = 1;
-	else version = parseInt(version.slice(1));
+	if (!version.startsWith('v')) {
+		version = 1;
+	} else {
+		version = parseInt(version.slice(1));
+	}
+
 	return version;
 }
 

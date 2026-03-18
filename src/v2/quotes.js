@@ -34,5 +34,5 @@ export default new Hono()
 			.rpc('get_random_quote', { _language: language })
 			.single();
 
-		return Response.json(data, { headers: { 'Cache-Control': 'no-store' } });
+		return c.json(data, 200, { 'Cache-Control': 'no-store' });
 	});

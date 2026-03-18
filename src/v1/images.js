@@ -36,7 +36,7 @@ export default new Hono()
 		const format = c.req.header('accept')?.includes('avif') ? 'avif' : 'webp';
 		const quality = sizes[c.req.query('quality')] ?? 'fhd';
 
-		return Response.json(
+		return c.json(
 			{
 				camera: data.camera,
 				category: data.category,
@@ -44,6 +44,7 @@ export default new Hono()
 				location: data.location_name,
 				photographer: data.photographer,
 			},
-			{ headers: { 'Cache-Control': 'no-store' } },
+			200,
+			{ 'Cache-Control': 'no-store' },
 		);
 	});
