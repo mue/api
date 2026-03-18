@@ -1,5 +1,5 @@
 import { error, json } from 'itty-router-extras';
-import paginate from '../../pagination.js';
+import paginate from '../../util/pagination.js';
 import { getManifest, getVersion, resolveIdentifier, applyFilters, applySorting } from './utils.js';
 
 /**

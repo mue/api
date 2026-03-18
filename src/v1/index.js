@@ -1,8 +1,8 @@
 import { Router } from 'itty-router';
 import { json, error } from 'itty-router-extras';
-import v2 from './v2';
-import sizes from './sizes';
-import news from '../news';
+import v2 from '../v2';
+import sizes from '../util/sizes';
+import news from './news';
 import {
 	getCollection,
 	getCollections,
@@ -10,7 +10,7 @@ import {
 	getItem,
 	getItems,
 	incrementItemView,
-} from './v2/marketplace';
+} from '../v2/marketplace';
 
 export default Router()
 	.get('/', () => 'Hello World! API docs: https://docs.muetab.com/api/introduction')

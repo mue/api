@@ -1,7 +1,6 @@
 import { Router } from 'itty-router';
 import { json, error } from 'itty-router-extras';
-import sizes from '../sizes';
-import news from '../../news';
+import sizes from '../util/sizes';
 import { getUnsplashImage } from './unsplash';
 import { withWeatherLanguage } from './weather';
 import {
@@ -193,7 +192,6 @@ export default Router({ base: '/v2' })
 		const res = await fetch(url, { cf: { cacheTtl: 31536000 } }); // 1 year
 		return new Response(res.body, res);
 	})
-	.get('/news', () => news)
 	.get('/quotes/random', async (req, env, ctx) => {
 		const kv_id = 'v2_quote_languages';
 		let allowed = await env.cache.get(kv_id, {
