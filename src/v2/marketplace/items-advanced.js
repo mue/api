@@ -1,4 +1,3 @@
-
 import { error, json } from 'itty-router-extras';
 import { getManifest, resolveIdentifier } from './utils.js';
 
@@ -58,8 +57,7 @@ export async function getRelatedItems(req) {
 	}
 
 	// Items in same category (type)
-	const categoryItems = Object.values(manifest[resolvedCategory])
-		.filter((i) => i.id !== item.id);
+	const categoryItems = Object.values(manifest[resolvedCategory]).filter((i) => i.id !== item.id);
 
 	for (const categoryItem of categoryItems) {
 		relatedByCategory.add(categoryItem.id);

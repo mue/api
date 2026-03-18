@@ -48,7 +48,9 @@ export default {
 			if (!(res instanceof Response)) {
 				res = json(res, {
 					// cdn 1d, client 1h, stale 1h
-					headers: { 'Cache-Control': 'public, s-max-age=86400, max-age=3600, stale-while-revalidate=3600' },
+					headers: {
+						'Cache-Control': 'public, s-max-age=86400, max-age=3600, stale-while-revalidate=3600',
+					},
 				});
 			}
 
@@ -68,7 +70,6 @@ export default {
 					},
 				});
 			}
-
 
 			if (res.headers.has('Cache-Control') && res.headers.get('Cache-Control') !== 'no-store') {
 				ctx.waitUntil(cache.put(cacheKey, res.clone()));

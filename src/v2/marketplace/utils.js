@@ -129,7 +129,9 @@ export function applyFilters(items, query) {
 
 	// Filter by category_tags (new in schema v3.0)
 	if (query.category_tags) {
-		const tags = Array.isArray(query.category_tags) ? query.category_tags : query.category_tags.split(',');
+		const tags = Array.isArray(query.category_tags)
+			? query.category_tags
+			: query.category_tags.split(',');
 		filtered = filtered.filter(
 			(item) => item.category_tags && tags.some((tag) => item.category_tags.includes(tag)),
 		);

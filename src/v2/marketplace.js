@@ -1,4 +1,3 @@
-
 // Re-export all marketplace functionality from modular files
 export {
 	getCollection,

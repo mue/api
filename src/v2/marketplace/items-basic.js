@@ -1,4 +1,3 @@
-
 import { error, json } from 'itty-router-extras';
 import paginate from '../../pagination.js';
 import { getManifest, getVersion, resolveIdentifier, applyFilters, applySorting } from './utils.js';
@@ -255,8 +254,7 @@ export async function getItems(req, env, ctx) {
 				const analyticsMap = new Map(
 					analyticsData.map((row) => [
 						row.item_id,
-						{ views: row.views || 0,
-							downloads: row.downloads || 0 },
+						{ views: row.views || 0, downloads: row.downloads || 0 },
 					]),
 				);
 
@@ -265,13 +263,9 @@ export async function getItems(req, env, ctx) {
 					const itemKey = item.name || item.id;
 					const analytics = analyticsMap.get(itemKey);
 					if (analytics) {
-						return { ...item,
-							downloads: analytics.downloads,
-							views: analytics.views };
+						return { ...item, downloads: analytics.downloads, views: analytics.views };
 					}
-					return { ...item,
-						downloads: 0,
-						views: 0 };
+					return { ...item, downloads: 0, views: 0 };
 				});
 			}
 		} catch (error) {
