@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+
 import { createClient } from '@supabase/supabase-js';
+
 import v1 from './v1';
 import v2 from './v2';
 
@@ -19,7 +21,10 @@ app.use('*', async (c, next) => {
 
 	if (c.req.method === 'GET') {
 		const cached = await cache.match(cacheKey);
-		if (cached) return cached;
+
+		if (cached) {
+			return cached;
+		}
 	}
 
 	await next();
@@ -31,6 +36,7 @@ app.use('*', async (c, next) => {
 			'Cache-Control',
 			'public, s-max-age=86400, max-age=3600, stale-while-revalidate=3600',
 		);
+
 		c.res = new Response(res.body, { headers: newHeaders,
 			status: res.status,
 			statusText: res.statusText });
