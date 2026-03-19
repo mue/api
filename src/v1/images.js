@@ -4,6 +4,7 @@ import { count, desc, eq, and, notInArray, sql } from 'drizzle-orm';
 
 import { images } from '@/db/schema.js';
 import sizes from '@/util/sizes';
+import { CDN } from '@/constants.js';
 
 export default new Hono()
   .get('/categories', async (c) => {
@@ -81,7 +82,7 @@ export default new Hono()
       {
         camera: data.camera,
         category: data.category,
-        file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}?v=${data.version}`,
+        file: `${CDN}/img/${quality}/${data.id}.${format}?v=${data.version}`,
         location: data.locationName,
         photographer: data.photographer,
       },

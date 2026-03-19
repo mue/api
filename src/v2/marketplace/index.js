@@ -1,12 +1,9 @@
 import { Hono } from 'hono';
 
 import { getCollection, getCollections, getCurator, getCurators, getFeatured } from '@/v2/marketplace/collections';
-
-import { getItem, getItems, incrementItemView, incrementItemDownload } from '@/v2/marketplace/items/basic';
-import { getRelatedItems, getRandom } from '@/v2/marketplace/items/advanced';
-
+import { getItem, getItems, getRelatedItems, getRandom } from '@/v2/marketplace/items';
+import { incrementItemView, incrementItemDownload, getGlobalStats, getCategoryStats, getTrending, getRecent } from '@/v2/marketplace/analytics';
 import { search, batchGetItems } from '@/v2/marketplace/search';
-import { getGlobalStats, getCategoryStats, getTrending, getRecent } from '@/v2/marketplace/stats';
 
 export default new Hono()
   .get('/collection/:collection', (c) => getCollection(c))

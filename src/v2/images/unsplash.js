@@ -1,3 +1,5 @@
+import { UNSPLASH_API } from '@/constants.js';
+
 export const NAMED_COLLECTIONS = {
   animals: 'nJDnd_8TN_g',
   architecture: 'e9-QAhrwZ5Q',
@@ -19,7 +21,7 @@ export const getUnsplashImage = async (query, quality, env) => {
   const size = sizes[quality];
 
   const data = await (
-    await fetch(`https://api.unsplash.com/photos/random?${query.toString()}`)
+    await fetch(`${UNSPLASH_API}/photos/random?${query.toString()}`)
   ).json();
 
   return {

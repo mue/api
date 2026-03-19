@@ -1,4 +1,8 @@
+import { inArray } from 'drizzle-orm';
+
 import paginate from '@/util/pagination.js';
+import { MARKETPLACE_DATA } from '@/constants.js';
+
 import {
   getManifest,
   getVersion,
@@ -6,7 +10,7 @@ import {
   applyFilters,
   applySorting,
 } from '@/v2/marketplace/utils.js';
-import { inArray, sql } from 'drizzle-orm';
+
 import { marketplaceAnalytics } from '@/db/schema.js';
 
 export async function getItem(c) {
@@ -32,7 +36,7 @@ export async function getItem(c) {
   }
 
   let item = await (
-    await fetch(`https://marketplace-data.muetab.com/${resolvedCategory}/${itemKey}.json`, {
+    await fetch(`${MARKETPLACE_DATA}/${resolvedCategory}/${itemKey}.json`, {
       cf: { cacheTtl: 3600 },
     })
   ).json();
@@ -54,104 +58,6 @@ export async function getItem(c) {
   }
 
   return c.json({ data: item, updated: item.updated_at });
-}
-
-export async function incrementItemView(c) {
-  const manifest = await getManifest();
-  const db = c.get('db');
-
-  const category = c.req.param('category');
-  const resolved = category
-    ? resolveIdentifier(manifest, c.req.param('item'), category)
-    : resolveIdentifier(manifest, c.req.param('item'));
-
-  if (!resolved) {
-    return c.json({ error: 'Item Not Found' }, 404);
-  }
-
-  const { key: itemKey, category: resolvedCategory } = resolved;
-
-  if (!manifest[resolvedCategory]) {
-    return c.json({ error: 'Category Not Found' }, 404);
-  }
-
-  if (manifest[resolvedCategory][itemKey] === undefined) {
-    return c.json({ error: 'Item Not Found' }, 404);
-  }
-
-  const [analyticsData] = await db
-    .insert(marketplaceAnalytics)
-    .values({
-      category: resolvedCategory,
-      itemId: itemKey,
-      updatedAt: sql`CURRENT_TIMESTAMP`,
-      views: 1,
-    })
-    .onConflictDoUpdate({
-      set: { updatedAt: sql`CURRENT_TIMESTAMP`, views: sql`${marketplaceAnalytics.views} + 1` },
-      target: [marketplaceAnalytics.itemId, marketplaceAnalytics.category],
-    })
-    .returning({ downloads: marketplaceAnalytics.downloads, views: marketplaceAnalytics.views });
-
-  return c.json(
-    {
-      debug: { fetchError: null, rpcError: null },
-      downloads: analyticsData?.downloads || 0,
-      views: analyticsData?.views || 1,
-    },
-    200,
-    { 'Cache-Control': 'no-store' },
-  );
-}
-
-export async function incrementItemDownload(c) {
-  const manifest = await getManifest();
-  const db = c.get('db');
-
-  const category = c.req.param('category');
-  const resolved = category
-    ? resolveIdentifier(manifest, c.req.param('item'), category)
-    : resolveIdentifier(manifest, c.req.param('item'));
-
-  if (!resolved) {
-    return c.json({ error: 'Item Not Found' }, 404);
-  }
-
-  const { key: itemKey, category: resolvedCategory } = resolved;
-
-  if (!manifest[resolvedCategory]) {
-    return c.json({ error: 'Category Not Found' }, 404);
-  }
-
-  if (manifest[resolvedCategory][itemKey] === undefined) {
-    return c.json({ error: 'Item Not Found' }, 404);
-  }
-
-  const [analyticsData] = await db
-    .insert(marketplaceAnalytics)
-    .values({
-      category: resolvedCategory,
-      downloads: 1,
-      itemId: itemKey,
-      updatedAt: sql`CURRENT_TIMESTAMP`,
-    })
-    .onConflictDoUpdate({
-      set: {
-        downloads: sql`${marketplaceAnalytics.downloads} + 1`,
-        updatedAt: sql`CURRENT_TIMESTAMP`,
-      },
-      target: [marketplaceAnalytics.itemId, marketplaceAnalytics.category],
-    })
-    .returning({ downloads: marketplaceAnalytics.downloads });
-
-  return c.json(
-    {
-      debug: { fetchError: null, rpcError: null },
-      downloads: analyticsData?.downloads || 1,
-    },
-    200,
-    { 'Cache-Control': 'no-store' },
-  );
 }
 
 export async function getItems(c) {
@@ -235,3 +141,113 @@ export async function getItems(c) {
     },
   });
 }
+
+export async function getRelatedItems(c) {
+  const manifest = await getManifest();
+
+  const category = c.req.param('category');
+  const resolved = category
+    ? resolveIdentifier(manifest, c.req.param('item'), category)
+    : resolveIdentifier(manifest, c.req.param('item'));
+
+  if (!resolved) {
+    return c.json({ error: 'Item Not Found' }, 404);
+  }
+
+  const { key: itemKey, category: resolvedCategory } = resolved;
+  const item = manifest[resolvedCategory][itemKey];
+
+  if (!item) {
+    return c.json({ error: 'Item Not Found' }, 404);
+  }
+
+  const relatedByCollection = new Set();
+  const relatedByAuthor = new Set();
+  const relatedByCategory = new Set();
+
+  for (const collectionName of item.in_collections) {
+    const collection = manifest.collections[collectionName];
+    if (collection.items) {
+      for (const collectionItem of collection.items) {
+        const [type, name] = collectionItem.split('/');
+        if (name !== itemKey) {
+          relatedByCollection.add(manifest[type][name].id);
+        }
+      }
+    }
+  }
+
+  const authorItems = Object.values(manifest.preset_settings)
+    .concat(Object.values(manifest.photo_packs))
+    .concat(Object.values(manifest.quote_packs))
+    .filter((i) => i.author === item.author && i.id !== item.id);
+
+  for (const authorItem of authorItems) {
+    relatedByAuthor.add(authorItem.id);
+  }
+
+  const categoryItems = Object.values(manifest[resolvedCategory]).filter((i) => i.id !== item.id);
+
+  for (const categoryItem of categoryItems) {
+    relatedByCategory.add(categoryItem.id);
+  }
+
+  const scoredRelated = new Map();
+
+  for (const id of relatedByCollection) {
+    scoredRelated.set(id, (scoredRelated.get(id) || 0) + 10);
+  }
+
+  for (const id of relatedByAuthor) {
+    scoredRelated.set(id, (scoredRelated.get(id) || 0) + 5);
+  }
+
+  for (const id of relatedByCategory) {
+    scoredRelated.set(id, (scoredRelated.get(id) || 0) + 2);
+  }
+
+  const sortedRelated = Array.from(scoredRelated.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  const relatedItems = sortedRelated.map(([id, score]) => {
+    const canonicalPath = manifest._id_index[id];
+    const [cat, name] = canonicalPath.split('/');
+    return { ...manifest[cat][name], relevance_score: score };
+  });
+
+  return c.json({
+    data: { item, related: relatedItems },
+    meta: { total_related: relatedItems.length },
+  });
+}
+
+export async function getRandom(c) {
+  const manifest = await getManifest();
+  const category = c.req.param('category') || 'all';
+  const count = Math.min(parseInt(c.req.query('count')) || 1, 10);
+
+  let items;
+  if (category === 'all') {
+    items = [
+      ...Object.values(manifest.preset_settings),
+      ...Object.values(manifest.photo_packs),
+      ...Object.values(manifest.quote_packs),
+    ];
+  } else {
+    if (!manifest[category]) {
+      return c.json({ error: 'Category not found' }, 404);
+    }
+
+    items = Object.values(manifest[category]);
+  }
+
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return c.json({ data: count === 1 ? shuffled[0] : shuffled.slice(0, count) });
+}
+

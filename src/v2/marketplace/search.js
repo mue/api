@@ -1,4 +1,5 @@
 import { getManifest, getSearchIndex } from '@/v2/marketplace/utils.js';
+import { MARKETPLACE_DATA } from '@/constants.js';
 
 export async function search(c) {
   const query = c.req.query('q') || c.req.query('query');
@@ -97,7 +98,7 @@ export async function batchGetItems(c) {
 
     try {
       const item = await (
-        await fetch(`https://marketplace-data.muetab.com/${category}/${name}.json`, {
+        await fetch(`${MARKETPLACE_DATA}/${category}/${name}.json`, {
           cf: { cacheTtl: 3600 },
         })
       ).json();

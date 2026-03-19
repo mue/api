@@ -1,5 +1,6 @@
 import paginate from '@/util/pagination.js';
 import { getManifest, getVersion, resolveIdentifier } from '@/v2/marketplace/utils.js';
+import { MARKETPLACE_DATA } from '@/constants.js';
 
 export async function getCollection(c) {
   const manifest = await getManifest();
@@ -76,7 +77,7 @@ export async function getCurators(c) {
 export async function getFeatured(c) {
   return c.json({
     data: await (
-      await fetch('https://marketplace-data.muetab.com/featured.json', { cf: { cacheTtl: 3600 } })
+      await fetch(`${MARKETPLACE_DATA}/featured.json`, { cf: { cacheTtl: 3600 } })
     ).json(),
   });
 }

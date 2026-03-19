@@ -4,6 +4,7 @@ import { count, desc, eq, and, notInArray, sql } from 'drizzle-orm';
 
 import { images } from '@/db/schema.js';
 import sizes from '@/util/sizes';
+import { CDN, UNSPLASH_API } from '@/constants.js';
 
 import { getUnsplashImage, NAMED_COLLECTIONS } from '@/v2/images/unsplash';
 
@@ -97,7 +98,7 @@ export default new Hono()
         camera: data.camera,
         category: data.category,
         colour: data.colour,
-        file: `https://cdn.muetab.com/img/${quality}/${data.id}.${format}?v=${data.version}`,
+        file: `${CDN}/img/${quality}/${data.id}.${format}?v=${data.version}`,
         id: data.id,
         location: {
           latitude: coordinates?.[0] ?? null,
@@ -113,7 +114,7 @@ export default new Hono()
   })
   .get('/unsplash/topics', async (c) => {
     const data = await (
-      await fetch(`https://api.unsplash.com/topics?client_id=${c.env.UNSPLASH_TOKEN}`, {
+      await fetch(`${UNSPLASH_API}/topics?client_id=${c.env.UNSPLASH_TOKEN}`, {
         cf: { cacheTtl: 86400 },
       })
     ).json();

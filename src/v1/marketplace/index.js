@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 
 import { getCollection, getCollections, getFeatured } from '@/v2/marketplace/collections';
-import { getItem, getItems, incrementItemView } from '@/v2/marketplace/items/basic';
+import { getItem, getItems } from '@/v2/marketplace/items';
+import { incrementItemView } from '@/v2/marketplace/analytics';
 
 export default new Hono()
   .get('/collection/:collection', (c) => getCollection(c))
