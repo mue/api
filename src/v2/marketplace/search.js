@@ -38,7 +38,8 @@ export async function search(c) {
 				}
 			}
 
-			return { ...item, score };
+			return { ...item,
+				score };
 		})
 		.filter((item) => item.score > 0)
 		.sort((a, b) => b.score - a.score);
@@ -85,14 +86,16 @@ export async function batchGetItems(c) {
 	const itemPromises = ids.map(async (id) => {
 		const canonicalPath = manifest._id_index[id];
 		if (!canonicalPath) {
-			return { error: 'Not found', id };
+			return { error: 'Not found',
+				id };
 		}
 
 		const [category, name] = canonicalPath.split('/');
 		const itemSummary = manifest[category][name];
 
 		if (!itemSummary) {
-			return { error: 'Not found', id };
+			return { error: 'Not found',
+				id };
 		}
 
 		try {
@@ -109,9 +112,11 @@ export async function batchGetItems(c) {
 				return collectionWithoutItems;
 			});
 
-			return { data: item, id };
+			return { data: item,
+				id };
 		} catch {
-			return { error: 'Failed to fetch', id };
+			return { error: 'Failed to fetch',
+				id };
 		}
 	});
 

@@ -75,21 +75,27 @@ export async function incrementItemView(c) {
 	}
 
 	await db.insert(marketplaceAnalytics)
-		.values({ itemId: itemKey, category: resolvedCategory, views: 1, updatedAt: sql`CURRENT_TIMESTAMP` })
+		.values({ category: resolvedCategory,
+			itemId: itemKey,
+			updatedAt: sql`CURRENT_TIMESTAMP`,
+			views: 1 })
 		.onConflictDoUpdate({
+			set: { updatedAt: sql`CURRENT_TIMESTAMP`,
+				views: sql`${marketplaceAnalytics.views} + 1` },
 			target: [marketplaceAnalytics.itemId, marketplaceAnalytics.category],
-			set: { views: sql`${marketplaceAnalytics.views} + 1`, updatedAt: sql`CURRENT_TIMESTAMP` },
 		});
 
 	const analyticsData = await db
-		.select({ views: marketplaceAnalytics.views, downloads: marketplaceAnalytics.downloads })
+		.select({ downloads: marketplaceAnalytics.downloads,
+			views: marketplaceAnalytics.views })
 		.from(marketplaceAnalytics)
 		.where(and(eq(marketplaceAnalytics.itemId, itemKey), eq(marketplaceAnalytics.category, resolvedCategory)))
 		.then((rows) => rows[0]);
 
 	return c.json(
 		{
-			debug: { fetchError: null, rpcError: null },
+			debug: { fetchError: null,
+				rpcError: null },
 			downloads: analyticsData?.downloads || 0,
 			views: analyticsData?.views || 1,
 		},
@@ -122,10 +128,14 @@ export async function incrementItemDownload(c) {
 	}
 
 	await db.insert(marketplaceAnalytics)
-		.values({ itemId: itemKey, category: resolvedCategory, downloads: 1, updatedAt: sql`CURRENT_TIMESTAMP` })
+		.values({ category: resolvedCategory,
+			downloads: 1,
+			itemId: itemKey,
+			updatedAt: sql`CURRENT_TIMESTAMP` })
 		.onConflictDoUpdate({
+			set: { downloads: sql`${marketplaceAnalytics.downloads} + 1`,
+				updatedAt: sql`CURRENT_TIMESTAMP` },
 			target: [marketplaceAnalytics.itemId, marketplaceAnalytics.category],
-			set: { downloads: sql`${marketplaceAnalytics.downloads} + 1`, updatedAt: sql`CURRENT_TIMESTAMP` },
 		});
 
 	const analyticsData = await db
@@ -136,7 +146,8 @@ export async function incrementItemDownload(c) {
 
 	return c.json(
 		{
-			debug: { fetchError: null, rpcError: null },
+			debug: { fetchError: null,
+				rpcError: null },
 			downloads: analyticsData?.downloads || 1,
 		},
 		200,
@@ -180,9 +191,9 @@ export async function getItems(c) {
 			if (itemIds.length > 0) {
 				const analyticsData = await db
 					.select({
+						downloads: marketplaceAnalytics.downloads,
 						item_id: marketplaceAnalytics.itemId,
 						views: marketplaceAnalytics.views,
-						downloads: marketplaceAnalytics.downloads,
 					})
 					.from(marketplaceAnalytics)
 					.where(inArray(marketplaceAnalytics.itemId, itemIds));

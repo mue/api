@@ -6,7 +6,8 @@ export default new Hono()
 	.get('/languages', async (c) => {
 		const db = c.get('db');
 		const data = await db
-			.select({ name: quotes.language, count: count() })
+			.select({ count: count(),
+				name: quotes.language })
 			.from(quotes)
 			.groupBy(quotes.language)
 			.orderBy(desc(count()));
@@ -24,7 +25,8 @@ export default new Hono()
 
 		if (!allowed) {
 			allowed = await db
-				.select({ name: quotes.language, count: count() })
+				.select({ count: count(),
+					name: quotes.language })
 				.from(quotes)
 				.groupBy(quotes.language)
 				.orderBy(desc(count()));

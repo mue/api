@@ -7,7 +7,8 @@ export default new Hono()
 	.get('/categories', async (c) => {
 		const db = c.get('db');
 		const data = await db
-			.select({ name: images.category, count: count() })
+			.select({ count: count(),
+				name: images.category })
 			.from(images)
 			.groupBy(images.category)
 			.orderBy(desc(count()));
@@ -17,7 +18,8 @@ export default new Hono()
 	.get('/photographers', async (c) => {
 		const db = c.get('db');
 		const data = await db
-			.select({ name: images.photographer, count: count() })
+			.select({ count: count(),
+				name: images.photographer })
 			.from(images)
 			.groupBy(images.photographer)
 			.orderBy(desc(count()));
@@ -35,7 +37,8 @@ export default new Hono()
 
 		if (!categories) {
 			categories = await db
-				.select({ name: images.category, count: count() })
+				.select({ count: count(),
+					name: images.category })
 				.from(images)
 				.groupBy(images.category)
 				.orderBy(desc(count()));

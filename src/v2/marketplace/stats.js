@@ -37,10 +37,10 @@ export async function getTrending(c) {
 	try {
 		const query = db
 			.select({
-				item_id: marketplaceAnalytics.itemId,
 				category: marketplaceAnalytics.category,
-				views: marketplaceAnalytics.views,
 				downloads: marketplaceAnalytics.downloads,
+				item_id: marketplaceAnalytics.itemId,
+				views: marketplaceAnalytics.views,
 			})
 			.from(marketplaceAnalytics)
 			.orderBy(desc(marketplaceAnalytics.views))
@@ -63,7 +63,10 @@ export async function getTrending(c) {
 			const downloads = row.downloads || 0;
 			const weightedScore = views * 0.3 + downloads * 0.7;
 
-			return { ...item, _score: weightedScore, downloads, views };
+			return { ...item,
+				_score: weightedScore,
+				downloads,
+				views };
 		})
 		.filter(Boolean)
 		.sort((a, b) => b._score - a._score)

@@ -1,40 +1,40 @@
 import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 
 export const images = sqliteTable('images', {
-	id: text('id').primaryKey(),
+	blurHash: text('blur_hash'),
 	camera: text('camera').default('landscapes'),
+	category: text('category'),
+	colour: text('colour').notNull().default('#000000'),
 	createdAt: text('created_at'),
+	id: text('id').primaryKey(),
 	locationData: text('location_data'),
 	locationName: text('location_name'),
-	photographer: text('photographer'),
-	category: text('category'),
 	originalFileName: text('original_file_name'),
-	colour: text('colour').notNull().default('#000000'),
+	photographer: text('photographer'),
 	pun: integer('pun').notNull().unique(),
 	version: integer('version').notNull().default(1668190000),
-	blurHash: text('blur_hash'),
 });
 
 export const quotes = sqliteTable('quotes', {
-	id: text('id').primaryKey(),
 	author: text('author'),
 	authorOccupation: text('author_occupation'),
+	id: text('id').primaryKey(),
 	language: text('language'),
 	quote: text('quote'),
 });
 
 export const oldQuotes = sqliteTable('old_quotes', {
-	id: text('id').primaryKey(),
 	author: text('author'),
-	quote: text('quote'),
-	language: text('language'),
 	authorOccupation: text('author_occupation'),
+	id: text('id').primaryKey(),
+	language: text('language'),
+	quote: text('quote'),
 });
 
 export const marketplaceAnalytics = sqliteTable('marketplace_analytics', {
-	itemId: text('item_id').notNull(),
 	category: text('category').notNull(),
-	views: integer('views').default(0),
 	downloads: integer('downloads').default(0),
+	itemId: text('item_id').notNull(),
 	updatedAt: text('updated_at'),
+	views: integer('views').default(0),
 }, (t) => [primaryKey({ columns: [t.itemId, t.category] })]);
