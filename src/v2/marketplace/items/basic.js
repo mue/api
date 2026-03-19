@@ -1,5 +1,7 @@
 import paginate from '../../../util/pagination.js';
 import { getManifest, getVersion, resolveIdentifier, applyFilters, applySorting } from '../utils.js';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { marketplaceAnalytics } from '../../../db/schema.js';
 
 export async function getItem(c) {
 	const manifest = await getManifest();
@@ -51,7 +53,7 @@ export async function getItem(c) {
 
 export async function incrementItemView(c) {
 	const manifest = await getManifest();
-	const supabase = c.get('supabase');
+	const db = c.get('db');
 
 	const category = c.req.param('category');
 	const resolved = category
@@ -72,22 +74,22 @@ export async function incrementItemView(c) {
 		return c.json({ error: 'Item Not Found' }, 404);
 	}
 
-	const { error: rpcError } = await supabase.rpc('increment_marketplace_views', {
-		_category: resolvedCategory,
-		_item_id: itemKey,
-	});
+	await db.insert(marketplaceAnalytics)
+		.values({ itemId: itemKey, category: resolvedCategory, views: 1, updatedAt: sql`CURRENT_TIMESTAMP` })
+		.onConflictDoUpdate({
+			target: [marketplaceAnalytics.itemId, marketplaceAnalytics.category],
+			set: { views: sql`${marketplaceAnalytics.views} + 1`, updatedAt: sql`CURRENT_TIMESTAMP` },
+		});
 
-	const { data: analyticsData, error: fetchError } = await supabase
-		.from('marketplace_analytics')
-		.select('views, downloads')
-		.eq('item_id', itemKey)
-		.eq('category', resolvedCategory)
-		.single();
+	const analyticsData = await db
+		.select({ views: marketplaceAnalytics.views, downloads: marketplaceAnalytics.downloads })
+		.from(marketplaceAnalytics)
+		.where(and(eq(marketplaceAnalytics.itemId, itemKey), eq(marketplaceAnalytics.category, resolvedCategory)))
+		.then((rows) => rows[0]);
 
 	return c.json(
 		{
-			debug: { fetchError,
-				rpcError },
+			debug: { fetchError: null, rpcError: null },
 			downloads: analyticsData?.downloads || 0,
 			views: analyticsData?.views || 1,
 		},
@@ -98,7 +100,7 @@ export async function incrementItemView(c) {
 
 export async function incrementItemDownload(c) {
 	const manifest = await getManifest();
-	const supabase = c.get('supabase');
+	const db = c.get('db');
 
 	const category = c.req.param('category');
 	const resolved = category
@@ -119,22 +121,22 @@ export async function incrementItemDownload(c) {
 		return c.json({ error: 'Item Not Found' }, 404);
 	}
 
-	const { error: rpcError } = await supabase.rpc('increment_marketplace_downloads', {
-		_category: resolvedCategory,
-		_item_id: itemKey,
-	});
+	await db.insert(marketplaceAnalytics)
+		.values({ itemId: itemKey, category: resolvedCategory, downloads: 1, updatedAt: sql`CURRENT_TIMESTAMP` })
+		.onConflictDoUpdate({
+			target: [marketplaceAnalytics.itemId, marketplaceAnalytics.category],
+			set: { downloads: sql`${marketplaceAnalytics.downloads} + 1`, updatedAt: sql`CURRENT_TIMESTAMP` },
+		});
 
-	const { data: analyticsData, error: fetchError } = await supabase
-		.from('marketplace_analytics')
-		.select('downloads')
-		.eq('item_id', itemKey)
-		.eq('category', resolvedCategory)
-		.single();
+	const analyticsData = await db
+		.select({ downloads: marketplaceAnalytics.downloads })
+		.from(marketplaceAnalytics)
+		.where(and(eq(marketplaceAnalytics.itemId, itemKey), eq(marketplaceAnalytics.category, resolvedCategory)))
+		.then((rows) => rows[0]);
 
 	return c.json(
 		{
-			debug: { fetchError,
-				rpcError },
+			debug: { fetchError: null, rpcError: null },
 			downloads: analyticsData?.downloads || 1,
 		},
 		200,
@@ -145,7 +147,7 @@ export async function incrementItemDownload(c) {
 export async function getItems(c) {
 	let data;
 	const manifest = await getManifest();
-	const supabase = c.get('supabase');
+	const db = c.get('db');
 	const query = c.req.query();
 
 	if (c.req.param('category') === 'all') {
@@ -172,31 +174,37 @@ export async function getItems(c) {
 		}
 	}
 
-	if (query.include_analytics === 'true' && supabase) {
+	if (query.include_analytics === 'true') {
 		try {
 			const itemIds = data.map((item) => item.name || item.id);
-			const { data: analyticsData, error: dbError } = await supabase
-				.from('marketplace_analytics')
-				.select('item_id, views, downloads')
-				.in('item_id', itemIds);
+			if (itemIds.length > 0) {
+				const analyticsData = await db
+					.select({
+						item_id: marketplaceAnalytics.itemId,
+						views: marketplaceAnalytics.views,
+						downloads: marketplaceAnalytics.downloads,
+					})
+					.from(marketplaceAnalytics)
+					.where(inArray(marketplaceAnalytics.itemId, itemIds));
 
-			if (!dbError && analyticsData) {
-				const analyticsMap = new Map(
-					analyticsData.map((row) => [
-						row.item_id,
-						{ downloads: row.downloads || 0,
-							views: row.views || 0 },
-					]),
-				);
+				if (analyticsData) {
+					const analyticsMap = new Map(
+						analyticsData.map((row) => [
+							row.item_id,
+							{ downloads: row.downloads || 0,
+								views: row.views || 0 },
+						]),
+					);
 
-				data = data.map((item) => {
-					const itemKey = item.name || item.id;
-					const analytics = analyticsMap.get(itemKey);
-					return analytics ? { ...item,
-						...analytics } : { ...item,
-						downloads: 0,
-						views: 0 };
-				});
+					data = data.map((item) => {
+						const itemKey = item.name || item.id;
+						const analytics = analyticsMap.get(itemKey);
+						return analytics ? { ...item,
+							...analytics } : { ...item,
+							downloads: 0,
+							views: 0 };
+					});
+				}
 			}
 		} catch (err) {
 			console.warn('Failed to fetch analytics data', err);
