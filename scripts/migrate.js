@@ -1,11 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import { writeFileSync, mkdirSync } from 'fs';
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_TOKEN = process.env.SUPABASE_TOKEN;
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_TOKEN = process.env.SUPABASE_TOKEN || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_TOKEN) {
-	console.error('Missing SUPABASE_URL or SUPABASE_TOKEN env vars');
+	console.error('Missing Supabase credentials. Set one of:');
+	console.error('  SUPABASE_URL + SUPABASE_TOKEN');
+	console.error('  NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY');
 	process.exit(1);
 }
 
