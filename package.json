@@ -19,8 +19,8 @@
     "pretty": "prettier --write \"./src/**/*.{js,json}\""
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.2",
     "cheerio": "^1.2.0",
+    "drizzle-orm": "^0.45.1",
     "hono": "^4.12.8"
   },
   "devDependencies": {
