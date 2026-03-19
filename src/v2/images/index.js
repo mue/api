@@ -1,60 +1,85 @@
 import { Hono } from 'hono';
+import { count, desc, eq, and, notInArray, sql } from 'drizzle-orm';
+import { images } from '../../db/schema.js';
 import sizes from '../../util/sizes';
 import { getUnsplashImage } from './unsplash';
 
 export default new Hono()
 	.get('/categories', async (c) => {
-		const { data } = await c.get('supabase').rpc('get_image_categories');
+		const db = c.get('db');
+		const data = await db
+			.select({ name: images.category, count: count() })
+			.from(images)
+			.groupBy(images.category)
+			.orderBy(desc(count()));
 
 		return c.json(data);
 	})
 	.get('/photographers', async (c) => {
-		const { data } = await c.get('supabase').rpc('get_image_photographers');
+		const db = c.get('db');
+		const data = await db
+			.select({ name: images.photographer, count: count() })
+			.from(images)
+			.groupBy(images.photographer)
+			.orderBy(desc(count()));
 
 		return c.json(data);
 	})
 	.get('/random', async (c) => {
+		const db = c.get('db');
 		const kv_id = 'v2_image_categories';
+
 		let allowed = await c.env.cache.get(kv_id, {
 			cacheTtl: 3600,
 			type: 'json',
 		});
 
 		if (!allowed) {
-			const { data } = await c.get('supabase').rpc('get_image_categories');
+			allowed = await db
+				.select({ name: images.category, count: count() })
+				.from(images)
+				.groupBy(images.category)
+				.orderBy(desc(count()));
+
 			c.executionCtx.waitUntil(
-				c.env.cache.put(kv_id, JSON.stringify(data), { expirationTtl: 86400 }),
+				c.env.cache.put(kv_id, JSON.stringify(allowed), { expirationTtl: 86400 }),
 			);
-			allowed = data;
 		}
 
-		allowed = allowed.map((row) => row.name);
+		const allowedNames = allowed.map((row) => row.name);
 		let categories =
 			c.req
 				.query('categories')
 				?.split(',')
-				?.filter((category) => allowed.includes(category)) ?? [];
+				?.filter((category) => allowedNames.includes(category)) ?? [];
 
 		if (categories.length === 0) {
-			categories = allowed;
+			categories = allowedNames;
 		}
 
 		const category = categories[Math.floor(Math.random() * categories.length)];
-		const { data } = await c
-			.get('supabase')
-			.rpc('get_random_image', {
-				_category: category,
-				_exclude: c.req.query('exclude'),
-			})
-			.single();
+
+		const excludeList = c.req.query('exclude')?.split(',').map(Number).filter(Boolean) ?? [];
+		const conditions = [eq(images.category, category)];
+		if (excludeList.length > 0) {
+			conditions.push(notInArray(images.pun, excludeList));
+		}
+
+		const data = await db
+			.select()
+			.from(images)
+			.where(and(...conditions))
+			.orderBy(sql`RANDOM()`)
+			.limit(1)
+			.then((rows) => rows[0]);
 
 		const format = c.req.header('accept')?.includes('avif') ? 'avif' : 'webp';
 		const quality = sizes[c.req.query('quality')] ?? 'fhd';
-		const coordinates = data.location_data?.split(',');
+		const coordinates = data.locationData?.split(',');
 
 		return c.json(
 			{
-				blur_hash: data.blur_hash,
+				blur_hash: data.blurHash,
 				camera: data.camera,
 				category: data.category,
 				colour: data.colour,
@@ -63,7 +88,7 @@ export default new Hono()
 				location: {
 					latitude: coordinates?.[0] ?? null,
 					longitude: coordinates?.[1] ?? null,
-					name: data.location_name,
+					name: data.locationName,
 				},
 				photographer: data.photographer,
 				pun: data.pun,
