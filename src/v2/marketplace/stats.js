@@ -1,4 +1,6 @@
 import { getManifest, getStats } from './utils.js';
+import { desc, eq } from 'drizzle-orm';
+import { marketplaceAnalytics } from '../../db/schema.js';
 
 export async function getGlobalStats(c) {
 	const stats = await getStats();
@@ -29,21 +31,25 @@ export async function getCategoryStats(c) {
 export async function getTrending(c) {
 	const limit = parseInt(c.req.query('limit')) || 20;
 	const category = c.req.query('category');
-	const supabase = c.get('supabase');
+	const db = c.get('db');
 
-	let query = supabase
-		.from('marketplace_analytics')
-		.select('item_id, category, views, downloads')
-		.order('views', { ascending: false })
-		.limit(limit * 3);
+	let analyticsData;
+	try {
+		const query = db
+			.select({
+				item_id: marketplaceAnalytics.itemId,
+				category: marketplaceAnalytics.category,
+				views: marketplaceAnalytics.views,
+				downloads: marketplaceAnalytics.downloads,
+			})
+			.from(marketplaceAnalytics)
+			.orderBy(desc(marketplaceAnalytics.views))
+			.limit(limit * 3);
 
-	if (category) {
-		query = query.eq('category', category);
-	}
-
-	const { data: analyticsData, error: dbError } = await query;
-
-	if (dbError) {
+		analyticsData = await (category
+			? query.where(eq(marketplaceAnalytics.category, category))
+			: query);
+	} catch {
 		return c.json({ error: 'Failed to fetch trending items' }, 500);
 	}
 
