@@ -12,13 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Publish
-        uses: cloudflare/wrangler-action@2.0.0
+        uses: cloudflare/wrangler-action@3.14.1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          # secrets: |
-          #     SUPABASE_URL
-          #     SUPABASE_TOKEN
-          # env:
-          #   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          #   SUPABASE_TOKEN: ${{ secrets.SUPABASE_TOKEN }}

@@ -11,12 +11,9 @@ Secrets are deployed with Wrangler but a `.dev.vars` file can be used in develop
 
 ```sh
 IS_LOCAL_MODE=1
-BASELIME_API_KEY=
 MAPBOX_TOKEN=
 OPENWEATHER_TOKEN=
 PEXELS_TOKEN=
-SUPABASE_TOKEN=
-SUPABASE_URL=
 UNSPLASH_TOKEN=
 ```
 
