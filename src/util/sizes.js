@@ -1,6 +1,6 @@
 export default {
-	original: 'original',
-	high: 'qhd', // eslint-disable-line sort-keys
-	normal: 'fhd',
-	datasaver: 'hd', // eslint-disable-line sort-keys
+  original: 'original',
+  high: 'qhd',
+  normal: 'fhd',
+  datasaver: 'hd',
 };
