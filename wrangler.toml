@@ -13,10 +13,10 @@ kv_namespaces = [
   { binding = "cache", id = "08c0008096b7486a9532c5be43e48a7f" }
 ]
 
-# [[d1_databases]]
-#   binding = "DB"
-#   database_name = "mue-content"
-#   database_id = "5b6376e6-1d2a-4f3b-b463-0d6a1b387be1"
+[[d1_databases]]
+  binding = "DB"
+  database_name = "mue-content"
+  database_id = "5b6376e6-1d2a-4f3b-b463-0d6a1b387be1"
 
 [vars]
   UNSPLASH_REFERRAL = "mue"
@@ -24,8 +24,6 @@ kv_namespaces = [
   SPONSORS_NAME = "mue"
 
 # SECRETS:
-# 	SUPABASE_URL
-# 	SUPABASE_TOKEN
 # 	UNSPLASH_TOKEN
 # 	PEXELS_TOKEN
 # 	MAPBOX_TOKEN
