@@ -2,10 +2,8 @@ import { getManifest, getSearchIndex } from '@/v2/marketplace/utils.js';
 import { MARKETPLACE_DATA } from '@/constants.js';
 
 export async function search(c) {
-  const query = c.req.query('q') || c.req.query('query');
-  if (!query) {
-    return c.json({ error: 'Missing search query parameter (q or query)' }, 400);
-  }
+  const { q, query: queryParam } = c.req.valid('query');
+  const query = q || queryParam;
 
   const searchIndex = await getSearchIndex();
   const searchTerms = query
@@ -64,23 +62,7 @@ export async function search(c) {
 }
 
 export async function batchGetItems(c) {
-  let ids;
-
-  if (c.req.method === 'POST') {
-    const body = await c.req.json();
-    ids = body.ids;
-  } else {
-    ids = c.req.query('ids') ? c.req.query('ids').split(',') : [];
-  }
-
-  if (!ids || ids.length === 0) {
-    return c.json({ error: 'Missing ids parameter' }, 400);
-  }
-
-  if (ids.length > 100) {
-    return c.json({ error: 'Maximum 100 items per batch request' }, 400);
-  }
-
+  const { ids } = c.req.valid('json');
   const manifest = await getManifest();
 
   const itemPromises = ids.map(async (id) => {
@@ -100,6 +82,7 @@ export async function batchGetItems(c) {
       const item = await (
         await fetch(`${MARKETPLACE_DATA}/${category}/${name}.json`, {
           cf: { cacheTtl: 3600 },
+          signal: AbortSignal.timeout(5000),
         })
       ).json();
 

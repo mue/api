@@ -5,7 +5,6 @@ import { MARKETPLACE_DATA } from '@/constants.js';
 
 import {
   getManifest,
-  getVersion,
   resolveIdentifier,
   applyFilters,
   applySorting,
@@ -38,6 +37,7 @@ export async function getItem(c) {
   let item = await (
     await fetch(`${MARKETPLACE_DATA}/${resolvedCategory}/${itemKey}.json`, {
       cf: { cacheTtl: 3600 },
+      signal: AbortSignal.timeout(5000),
     })
   ).json();
 
@@ -48,7 +48,7 @@ export async function getItem(c) {
     return collectionWithoutItems;
   });
 
-  const version = getVersion(c.req);
+  const version = c.get('version');
   if (version === 2) {
     item = {
       display_name: item.name,
@@ -82,7 +82,7 @@ export async function getItems(c) {
     }
 
     data = Object.values(category);
-    const version = getVersion(c.req);
+    const version = c.get('version');
 
     if (version === 1) {
       data = data.map((item) => ({ ...item, type: c.req.param('category') }));
@@ -250,4 +250,3 @@ export async function getRandom(c) {
 
   return c.json({ data: count === 1 ? shuffled[0] : shuffled.slice(0, count) });
 }
-

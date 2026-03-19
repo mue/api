@@ -21,7 +21,9 @@ export const getUnsplashImage = async (query, quality, env) => {
   const size = sizes[quality];
 
   const data = await (
-    await fetch(`${UNSPLASH_API}/photos/random?${query.toString()}`)
+    await fetch(`${UNSPLASH_API}/photos/random?${query.toString()}`, {
+      signal: AbortSignal.timeout(5000),
+    })
   ).json();
 
   return {

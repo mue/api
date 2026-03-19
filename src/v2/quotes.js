@@ -1,60 +1,61 @@
 import { Hono } from 'hono';
+import { validator } from 'hono/validator';
 
 import { count, desc, eq, sql } from 'drizzle-orm';
 
 import { quotes } from '@/db/schema.js';
 
-export default new Hono()
-  .get('/languages', async (c) => {
-    const db = c.get('db');
-    const data = await db
-      .select({
-        count: count(),
-        name: quotes.language,
-      })
+const KV_KEY = 'v2_quote_languages';
+
+async function getLanguages(db, c) {
+  let languages = await c.env.cache.get(KV_KEY, { type: 'json' });
+
+  if (!languages) {
+    languages = await db
+      .select({ count: count(), name: quotes.language })
       .from(quotes)
       .groupBy(quotes.language)
       .orderBy(desc(count()));
 
-    return c.json(data);
+    c.executionCtx.waitUntil(
+      c.env.cache.put(KV_KEY, JSON.stringify(languages), { expirationTtl: 86400 }),
+    );
+  }
+
+  return languages;
+}
+
+export default new Hono()
+  .get('/languages', async (c) => {
+    const languages = await getLanguages(c.get('db'), c);
+    return c.json(languages);
   })
-  .get('/random', async (c) => {
-    const db = c.get('db');
-    const kv_id = 'v2_quote_languages';
+  .get(
+    '/random',
+    validator('query', (value, c) => {
+      if (value.language !== undefined && typeof value.language !== 'string') {
+        return c.json({ error: '`language` must be a string' }, 400);
+      }
 
-    let allowed = await c.env.cache.get(kv_id, {
-      cacheTtl: 3600,
-      type: 'json',
-    });
+      return value;
+    }),
+    async (c) => {
+      const db = c.get('db');
+      const { language = 'en' } = c.req.valid('query');
 
-    if (!allowed) {
-      allowed = await db
-        .select({
-          count: count(),
-          name: quotes.language,
-        })
+      const languages = await getLanguages(db, c);
+      if (!languages.map((l) => l.name).includes(language)) {
+        return c.json({ error: 'Unsupported language' }, 400);
+      }
+
+      const data = await db
+        .select()
         .from(quotes)
-        .groupBy(quotes.language)
-        .orderBy(desc(count()));
+        .where(eq(quotes.language, language))
+        .orderBy(sql`RANDOM()`)
+        .limit(1)
+        .then((rows) => rows[0]);
 
-      c.executionCtx.waitUntil(
-        c.env.cache.put(kv_id, JSON.stringify(allowed), { expirationTtl: 86400 }),
-      );
-    }
-
-    const allowedNames = allowed.map((row) => row.name);
-    const language = c.req.query('language') || 'en';
-    if (!allowedNames.includes(language)) {
-      return c.json({ error: 'Unsupported language' }, 400);
-    }
-
-    const data = await db
-      .select()
-      .from(quotes)
-      .where(eq(quotes.language, language))
-      .orderBy(sql`RANDOM()`)
-      .limit(1)
-      .then((rows) => rows[0]);
-
-    return c.json(data, 200, { 'Cache-Control': 'no-store' });
-  });
+      return c.json(data, 200, { 'Cache-Control': 'no-store' });
+    },
+  );

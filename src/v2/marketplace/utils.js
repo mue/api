@@ -1,3 +1,5 @@
+import { MARKETPLACE_DATA } from '@/constants.js';
+
 const CACHE_CONFIG = {
   full: {
     cacheEverything: true,
@@ -17,34 +19,24 @@ const CACHE_CONFIG = {
   },
 };
 
-export function getVersion(req) {
-  const url = new URL(req.url);
-  const path = url.pathname;
-
-  let version = path.split('/')[1];
-  if (!version.startsWith('v')) {
-    version = 1;
-  } else {
-    version = parseInt(version.slice(1));
-  }
-
-  return version;
-}
-
 export async function getManifest(lite = false) {
   const url = lite
-    ? 'https://marketplace-data.muetab.com/manifest-lite.json'
-    : 'https://marketplace-data.muetab.com/manifest.json?v=2';
+    ? `${MARKETPLACE_DATA}/manifest-lite.json`
+    : `${MARKETPLACE_DATA}/manifest.json?v=2`;
   const manifest = await (
-    await fetch(url, { cf: lite ? CACHE_CONFIG.lite : CACHE_CONFIG.full })
+    await fetch(url, {
+      cf: lite ? CACHE_CONFIG.lite : CACHE_CONFIG.full,
+      signal: AbortSignal.timeout(5000),
+    })
   ).json();
   return manifest;
 }
 
 export async function getSearchIndex() {
   const index = await (
-    await fetch('https://marketplace-data.muetab.com/search-index.json', {
+    await fetch(`${MARKETPLACE_DATA}/search-index.json`, {
       cf: CACHE_CONFIG.search,
+      signal: AbortSignal.timeout(5000),
     })
   ).json();
   return index;
@@ -52,7 +44,10 @@ export async function getSearchIndex() {
 
 export async function getStats() {
   const stats = await (
-    await fetch('https://marketplace-data.muetab.com/stats.json', { cf: CACHE_CONFIG.stats })
+    await fetch(`${MARKETPLACE_DATA}/stats.json`, {
+      cf: CACHE_CONFIG.stats,
+      signal: AbortSignal.timeout(5000),
+    })
   ).json();
   return stats;
 }

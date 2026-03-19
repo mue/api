@@ -43,7 +43,6 @@ export async function incrementItemView(c) {
 
   return c.json(
     {
-      debug: { fetchError: null, rpcError: null },
       downloads: analyticsData?.downloads || 0,
       views: analyticsData?.views || 1,
     },
@@ -94,7 +93,6 @@ export async function incrementItemDownload(c) {
 
   return c.json(
     {
-      debug: { fetchError: null, rpcError: null },
       downloads: analyticsData?.downloads || 1,
     },
     200,
@@ -108,11 +106,7 @@ export async function getGlobalStats(c) {
 }
 
 export async function getCategoryStats(c) {
-  const category = c.req.param('category');
-  if (!['preset_settings', 'photo_packs', 'quote_packs'].includes(category)) {
-    return c.json({ error: 'Invalid category' }, 404);
-  }
-
+  const { category } = c.req.valid('param');
   const manifest = await getManifest();
   const items = Object.values(manifest[category]);
 

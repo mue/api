@@ -30,6 +30,7 @@ export default [
         TextEncoder: 'readonly',
         TextDecoder: 'readonly',
         AbortController: 'readonly',
+        AbortSignal: 'readonly',
         btoa: 'readonly',
         atob: 'readonly',
         process: 'readonly',

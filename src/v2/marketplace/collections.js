@@ -1,5 +1,5 @@
 import paginate from '@/util/pagination.js';
-import { getManifest, getVersion, resolveIdentifier } from '@/v2/marketplace/utils.js';
+import { getManifest, resolveIdentifier } from '@/v2/marketplace/utils.js';
 import { MARKETPLACE_DATA } from '@/constants.js';
 
 export async function getCollection(c) {
@@ -28,7 +28,7 @@ export async function getCollection(c) {
     });
   }
 
-  const version = getVersion(c.req);
+  const version = c.get('version');
   if (version === 1) {
     collection.name = collection.display_name;
     delete collection.display_name;
@@ -77,7 +77,10 @@ export async function getCurators(c) {
 export async function getFeatured(c) {
   return c.json({
     data: await (
-      await fetch(`${MARKETPLACE_DATA}/featured.json`, { cf: { cacheTtl: 3600 } })
+      await fetch(`${MARKETPLACE_DATA}/featured.json`, {
+        cf: { cacheTtl: 3600 },
+        signal: AbortSignal.timeout(5000),
+      })
     ).json(),
   });
 }
