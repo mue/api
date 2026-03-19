@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { cache } from 'hono/cache';
 
-import { createClient } from '@supabase/supabase-js';
+import { getDB } from './db/index.js';
 
 import v1 from './v1';
 import v2 from './v2';
@@ -12,7 +12,7 @@ const app = new Hono();
 app.use('*', cors({ origin: '*' }));
 
 app.use('*', async (c, next) => {
-	c.set('supabase', createClient(c.env.SUPABASE_URL, c.env.SUPABASE_TOKEN));
+	c.set('db', getDB(c.env));
 	await next();
 });
 
