@@ -17,10 +17,15 @@ export default new Hono().get(
     const url = `${MAPBOX}/styles/v1/mapbox/streets-v11/static/pin-s+555555(${longitude},${latitude})/${longitude},${latitude},9,0/450x200?access_token=${c.env.MAPBOX_TOKEN}`;
     const res = await fetch(url, { cf: { cacheTtl: 31536000 }, signal: AbortSignal.timeout(5000) });
 
+    const headers = Object.fromEntries(
+      [...res.headers].map(([k, v]) => [k.toLowerCase(), v])
+    );
+    headers['cross-origin-resource-policy'] = 'cross-origin';
+
     return new Response(res.body, {
       status: res.status,
       statusText: res.statusText,
-      headers: Object.fromEntries([...res.headers, ['Cross-Origin-Resource-Policy', 'cross-origin']]),
+      headers,
     });
   },
 );
