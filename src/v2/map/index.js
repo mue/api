@@ -15,17 +15,17 @@ export default new Hono().get(
   async (c) => {
     const { latitude, longitude } = c.req.valid('query');
     const url = `${MAPBOX}/styles/v1/mapbox/streets-v11/static/pin-s+555555(${longitude},${latitude})/${longitude},${latitude},9,0/450x200?access_token=${c.env.MAPBOX_TOKEN}`;
-    const res = await fetch(url, { cf: { cacheTtl: 31536000 }, signal: AbortSignal.timeout(5000) });
-
-    const headers = Object.fromEntries(
-      [...res.headers].map(([k, v]) => [k.toLowerCase(), v])
-    );
-    headers['cross-origin-resource-policy'] = 'cross-origin';
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
 
     return new Response(res.body, {
       status: res.status,
       statusText: res.statusText,
-      headers,
+      headers: {
+        'Content-Type': res.headers.get('content-type') ?? 'image/png',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cross-Origin-Resource-Policy': 'cross-origin',
+        'Access-Control-Allow-Origin': '*',
+      },
     });
   },
 );
