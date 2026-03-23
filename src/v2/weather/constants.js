@@ -1,5 +1,4 @@
 export const OPENWEATHER = 'https://api.openweathermap.org';
-export const MAPBOX = 'https://api.mapbox.com';
 
 export const SUPPORTED_LANGUAGES = [
   'en',
