@@ -5,7 +5,6 @@ import { bodyLimit } from 'hono/body-limit';
 import { requestId } from 'hono/request-id';
 import { timeout } from 'hono/timeout';
 import { trimTrailingSlash } from 'hono/trailing-slash';
-import { secureHeaders } from 'hono/secure-headers';
 import { HTTPException } from 'hono/http-exception';
 
 import { getDB } from '@/db/index.js';
@@ -16,7 +15,6 @@ import v2 from '@/v2';
 const app = new Hono();
 
 app.use('*', cors({ origin: '*' }));
-app.use('*', secureHeaders());
 app.use('*', requestId());
 app.use('*', bodyLimit({ maxSize: 50 * 1024 }));
 app.use('*', timeout(10000));
