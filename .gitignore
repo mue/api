@@ -4,8 +4,10 @@
 .claude/
 .history/
 .wrangler/
+migrations/
 node_modules/
 
 # Files
 .env
 .dev.vars
+fix-location-data.js
