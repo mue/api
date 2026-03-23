@@ -8,7 +8,6 @@ import sizes from '@/util/sizes';
 import { CDN, UNSPLASH_API } from '@/constants.js';
 
 import { getUnsplashImage, NAMED_COLLECTIONS } from '@/v2/images/unsplash';
-import map from '@/v2/images/map/index';
 
 export default new Hono()
   .get('/categories', async (c) => {
@@ -127,7 +126,6 @@ export default new Hono()
       );
     },
   )
-  .route('/map', map)
   .get('/unsplash/topics', async (c) => {
     const data = await (
       await fetch(`${UNSPLASH_API}/topics?client_id=${c.env.UNSPLASH_TOKEN}`, {
