@@ -21,7 +21,7 @@
   "dependencies": {
     "cheerio": "^1.2.0",
     "drizzle-orm": "^0.45.1",
-    "hono": "^4.12.8"
+    "hono": "^4.12.11"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
