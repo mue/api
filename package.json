@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "cheerio": "^1.2.0",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.12.12"
   },
   "devDependencies": {
