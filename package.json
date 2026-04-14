@@ -30,6 +30,6 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.4.0",
     "prettier": "^3.8.2",
-    "wrangler": "^4.81.1"
+    "wrangler": "^4.82.2"
   }
 }
