@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+
 import { cors } from 'hono/cors';
 import { cache } from 'hono/cache';
 import { bodyLimit } from 'hono/body-limit';
@@ -7,7 +8,7 @@ import { timeout } from 'hono/timeout';
 import { trimTrailingSlash } from 'hono/trailing-slash';
 import { HTTPException } from 'hono/http-exception';
 
-import { getDB } from '@/db/index.js';
+import { getDB } from '@/db';
 
 import v1 from '@/v1';
 import v2 from '@/v2';

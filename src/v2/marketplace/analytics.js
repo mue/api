@@ -1,8 +1,8 @@
 import { desc, eq, sql } from 'drizzle-orm';
 
-import { getManifest, getStats, resolveIdentifier } from '@/v2/marketplace/utils.js';
+import { getManifest, getStats, resolveIdentifier } from '@/v2/marketplace/utils';
 
-import { marketplaceAnalytics } from '@/db/schema.js';
+import { marketplaceAnalytics } from '@/db/schema';
 
 export async function incrementItemView(c) {
   const manifest = await getManifest();

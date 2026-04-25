@@ -3,9 +3,11 @@ import { validator } from 'hono/validator';
 
 import { count, desc, eq, and, notInArray, sql } from 'drizzle-orm';
 
-import { images } from '@/db/schema.js';
+import { images } from '@/db/schema';
+
 import sizes from '@/util/sizes';
-import { CDN } from '@/constants.js';
+
+import { CDN } from '@/constants';
 
 export default new Hono()
   .get('/categories', async (c) => {

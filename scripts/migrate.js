@@ -1,62 +1,71 @@
+/* eslint-disable no-console */
 import { createClient } from '@supabase/supabase-js';
 import { writeFileSync, mkdirSync } from 'fs';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_TOKEN = process.env.SUPABASE_TOKEN || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_TOKEN =
+  process.env.SUPABASE_TOKEN ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_TOKEN) {
-	console.error('Missing Supabase credentials. Set one of:');
-	console.error('  SUPABASE_URL + SUPABASE_TOKEN');
-	console.error('  NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY');
-	process.exit(1);
+  console.error('Missing Supabase credentials. Set one of:');
+  console.error('  SUPABASE_URL + SUPABASE_TOKEN');
+  console.error('  NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  process.exit(1);
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_TOKEN);
 
 async function fetchAllRows(table) {
-	const rows = [];
-	let offset = 0;
-	const batchSize = 1000;
+  const rows = [];
+  let offset = 0;
+  const batchSize = 1000;
 
-	while (true) {
-		console.log(`  Fetching ${table} offset=${offset}...`);
-		const { data, error } = await supabase
-			.from(table)
-			.select('*')
-			.range(offset, offset + batchSize - 1);
+  while (true) {
+    console.log(`  Fetching ${table} offset=${offset}...`);
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .range(offset, offset + batchSize - 1);
 
-		if (error) {
-			console.error(`  ERROR fetching ${table} at offset ${offset}:`, error.message);
-			break;
-		}
+    if (error) {
+      console.error(`  ERROR fetching ${table} at offset ${offset}:`, error.message);
+      break;
+    }
 
-		if (!data || data.length === 0) break;
+    if (!data || data.length === 0) break;
 
-		rows.push(...data);
-		if (data.length < batchSize) break;
-		offset += batchSize;
-	}
+    rows.push(...data);
+    if (data.length < batchSize) break;
+    offset += batchSize;
+  }
 
-	console.log(`  ${table}: ${rows.length} rows`);
-	return rows;
+  console.log(`  ${table}: ${rows.length} rows`);
+  return rows;
 }
 
 function escapeValue(val) {
-	if (val === null || val === undefined) return 'NULL';
-	if (typeof val === 'number') return String(val);
-	if (typeof val === 'boolean') return val ? '1' : '0';
-	return `'${String(val).replace(/'/g, "''")}'`;
+  if (val === null || val === undefined) return 'NULL';
+  if (typeof val === 'number') return String(val);
+  if (typeof val === 'boolean') return val ? '1' : '0';
+
+  return `'${String(val).replace(/'/g, "''")}'`;
 }
 
 function rowsToInserts(table, rows) {
-	if (rows.length === 0) return '';
-	const cols = Object.keys(rows[0]).map((c) => `"${c}"`).join(', ');
-	return rows
-		.map((row) => {
-			const vals = Object.values(row).map(escapeValue).join(', ');
-			return `INSERT OR IGNORE INTO "${table}" (${cols}) VALUES (${vals});`;
-		})
-		.join('\n');
+  if (rows.length === 0) return '';
+
+  const cols = Object.keys(rows[0])
+    .map((c) => `"${c}"`)
+    .join(', ');
+
+  return rows
+    .map((row) => {
+      const vals = Object.values(row).map(escapeValue).join(', ');
+      return `INSERT OR IGNORE INTO "${table}" (${cols}) VALUES (${vals});`;
+    })
+    .join('\n');
 }
 
 const SCHEMA_SQL = `
@@ -111,7 +120,7 @@ const TABLES = ['images', 'quotes', 'old_quotes', 'marketplace_analytics'];
 console.log('Fetching data from Supabase...');
 const allData = {};
 for (const table of TABLES) {
-	allData[table] = await fetchAllRows(table);
+  allData[table] = await fetchAllRows(table);
 }
 
 mkdirSync('migrations', { recursive: true });
@@ -119,10 +128,9 @@ mkdirSync('migrations', { recursive: true });
 writeFileSync('migrations/schema.sql', SCHEMA_SQL);
 console.log('Written migrations/schema.sql');
 
-const seedLines = TABLES
-	.map((table) => rowsToInserts(table, allData[table]))
-	.filter(Boolean)
-	.join('\n\n');
+const seedLines = TABLES.map((table) => rowsToInserts(table, allData[table]))
+  .filter(Boolean)
+  .join('\n\n');
 writeFileSync('migrations/seed.sql', seedLines);
 console.log('Written migrations/seed.sql');
 

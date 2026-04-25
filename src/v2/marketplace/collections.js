@@ -1,6 +1,8 @@
-import paginate from '@/util/pagination.js';
-import { getManifest, resolveIdentifier } from '@/v2/marketplace/utils.js';
-import { MARKETPLACE_DATA } from '@/constants.js';
+import paginate from '@/util/pagination';
+
+import { getManifest, resolveIdentifier } from '@/v2/marketplace/utils';
+
+import { MARKETPLACE_DATA } from '@/constants';
 
 export async function getCollection(c) {
   const manifest = await getManifest();

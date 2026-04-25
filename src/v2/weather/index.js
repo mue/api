@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
+
 import { validator } from 'hono/validator';
 
 import { withWeatherLanguage } from '@/v2/weather/middleware';
-import { OPENWEATHER } from '@/v2/weather/constants.js';
+import { OPENWEATHER } from '@/v2/weather/constants';
 
 const requireCoords = validator('query', (value, c) => {
   if (!value.latitude || !value.longitude) {
@@ -33,6 +34,7 @@ export default new Hono()
       if (value.q.length < 2) {
         return c.json({ error: '`q` must be at least 2 characters' }, 400);
       }
+
       return value;
     }),
     async (c) => {

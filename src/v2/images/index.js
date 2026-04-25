@@ -3,9 +3,11 @@ import { validator } from 'hono/validator';
 
 import { count, desc, eq, and, notInArray, sql } from 'drizzle-orm';
 
-import { images } from '@/db/schema.js';
+import { images } from '@/db/schema';
+
 import sizes from '@/util/sizes';
-import { CDN, UNSPLASH_API } from '@/constants.js';
+
+import { CDN, UNSPLASH_API } from '@/constants';
 
 import { getUnsplashImage, NAMED_COLLECTIONS } from '@/v2/images/unsplash';
 

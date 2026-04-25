@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { validator } from 'hono/validator';
 
-import { MAPBOX } from '@/constants.js';
+import { MAPBOX } from '@/constants';
 
 export default new Hono().get(
   '/',
@@ -20,7 +20,10 @@ export default new Hono().get(
     return new Response(res.body, {
       status: res.status,
       statusText: res.statusText,
-      headers: Object.fromEntries([...res.headers, ['Cross-Origin-Resource-Policy', 'cross-origin']]),
+      headers: Object.fromEntries([
+        ...res.headers,
+        ['Cross-Origin-Resource-Policy', 'cross-origin'],
+      ]),
     });
   },
 );

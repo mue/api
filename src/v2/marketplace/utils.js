@@ -1,4 +1,4 @@
-import { MARKETPLACE_DATA } from '@/constants.js';
+import { MARKETPLACE_DATA } from '@/constants';
 
 const CACHE_CONFIG = {
   full: {
@@ -23,12 +23,14 @@ export async function getManifest(lite = false) {
   const url = lite
     ? `${MARKETPLACE_DATA}/manifest-lite.json`
     : `${MARKETPLACE_DATA}/manifest.json?v=2`;
+
   const manifest = await (
     await fetch(url, {
       cf: lite ? CACHE_CONFIG.lite : CACHE_CONFIG.full,
       signal: AbortSignal.timeout(5000),
     })
   ).json();
+
   return manifest;
 }
 
@@ -39,6 +41,7 @@ export async function getSearchIndex() {
       signal: AbortSignal.timeout(5000),
     })
   ).json();
+
   return index;
 }
 
@@ -49,6 +52,7 @@ export async function getStats() {
       signal: AbortSignal.timeout(5000),
     })
   ).json();
+
   return stats;
 }
 

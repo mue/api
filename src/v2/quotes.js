@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
+
 import { validator } from 'hono/validator';
 
 import { count, desc, eq, sql } from 'drizzle-orm';
 
-import { quotes } from '@/db/schema.js';
+import { quotes } from '@/db/schema';
 
 const KV_KEY = 'v2_quote_languages';
 

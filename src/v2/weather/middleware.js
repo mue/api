@@ -1,4 +1,4 @@
-import { LANGUAGE_MAP, SUPPORTED_LANGUAGES } from '@/v2/weather/constants.js';
+import { LANGUAGE_MAP, SUPPORTED_LANGUAGES } from '@/v2/weather/constants';
 
 export const withWeatherLanguage = async (c, next) => {
   const allowed = SUPPORTED_LANGUAGES;

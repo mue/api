@@ -1,5 +1,6 @@
-import { getManifest, getSearchIndex } from '@/v2/marketplace/utils.js';
-import { MARKETPLACE_DATA } from '@/constants.js';
+import { getManifest, getSearchIndex } from '@/v2/marketplace/utils';
+
+import { MARKETPLACE_DATA } from '@/constants';
 
 export async function search(c) {
   const { q, query: queryParam } = c.req.valid('query');

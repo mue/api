@@ -1,4 +1,4 @@
-import { UNSPLASH_API } from '@/constants.js';
+import { UNSPLASH_API } from '@/constants';
 
 export const NAMED_COLLECTIONS = {
   animals: 'nJDnd_8TN_g',

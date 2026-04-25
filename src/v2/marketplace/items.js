@@ -1,16 +1,11 @@
 import { inArray } from 'drizzle-orm';
 
-import paginate from '@/util/pagination.js';
-import { MARKETPLACE_DATA } from '@/constants.js';
+import paginate from '@/util/pagination';
+import { MARKETPLACE_DATA } from '@/constants';
 
-import {
-  getManifest,
-  resolveIdentifier,
-  applyFilters,
-  applySorting,
-} from '@/v2/marketplace/utils.js';
+import { getManifest, resolveIdentifier, applyFilters, applySorting } from '@/v2/marketplace/utils';
 
-import { marketplaceAnalytics } from '@/db/schema.js';
+import { marketplaceAnalytics } from '@/db/schema';
 
 export async function getItem(c) {
   const manifest = await getManifest();
@@ -62,6 +57,7 @@ export async function getItem(c) {
 
 export async function getItems(c) {
   let data;
+
   const manifest = await getManifest();
   const db = c.get('db');
   const query = c.req.query();
@@ -167,9 +163,11 @@ export async function getRelatedItems(c) {
 
   for (const collectionName of item.in_collections) {
     const collection = manifest.collections[collectionName];
+
     if (collection.items) {
       for (const collectionItem of collection.items) {
         const [type, name] = collectionItem.split('/');
+
         if (name !== itemKey) {
           relatedByCollection.add(manifest[type][name].id);
         }

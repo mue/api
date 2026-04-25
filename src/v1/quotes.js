@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 
 import { eq, sql } from 'drizzle-orm';
 
-import { oldQuotes } from '@/db/schema.js';
+import { oldQuotes } from '@/db/schema';
 
 export default new Hono()
   .get('/languages', async (c) => {
