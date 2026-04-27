@@ -5,6 +5,7 @@ import {
   applySorting,
   resolveIdentifier,
   getManifest,
+  getManifestCached,
   getSearchIndex,
   getStats,
 } from '@/v2/marketplace/utils';
@@ -430,5 +431,122 @@ describe('getStats', () => {
   it('throws HTTPException(503) when fetch fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
     await expect(getStats()).rejects.toBeInstanceOf(HTTPException);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getManifestCached — request-scope + KV caching
+// ---------------------------------------------------------------------------
+
+function makeContext(overrides = {}) {
+  const store = new Map();
+  return {
+    get: (key) => store.get(key),
+    set: (key, val) => store.set(key, val),
+    env: overrides.env ?? {},
+    executionCtx: overrides.executionCtx ?? { waitUntil: vi.fn() },
+  };
+}
+
+describe('getManifestCached', () => {
+  it('returns manifest from request context without calling fetch or KV', async () => {
+    const c = makeContext();
+    c.set('manifest', mockManifest);
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const result = await getManifestCached(c);
+
+    expect(result).toBe(mockManifest);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('returns manifest from KV cache and sets it on the context', async () => {
+    const kvGet = vi.fn().mockResolvedValue(mockManifest);
+    const c = makeContext({ env: { cache: { get: kvGet, put: vi.fn() } } });
+    vi.stubGlobal('fetch', vi.fn());
+
+    const result = await getManifestCached(c);
+
+    expect(result).toEqual(mockManifest);
+    expect(kvGet).toHaveBeenCalledWith('v2_manifest', { type: 'json' });
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+    // subsequent call should hit request-scope cache
+    const result2 = await getManifestCached(c);
+    expect(result2).toBe(result);
+    expect(kvGet).toHaveBeenCalledTimes(1);
+  });
+
+  it('fetches from network on a cold start, then populates context and queues KV write', async () => {
+    const waitUntil = vi.fn();
+    const kvGet = vi.fn().mockResolvedValue(null);
+    const kvPut = vi.fn().mockResolvedValue(undefined);
+    const c = makeContext({
+      env: { cache: { get: kvGet, put: kvPut } },
+      executionCtx: { waitUntil },
+    });
+    stubFetchJson(mockManifest);
+
+    const result = await getManifestCached(c);
+
+    expect(result).toEqual(mockManifest);
+    expect(waitUntil).toHaveBeenCalledOnce();
+    // confirm context is now populated so next call skips KV
+    const result2 = await getManifestCached(c);
+    expect(result2).toBe(result);
+    expect(kvGet).toHaveBeenCalledTimes(1);
+  });
+
+  it('works when c.env.cache is absent (no KV namespace bound)', async () => {
+    const c = makeContext({ env: {} });
+    stubFetchJson(mockManifest);
+
+    const result = await getManifestCached(c);
+
+    expect(result).toEqual(mockManifest);
+  });
+
+  it('propagates HTTPException when fetch returns invalid manifest', async () => {
+    const c = makeContext({ env: { cache: { get: vi.fn().mockResolvedValue(null), put: vi.fn() } } });
+    stubFetchJson(null);
+
+    await expect(getManifestCached(c)).rejects.toMatchObject({ status: 503 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// applySorting — date optimisation regression tests
+// ---------------------------------------------------------------------------
+
+describe('applySorting date fields', () => {
+  it('sorts by updated_at descending', () => {
+    const result = applySorting(items, { sort: 'updated', order: 'desc' });
+    // coastal updated 2023-09-01, abstract 2023-03-01, mountain 2022-06-01
+    expect(result[0].name).toBe('coastal');
+    expect(result[2].name).toBe('mountain');
+  });
+
+  it('sorts by updated_at ascending', () => {
+    const result = applySorting(items, { sort: 'updated', order: 'asc' });
+    expect(result[0].name).toBe('mountain');
+    expect(result[2].name).toBe('coastal');
+  });
+
+  it('newest order:asc yields oldest-first', () => {
+    const result = applySorting(items, { sort: 'newest', order: 'asc' });
+    expect(result[0].name).toBe('mountain');
+    expect(result[2].name).toBe('coastal');
+  });
+
+  it('oldest order:asc yields newest-first', () => {
+    const result = applySorting(items, { sort: 'oldest', order: 'asc' });
+    expect(result[0].name).toBe('coastal');
+    expect(result[2].name).toBe('mountain');
+  });
+
+  it('does not mutate the input array for date sorts', () => {
+    const original = [...items];
+    applySorting(items, { sort: 'newest' });
+    expect(items).toEqual(original);
   });
 });

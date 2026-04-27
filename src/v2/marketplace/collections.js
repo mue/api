@@ -1,11 +1,11 @@
 import paginate from '@/util/pagination';
 
-import { getManifest, resolveIdentifier } from '@/v2/marketplace/utils';
+import { getManifestCached, resolveIdentifier } from '@/v2/marketplace/utils';
 
 import { MARKETPLACE_DATA } from '@/constants';
 
 export async function getCollection(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
 
   const resolved = resolveIdentifier(manifest, c.req.param('collection'));
   if (!resolved || resolved.category !== 'collections') {
@@ -40,7 +40,7 @@ export async function getCollection(c) {
 }
 
 export async function getCollections(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const collections = Object.values(manifest.collections).map((collection) => {
     // eslint-disable-next-line no-unused-vars
     const { items, ...collectionWithoutItems } = collection;
@@ -50,7 +50,7 @@ export async function getCollections(c) {
 }
 
 export async function getCurator(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const curatorName = decodeURIComponent(c.req.param('curator'));
   const curator = manifest.curators[curatorName];
 
@@ -70,7 +70,7 @@ export async function getCurator(c) {
 }
 
 export async function getCurators(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const curators = Object.keys(manifest.curators);
 
   return c.json({ data: paginate(curators, c.req.query()) });

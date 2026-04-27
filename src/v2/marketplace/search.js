@@ -1,4 +1,4 @@
-import { getManifest, getSearchIndex } from '@/v2/marketplace/utils';
+import { getManifestCached, getSearchIndex } from '@/v2/marketplace/utils';
 
 import { MARKETPLACE_DATA } from '@/constants';
 
@@ -64,7 +64,7 @@ export async function search(c) {
 
 export async function batchGetItems(c) {
   const { ids } = c.req.valid('json');
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
 
   const itemPromises = ids.map(async (id) => {
     const canonicalPath = manifest._id_index[id];

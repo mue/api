@@ -4,12 +4,12 @@ import paginate from '@/util/pagination';
 import { safeFetchJson } from '@/util/fetch';
 import { MARKETPLACE_DATA } from '@/constants';
 
-import { getManifest, resolveIdentifier, applyFilters, applySorting } from '@/v2/marketplace/utils';
+import { getManifestCached, resolveIdentifier, applyFilters, applySorting } from '@/v2/marketplace/utils';
 
 import { marketplaceAnalytics } from '@/db/schema';
 
 export async function getItem(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
 
   const category = c.req.param('category');
   const resolved = category
@@ -57,7 +57,7 @@ export async function getItem(c) {
 export async function getItems(c) {
   let data;
 
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const db = c.get('db');
   const query = c.req.query();
 
@@ -138,7 +138,7 @@ export async function getItems(c) {
 }
 
 export async function getRelatedItems(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
 
   const category = c.req.param('category');
   const resolved = category
@@ -220,7 +220,7 @@ export async function getRelatedItems(c) {
 }
 
 export async function getRandom(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const category = c.req.param('category') || 'all';
   const count = Math.min(parseInt(c.req.query('count')) || 1, 10);
 

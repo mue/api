@@ -1,11 +1,11 @@
 import { desc, eq, sql } from 'drizzle-orm';
 
-import { getManifest, getStats, resolveIdentifier } from '@/v2/marketplace/utils';
+import { getManifestCached, getStats, resolveIdentifier } from '@/v2/marketplace/utils';
 
 import { marketplaceAnalytics } from '@/db/schema';
 
 export async function incrementItemView(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const db = c.get('db');
 
   const category = c.req.param('category');
@@ -52,7 +52,7 @@ export async function incrementItemView(c) {
 }
 
 export async function incrementItemDownload(c) {
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const db = c.get('db');
 
   const category = c.req.param('category');
@@ -107,16 +107,18 @@ export async function getGlobalStats(c) {
 
 export async function getCategoryStats(c) {
   const { category } = c.req.valid('param');
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const items = Object.values(manifest[category]);
 
   const stats = {
     authors: [...new Set(items.map((item) => item.author))].length,
     category,
     languages: [...new Set(items.map((item) => item.language).filter(Boolean))],
-    recent_items: items
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 10),
+    recent_items: [...items]
+      .map((item) => [item, Date.parse(item.created_at)])
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([item]) => item),
   };
 
   return c.json({ data: stats });
@@ -149,7 +151,7 @@ export async function getTrending(c) {
     return c.json({ error: 'Failed to fetch trending items' }, 500);
   }
 
-  const manifest = await getManifest();
+  const manifest = await getManifestCached(c);
   const trendingItems = analyticsData
     .map((row) => {
       const item = manifest[row.category]?.[row.item_id];

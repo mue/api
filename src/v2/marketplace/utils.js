@@ -3,6 +3,9 @@ import { HTTPException } from 'hono/http-exception';
 import { safeFetchJson } from '@/util/fetch';
 import { MARKETPLACE_DATA } from '@/constants';
 
+const MANIFEST_KV_KEY = 'v2_manifest';
+const MANIFEST_KV_TTL = 3600;
+
 const CACHE_CONFIG = {
   full: {
     cacheEverything: true,
@@ -34,6 +37,36 @@ export async function getManifest(lite = false) {
 
   if (!manifest || typeof manifest !== 'object' || typeof manifest._id_index !== 'object') {
     throw new HTTPException(503, { message: 'Marketplace data is currently unavailable' });
+  }
+
+  return manifest;
+}
+
+export async function getManifestCached(c) {
+  const inContext = c.get('manifest');
+  if (inContext) return inContext;
+
+  if (c.env?.cache) {
+    const kvCached = await c.env.cache.get(MANIFEST_KV_KEY, { type: 'json' });
+    if (kvCached) {
+      c.set('manifest', kvCached);
+      return kvCached;
+    }
+  }
+
+  const manifest = await getManifest();
+  c.set('manifest', manifest);
+
+  if (c.env?.cache) {
+    try {
+      c.executionCtx.waitUntil(
+        c.env.cache.put(MANIFEST_KV_KEY, JSON.stringify(manifest), {
+          expirationTtl: MANIFEST_KV_TTL,
+        }),
+      );
+    } catch {
+      // executionCtx unavailable outside Cloudflare Workers runtime
+    }
   }
 
   return manifest;
@@ -137,13 +170,13 @@ export function applyFilters(items, query) {
   }
 
   if (query.date_from) {
-    const fromDate = new Date(query.date_from);
-    filtered = filtered.filter((item) => new Date(item.created_at) >= fromDate);
+    const fromTs = new Date(query.date_from).getTime();
+    filtered = filtered.filter((item) => Date.parse(item.created_at) >= fromTs);
   }
 
   if (query.date_to) {
-    const toDate = new Date(query.date_to);
-    filtered = filtered.filter((item) => new Date(item.created_at) <= toDate);
+    const toTs = new Date(query.date_to).getTime();
+    filtered = filtered.filter((item) => Date.parse(item.created_at) <= toTs);
   }
 
   if (query.min_items) {
@@ -173,19 +206,21 @@ export function applySorting(items, query) {
   const sortField = query.sort || 'newest';
   const sortOrder = query.order || 'desc';
 
+  // Pre-compute date keys once (O(n)) so the comparator runs on plain numbers (O(n log n))
+  // instead of allocating a new Date object on every comparison.
+  if (['newest', 'oldest', 'updated'].includes(sortField)) {
+    const dateField = sortField === 'updated' ? 'updated_at' : 'created_at';
+    const keyed = items.map((item) => [item, Date.parse(item[dateField])]);
+    keyed.sort(([, aTs], [, bTs]) => {
+      const comparison = sortField === 'oldest' ? aTs - bTs : bTs - aTs;
+      return sortOrder === 'asc' ? -comparison : comparison;
+    });
+    return keyed.map(([item]) => item);
+  }
+
   const sorted = [...items].sort((a, b) => {
     let comparison = 0;
-
     switch (sortField) {
-      case 'newest':
-        comparison = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        break;
-      case 'oldest':
-        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        break;
-      case 'updated':
-        comparison = new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-        break;
       case 'name':
         comparison = a.display_name.localeCompare(b.display_name);
         break;
@@ -198,7 +233,6 @@ export function applySorting(items, query) {
       default:
         break;
     }
-
     return sortOrder === 'asc' ? -comparison : comparison;
   });
 
