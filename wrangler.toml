@@ -36,7 +36,7 @@ mode = "smart"
 # 	OPENWEATHER_TOKEN
 
 [observability]
-enabled = false
+enabled = true
 head_sampling_rate = 1
 
 [observability.logs]
