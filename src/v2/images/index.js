@@ -27,7 +27,9 @@ async function getCachedRows(c, kvKey, queryFn) {
       c.executionCtx.waitUntil(
         c.env.cache.put(kvKey, JSON.stringify(data), { expirationTtl: KV_TTL }),
       );
-    } catch {}
+    } catch {
+      // executionCtx unavailable outside Cloudflare Workers runtime
+    }
   }
 
   return data;

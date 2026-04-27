@@ -21,7 +21,9 @@ export default new Hono()
             expirationTtl: KV_TTL,
           }),
         );
-      } catch {}
+      } catch {
+        // executionCtx unavailable outside Cloudflare Workers runtime
+      }
     }
 
     return c.json(languages);

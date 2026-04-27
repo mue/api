@@ -25,6 +25,7 @@ export default [
         TextDecoder: 'readonly',
         AbortController: 'readonly',
         AbortSignal: 'readonly',
+        DOMException: 'readonly',
         btoa: 'readonly',
         atob: 'readonly',
         process: 'readonly',

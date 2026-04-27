@@ -31,7 +31,9 @@ export default new Hono()
         c.executionCtx.waitUntil(
           c.env.cache.put(CATEGORIES_KV_KEY, JSON.stringify(data), { expirationTtl: KV_TTL }),
         );
-      } catch {}
+      } catch {
+        // executionCtx unavailable outside Cloudflare Workers runtime
+      }
     }
 
     return c.json(data.map((row) => row.name));
@@ -51,7 +53,9 @@ export default new Hono()
         c.executionCtx.waitUntil(
           c.env.cache.put(PHOTOGRAPHERS_KV_KEY, JSON.stringify(data), { expirationTtl: KV_TTL }),
         );
-      } catch {}
+      } catch {
+        // executionCtx unavailable outside Cloudflare Workers runtime
+      }
     }
 
     return c.json(data.map((row) => row.name));
@@ -86,7 +90,9 @@ export default new Hono()
               expirationTtl: KV_TTL,
             }),
           );
-        } catch {}
+        } catch {
+        // executionCtx unavailable outside Cloudflare Workers runtime
+      }
       }
 
       const category = categories[Math.floor(Math.random() * categories.length)].name;
