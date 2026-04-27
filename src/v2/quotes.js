@@ -45,7 +45,7 @@ export default new Hono()
       const { language = 'en' } = c.req.valid('query');
 
       const languages = await getLanguages(db, c);
-      if (!languages.map((l) => l.name).includes(language)) {
+      if (!languages.some((l) => l.name === language)) {
         return c.json({ error: 'Unsupported language' }, 400);
       }
 

@@ -19,24 +19,20 @@ export async function getCollection(c) {
     return c.json({ error: 'Not Found' }, 404);
   }
 
-  if (collection.items) {
-    const unresolved_items = collection.items;
-    collection.items = unresolved_items.map((item) => {
-      const [type, name] = item.split('/');
-      return {
-        ...manifest[type][name],
-        type,
-      };
-    });
-  }
+  const resolvedItems = collection.items?.map((ref) => {
+    const [type, name] = ref.split('/');
+    return { ...manifest[type][name], type };
+  });
+
+  let result = { ...collection, ...(resolvedItems !== undefined && { items: resolvedItems }) };
 
   const version = c.get('version');
   if (version === 1) {
-    collection.name = collection.display_name;
-    delete collection.display_name;
+    const { display_name, ...rest } = result;
+    result = { ...rest, name: display_name };
   }
 
-  return c.json({ data: collection });
+  return c.json({ data: result });
 }
 
 export async function getCollections(c) {

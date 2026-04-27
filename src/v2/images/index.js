@@ -12,41 +12,56 @@ import { CDN, UNSPLASH_API } from '@/constants';
 
 import { getUnsplashImage, NAMED_COLLECTIONS } from '@/v2/images/unsplash';
 
+const VALID_QUALITIES = new Set(Object.keys(sizes));
+const VALID_QUALITIES_STR = Object.keys(sizes).join(', ');
+const CATEGORIES_KV_KEY = 'v2_image_categories';
+const PHOTOGRAPHERS_KV_KEY = 'v2_image_photographers';
+const KV_TTL = 86400;
+
+async function getCachedRows(c, kvKey, queryFn) {
+  let data = await c.env.cache.get(kvKey, { type: 'json' });
+
+  if (!data) {
+    data = await queryFn();
+    try {
+      c.executionCtx.waitUntil(
+        c.env.cache.put(kvKey, JSON.stringify(data), { expirationTtl: KV_TTL }),
+      );
+    } catch {}
+  }
+
+  return data;
+}
+
 export default new Hono()
   .get('/categories', async (c) => {
     const db = c.get('db');
-
-    const data = await db
-      .select({
-        count: count(),
-        name: images.category,
-      })
-      .from(images)
-      .groupBy(images.category)
-      .orderBy(desc(count()));
-
+    const data = await getCachedRows(c, CATEGORIES_KV_KEY, () =>
+      db
+        .select({ count: count(), name: images.category })
+        .from(images)
+        .groupBy(images.category)
+        .orderBy(desc(count())),
+    );
     return c.json(data);
   })
   .get('/photographers', async (c) => {
     const db = c.get('db');
-
-    const data = await db
-      .select({
-        count: count(),
-        name: images.photographer,
-      })
-      .from(images)
-      .groupBy(images.photographer)
-      .orderBy(desc(count()));
-
+    const data = await getCachedRows(c, PHOTOGRAPHERS_KV_KEY, () =>
+      db
+        .select({ count: count(), name: images.photographer })
+        .from(images)
+        .groupBy(images.photographer)
+        .orderBy(desc(count())),
+    );
     return c.json(data);
   })
   .get(
     '/random',
     validator('query', (value, c) => {
-      if (value.quality !== undefined && !Object.keys(sizes).includes(value.quality)) {
+      if (value.quality !== undefined && !VALID_QUALITIES.has(value.quality)) {
         return c.json(
-          { error: `\`quality\` must be one of: ${Object.keys(sizes).join(', ')}` },
+          { error: `\`quality\` must be one of: ${VALID_QUALITIES_STR}` },
           400,
         );
       }
@@ -55,27 +70,14 @@ export default new Hono()
     }),
     async (c) => {
       const db = c.get('db');
-      const kv_id = 'v2_image_categories';
 
-      let allowed = await c.env.cache.get(kv_id, {
-        cacheTtl: 3600,
-        type: 'json',
-      });
-
-      if (!allowed) {
-        allowed = await db
-          .select({
-            count: count(),
-            name: images.category,
-          })
+      const allowed = await getCachedRows(c, CATEGORIES_KV_KEY, () =>
+        db
+          .select({ count: count(), name: images.category })
           .from(images)
           .groupBy(images.category)
-          .orderBy(desc(count()));
-
-        c.executionCtx.waitUntil(
-          c.env.cache.put(kv_id, JSON.stringify(allowed), { expirationTtl: 86400 }),
-        );
-      }
+          .orderBy(desc(count())),
+      );
 
       const allowedNames = allowed.map((row) => row.name);
       let categories =
@@ -150,9 +152,9 @@ export default new Hono()
         );
       }
 
-      if (value.quality !== undefined && !Object.keys(sizes).includes(value.quality)) {
+      if (value.quality !== undefined && !VALID_QUALITIES.has(value.quality)) {
         return c.json(
-          { error: `\`quality\` must be one of: ${Object.keys(sizes).join(', ')}` },
+          { error: `\`quality\` must be one of: ${VALID_QUALITIES_STR}` },
           400,
         );
       }

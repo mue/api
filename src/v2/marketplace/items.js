@@ -174,13 +174,12 @@ export async function getRelatedItems(c) {
     }
   }
 
-  const authorItems = Object.values(manifest.preset_settings)
-    .concat(Object.values(manifest.photo_packs))
-    .concat(Object.values(manifest.quote_packs))
-    .filter((i) => i.author === item.author && i.id !== item.id);
-
-  for (const authorItem of authorItems) {
-    relatedByAuthor.add(authorItem.id);
+  for (const category of ['preset_settings', 'photo_packs', 'quote_packs']) {
+    for (const entry of Object.values(manifest[category])) {
+      if (entry.author === item.author && entry.id !== item.id) {
+        relatedByAuthor.add(entry.id);
+      }
+    }
   }
 
   const categoryItems = Object.values(manifest[resolvedCategory]).filter((i) => i.id !== item.id);

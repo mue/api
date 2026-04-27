@@ -249,3 +249,240 @@ describe('GET /v2/marketplace/search', () => {
     expect(body.meta.per_page).toBe(100);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Image categories/photographers — KV caching
+// ---------------------------------------------------------------------------
+
+describe('GET /v2/images/categories', () => {
+  it('returns cached data from KV without hitting the DB', async () => {
+    const cached = [
+      { count: 10, name: 'nature' },
+      { count: 5, name: 'architecture' },
+    ];
+    mockEnv.cache.get.mockResolvedValueOnce(cached);
+    const res = await app.request('/v2/images/categories', {}, mockEnv);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(cached);
+  });
+
+  it('checks KV with the correct key', async () => {
+    const cached = [{ count: 3, name: 'urban' }];
+    mockEnv.cache.get.mockResolvedValueOnce(cached);
+    await app.request('/v2/images/categories', {}, mockEnv);
+    expect(mockEnv.cache.get).toHaveBeenCalledWith('v2_image_categories', { type: 'json' });
+  });
+});
+
+describe('GET /v2/images/photographers', () => {
+  it('returns cached data from KV without hitting the DB', async () => {
+    const cached = [
+      { count: 8, name: 'Alex' },
+      { count: 2, name: 'Jordan' },
+    ];
+    mockEnv.cache.get.mockResolvedValueOnce(cached);
+    const res = await app.request('/v2/images/photographers', {}, mockEnv);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(cached);
+  });
+
+  it('checks KV with the correct key', async () => {
+    const cached = [{ count: 1, name: 'Sam' }];
+    mockEnv.cache.get.mockResolvedValueOnce(cached);
+    await app.request('/v2/images/photographers', {}, mockEnv);
+    expect(mockEnv.cache.get).toHaveBeenCalledWith('v2_image_photographers', { type: 'json' });
+  });
+});
+
+describe('GET /images/categories (v1)', () => {
+  it('returns name-only list from KV cache', async () => {
+    const cached = [
+      { count: 10, name: 'nature' },
+      { count: 5, name: 'architecture' },
+    ];
+    mockEnv.cache.get.mockResolvedValueOnce(cached);
+    const res = await app.request('/images/categories', {}, mockEnv);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(['nature', 'architecture']);
+  });
+
+  it('checks KV with the correct key', async () => {
+    mockEnv.cache.get.mockResolvedValueOnce([{ count: 5, name: 'nature' }]);
+    await app.request('/images/categories', {}, mockEnv);
+    expect(mockEnv.cache.get).toHaveBeenCalledWith('image_categories', { type: 'json' });
+  });
+});
+
+describe('GET /images/photographers (v1)', () => {
+  it('returns name-only list from KV cache', async () => {
+    const cached = [
+      { count: 4, name: 'Alice' },
+      { count: 2, name: 'Bob' },
+    ];
+    mockEnv.cache.get.mockResolvedValueOnce(cached);
+    const res = await app.request('/images/photographers', {}, mockEnv);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(['Alice', 'Bob']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// v1 quotes — /quotes/languages KV caching
+// ---------------------------------------------------------------------------
+
+describe('GET /quotes/languages (v1)', () => {
+  it('returns cached language list from KV', async () => {
+    const cached = ['English', 'French', 'German'];
+    mockEnv.cache.get.mockResolvedValueOnce(cached);
+    const res = await app.request('/quotes/languages', {}, mockEnv);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(cached);
+  });
+
+  it('checks KV with the correct key', async () => {
+    mockEnv.cache.get.mockResolvedValueOnce(['English']);
+    await app.request('/quotes/languages', {}, mockEnv);
+    expect(mockEnv.cache.get).toHaveBeenCalledWith('v1_quote_languages', { type: 'json' });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// v2 quotes language validation — .some() correctness
+// ---------------------------------------------------------------------------
+
+describe('GET /v2/quotes/random — language validation', () => {
+  it('rejects an unsupported language', async () => {
+    const languages = [{ count: 5, name: 'en' }, { count: 3, name: 'fr' }];
+    mockEnv.cache.get.mockResolvedValue(languages);
+    const res = await app.request('/v2/quotes/random?language=zz', {}, mockEnv);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toHaveProperty('error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Marketplace collection — no manifest mutation
+// ---------------------------------------------------------------------------
+
+const collectionManifest = {
+  _id_index: { 'id-1': 'photo_packs/coastal' },
+  collections: {
+    'mue-picks': {
+      display_name: 'Mue Picks',
+      items: ['photo_packs/coastal'],
+      in_collections: [],
+    },
+  },
+  photo_packs: {
+    coastal: { id: 'id-1', name: 'coastal', display_name: 'Coastal', in_collections: ['mue-picks'], author: 'mue' },
+  },
+  preset_settings: {},
+  quote_packs: {},
+  curators: {},
+};
+
+describe('GET /v2/marketplace/collection/:collection', () => {
+  it('resolves collection items in the response', async () => {
+    mockEnv.cache.get.mockImplementation((key) =>
+      Promise.resolve(key === 'v2_manifest' ? collectionManifest : null),
+    );
+    const res = await app.request('/v2/marketplace/collection/mue-picks', {}, mockEnv);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.items[0]).toMatchObject({ name: 'coastal' });
+  });
+
+  it('does not mutate the cached manifest object', async () => {
+    // Return the SAME object reference both times so mutations would be visible
+    mockEnv.cache.get.mockImplementation((key) =>
+      Promise.resolve(key === 'v2_manifest' ? collectionManifest : null),
+    );
+
+    await app.request('/v2/marketplace/collection/mue-picks', {}, mockEnv);
+
+    // The original manifest must still have string items, not resolved objects
+    expect(collectionManifest.collections['mue-picks'].items).toEqual(['photo_packs/coastal']);
+  });
+
+  it('returns 404 for unknown collection', async () => {
+    mockEnv.cache.get.mockImplementation((key) =>
+      Promise.resolve(key === 'v2_manifest' ? collectionManifest : null),
+    );
+    const res = await app.request('/v2/marketplace/collection/no-such-collection', {}, mockEnv);
+    expect(res.status).toBe(404);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Marketplace related items — author loop correctness
+// ---------------------------------------------------------------------------
+
+const relatedManifest = {
+  _id_index: {
+    'id-coastal': 'photo_packs/coastal',
+    'id-mountain': 'photo_packs/mountain',
+    'id-haiku': 'quote_packs/haiku',
+    'id-dark': 'preset_settings/dark',
+  },
+  collections: {},
+  photo_packs: {
+    coastal: { id: 'id-coastal', name: 'coastal', display_name: 'Coastal', author: 'mue', in_collections: [] },
+    mountain: { id: 'id-mountain', name: 'mountain', display_name: 'Mountain', author: 'other', in_collections: [] },
+  },
+  quote_packs: {
+    haiku: { id: 'id-haiku', name: 'haiku', display_name: 'Haiku', author: 'mue', in_collections: [] },
+  },
+  preset_settings: {
+    dark: { id: 'id-dark', name: 'dark', display_name: 'Dark', author: 'mue', in_collections: [] },
+  },
+  curators: {},
+};
+
+describe('GET /v2/marketplace/item/:category/:item/related', () => {
+  it('finds related items by same author across all categories', async () => {
+    mockEnv.cache.get.mockImplementation((key) =>
+      Promise.resolve(key === 'v2_manifest' ? relatedManifest : null),
+    );
+    const res = await app.request(
+      '/v2/marketplace/item/photo_packs/coastal/related',
+      {},
+      mockEnv,
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    const relatedIds = body.data.related.map((r) => r.id);
+    // haiku (quote_packs) and dark (preset_settings) are by 'mue' — found across categories
+    expect(relatedIds).toContain('id-haiku');
+    expect(relatedIds).toContain('id-dark');
+    // mountain is 'other' author — only appears via category (score 2), not author (score 5)
+    const haiku = body.data.related.find((r) => r.id === 'id-haiku');
+    const mountain = body.data.related.find((r) => r.id === 'id-mountain');
+    expect(haiku.relevance_score).toBeGreaterThan(mountain.relevance_score);
+  });
+
+  it('excludes the requested item itself from related', async () => {
+    mockEnv.cache.get.mockImplementation((key) =>
+      Promise.resolve(key === 'v2_manifest' ? relatedManifest : null),
+    );
+    const res = await app.request(
+      '/v2/marketplace/item/photo_packs/coastal/related',
+      {},
+      mockEnv,
+    );
+    const body = await res.json();
+    const relatedIds = body.data.related.map((r) => r.id);
+    expect(relatedIds).not.toContain('id-coastal');
+  });
+
+  it('returns 404 for unknown item', async () => {
+    mockEnv.cache.get.mockImplementation((key) =>
+      Promise.resolve(key === 'v2_manifest' ? relatedManifest : null),
+    );
+    const res = await app.request(
+      '/v2/marketplace/item/photo_packs/unknown/related',
+      {},
+      mockEnv,
+    );
+    expect(res.status).toBe(404);
+  });
+});

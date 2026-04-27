@@ -9,55 +9,66 @@ import sizes from '@/util/sizes';
 
 import { CDN } from '@/constants';
 
+const VALID_QUALITIES = new Set(Object.keys(sizes));
+const VALID_QUALITIES_STR = Object.keys(sizes).join(', ');
+const CATEGORIES_KV_KEY = 'image_categories';
+const PHOTOGRAPHERS_KV_KEY = 'v1_image_photographers';
+const KV_TTL = 86400;
+
 export default new Hono()
   .get('/categories', async (c) => {
-    const db = c.get('db');
+    let data = await c.env.cache.get(CATEGORIES_KV_KEY, { type: 'json' });
 
-    const data = await db
-      .select({
-        count: count(),
-        name: images.category,
-      })
-      .from(images)
-      .groupBy(images.category)
-      .orderBy(desc(count()));
+    if (!data) {
+      data = await c
+        .get('db')
+        .select({ count: count(), name: images.category })
+        .from(images)
+        .groupBy(images.category)
+        .orderBy(desc(count()));
+
+      try {
+        c.executionCtx.waitUntil(
+          c.env.cache.put(CATEGORIES_KV_KEY, JSON.stringify(data), { expirationTtl: KV_TTL }),
+        );
+      } catch {}
+    }
 
     return c.json(data.map((row) => row.name));
   })
   .get('/photographers', async (c) => {
-    const db = c.get('db');
+    let data = await c.env.cache.get(PHOTOGRAPHERS_KV_KEY, { type: 'json' });
 
-    const data = await db
-      .select({
-        count: count(),
-        name: images.photographer,
-      })
-      .from(images)
-      .groupBy(images.photographer)
-      .orderBy(desc(count()));
+    if (!data) {
+      data = await c
+        .get('db')
+        .select({ count: count(), name: images.photographer })
+        .from(images)
+        .groupBy(images.photographer)
+        .orderBy(desc(count()));
+
+      try {
+        c.executionCtx.waitUntil(
+          c.env.cache.put(PHOTOGRAPHERS_KV_KEY, JSON.stringify(data), { expirationTtl: KV_TTL }),
+        );
+      } catch {}
+    }
 
     return c.json(data.map((row) => row.name));
   })
   .get(
     '/random',
     validator('query', (value, c) => {
-      if (value.quality !== undefined && !Object.keys(sizes).includes(value.quality)) {
-        return c.json(
-          { error: `\`quality\` must be one of: ${Object.keys(sizes).join(', ')}` },
-          400,
-        );
+      if (value.quality !== undefined && !VALID_QUALITIES.has(value.quality)) {
+        return c.json({ error: `\`quality\` must be one of: ${VALID_QUALITIES_STR}` }, 400);
       }
 
       return value;
     }),
     async (c) => {
       const db = c.get('db');
-      const kv_id = 'image_categories';
 
-      let categories = await c.env.cache.get(kv_id, {
-        cacheTtl: 3600,
-        type: 'json',
-      });
+      let categories = await c.env.cache.get(CATEGORIES_KV_KEY, { type: 'json' });
 
       if (!categories) {
         categories = await db
@@ -69,9 +80,13 @@ export default new Hono()
           .groupBy(images.category)
           .orderBy(desc(count()));
 
-        c.executionCtx.waitUntil(
-          c.env.cache.put(kv_id, JSON.stringify(categories), { expirationTtl: 86400 }),
-        );
+        try {
+          c.executionCtx.waitUntil(
+            c.env.cache.put(CATEGORIES_KV_KEY, JSON.stringify(categories), {
+              expirationTtl: KV_TTL,
+            }),
+          );
+        } catch {}
       }
 
       const category = categories[Math.floor(Math.random() * categories.length)].name;

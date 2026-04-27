@@ -4,12 +4,27 @@ import { eq, sql } from 'drizzle-orm';
 
 import { oldQuotes } from '@/db/schema';
 
+const LANGUAGES_KV_KEY = 'v1_quote_languages';
+const KV_TTL = 86400;
+
 export default new Hono()
   .get('/languages', async (c) => {
-    const db = c.get('db');
-    const rows = await db.selectDistinct({ name: oldQuotes.language }).from(oldQuotes);
+    let languages = await c.env.cache.get(LANGUAGES_KV_KEY, { type: 'json' });
 
-    return c.json(rows.map((r) => r.name));
+    if (!languages) {
+      const rows = await c.get('db').selectDistinct({ name: oldQuotes.language }).from(oldQuotes);
+      languages = rows.map((r) => r.name);
+
+      try {
+        c.executionCtx.waitUntil(
+          c.env.cache.put(LANGUAGES_KV_KEY, JSON.stringify(languages), {
+            expirationTtl: KV_TTL,
+          }),
+        );
+      } catch {}
+    }
+
+    return c.json(languages);
   })
   .get('/random', async (c) => {
     const db = c.get('db');
