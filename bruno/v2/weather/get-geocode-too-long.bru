@@ -1,0 +1,25 @@
+meta {
+  name: Geocode q Too Long
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/v2/geocode
+  body: none
+  auth: none
+}
+
+params:query {
+  q: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+}
+
+tests {
+  test("status is 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("returns error message", function() {
+    expect(res.body).to.have.property("error");
+  });
+}

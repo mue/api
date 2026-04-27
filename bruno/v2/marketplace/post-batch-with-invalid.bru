@@ -1,0 +1,36 @@
+meta {
+  name: Batch Get Items (Mixed Valid/Invalid)
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{baseUrl}}/v2/marketplace/batch
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "ids": ["{{itemId}}", "this-id-does-not-exist"]
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("reports correct counts", function() {
+    expect(res.body.meta.requested).to.equal(2);
+    expect(res.body.meta.found).to.equal(1);
+    expect(res.body.meta.errors).to.equal(1);
+  });
+
+  test("data contains one success and one error", function() {
+    const success = res.body.data.find(function(i) { return i.data; });
+    const error = res.body.data.find(function(i) { return i.error; });
+    expect(success).to.not.be.undefined;
+    expect(error).to.not.be.undefined;
+  });
+}

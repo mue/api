@@ -1,0 +1,30 @@
+meta {
+  name: Get Category Stats
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/stats/category/{{itemCategory}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data with stats fields", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body.data).to.have.property("authors");
+    expect(res.body.data).to.have.property("category");
+    expect(res.body.data).to.have.property("languages");
+    expect(res.body.data).to.have.property("recent_items");
+    expect(res.body.data.recent_items).to.be.an("array");
+  });
+
+  test("category matches request", function() {
+    expect(res.body.data.category).to.equal("photo_packs");
+  });
+}

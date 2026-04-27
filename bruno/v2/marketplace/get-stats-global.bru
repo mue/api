@@ -1,0 +1,21 @@
+meta {
+  name: Get Global Stats
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/stats/global
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data", function() {
+    expect(res.body).to.have.property("data");
+  });
+}

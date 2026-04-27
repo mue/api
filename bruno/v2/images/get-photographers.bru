@@ -1,0 +1,28 @@
+meta {
+  name: Get Photographers
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v2/images/photographers
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("returns an array", function() {
+    expect(res.body).to.be.an("array");
+    expect(res.body.length).to.be.greaterThan(0);
+  });
+
+  test("items have name and count", function() {
+    const first = res.body[0];
+    expect(first).to.have.property("name");
+    expect(first).to.have.property("count");
+  });
+}

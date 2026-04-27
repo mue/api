@@ -1,0 +1,17 @@
+meta {
+  name: Get Curator
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/curator/{{curatorName}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

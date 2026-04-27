@@ -1,0 +1,21 @@
+meta {
+  name: Get Weather Missing Params
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/v2/weather
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("returns error message", function() {
+    expect(res.body).to.have.property("error");
+  });
+}

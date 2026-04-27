@@ -1,0 +1,31 @@
+meta {
+  name: Get Random Quote
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/quotes/random
+  body: none
+  auth: none
+}
+
+params:query {
+  ~language: French
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has quote fields", function() {
+    expect(res.body).to.have.property("author");
+    expect(res.body).to.have.property("quote");
+  });
+
+  test("fields are strings", function() {
+    expect(res.body.author).to.be.a("string");
+    expect(res.body.quote).to.be.a("string");
+  });
+}

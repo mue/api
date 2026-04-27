@@ -1,0 +1,37 @@
+meta {
+  name: Geocode City
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v2/geocode
+  body: none
+  auth: none
+}
+
+params:query {
+  q: London
+  ~limit: 5
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("returns an array", function() {
+    expect(res.body).to.be.an("array");
+  });
+
+  test("results have location fields", function() {
+    if (res.body.length > 0) {
+      const first = res.body[0];
+      expect(first).to.have.property("country");
+      expect(first).to.have.property("displayName");
+      expect(first).to.have.property("lat");
+      expect(first).to.have.property("lon");
+      expect(first).to.have.property("name");
+    }
+  });
+}

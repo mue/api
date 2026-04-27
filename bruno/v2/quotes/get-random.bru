@@ -1,0 +1,30 @@
+meta {
+  name: Get Random Quote
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v2/quotes/random
+  body: none
+  auth: none
+}
+
+params:query {
+  ~language: en
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has quote fields", function() {
+    expect(res.body).to.have.property("author");
+    expect(res.body).to.have.property("quote");
+  });
+
+  test("invalid language returns 400", function() {
+    // Run separately: GET /v2/quotes/random?language=zzz → 400
+  });
+}

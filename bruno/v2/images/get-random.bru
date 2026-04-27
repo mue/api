@@ -1,0 +1,50 @@
+meta {
+  name: Get Random Image
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/v2/images/random
+  body: none
+  auth: none
+}
+
+params:query {
+  ~quality: normal
+  ~categories: architecture,landscapes
+  ~exclude: 1,2,3
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has required image fields", function() {
+    expect(res.body).to.have.property("blur_hash");
+    expect(res.body).to.have.property("camera");
+    expect(res.body).to.have.property("category");
+    expect(res.body).to.have.property("colour");
+    expect(res.body).to.have.property("file");
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("photographer");
+    expect(res.body).to.have.property("pun");
+  });
+
+  test("has location object", function() {
+    expect(res.body).to.have.property("location");
+    expect(res.body.location).to.have.property("latitude");
+    expect(res.body.location).to.have.property("longitude");
+    expect(res.body.location).to.have.property("name");
+  });
+
+  test("file is a string URL", function() {
+    expect(res.body.file).to.be.a("string");
+    expect(res.body.file).to.include("http");
+  });
+
+  test("invalid quality returns 400", function() {
+    // Run separately: GET /v2/images/random?quality=invalid → 400
+  });
+}

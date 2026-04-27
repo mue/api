@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "Mue API",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

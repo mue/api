@@ -1,0 +1,24 @@
+meta {
+  name: Increment Item View
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/v2/marketplace/item/{{itemId}}/view
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("returns view and download counts", function() {
+    expect(res.body).to.have.property("views");
+    expect(res.body).to.have.property("downloads");
+    expect(res.body.views).to.be.a("number");
+    expect(res.body.downloads).to.be.a("number");
+  });
+}

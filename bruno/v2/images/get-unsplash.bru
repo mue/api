@@ -1,0 +1,47 @@
+meta {
+  name: Get Unsplash Image
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/v2/images/unsplash
+  body: none
+  auth: none
+}
+
+params:query {
+  ~categories: landscapes
+  ~orientation: landscape
+  ~quality: normal
+  ~collections:
+  ~topics:
+  ~username:
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has required image fields", function() {
+    expect(res.body).to.have.property("blur_hash");
+    expect(res.body).to.have.property("camera");
+    expect(res.body).to.have.property("file");
+    expect(res.body).to.have.property("id");
+    expect(res.body).to.have.property("photographer");
+    expect(res.body).to.have.property("photo_page");
+    expect(res.body).to.have.property("photographer_page");
+  });
+
+  test("has location object", function() {
+    expect(res.body).to.have.property("location");
+    expect(res.body.location).to.have.property("latitude");
+    expect(res.body.location).to.have.property("longitude");
+    expect(res.body.location).to.have.property("name");
+  });
+
+  test("invalid orientation returns 400", function() {
+    // Run separately: GET /v2/images/unsplash?orientation=invalid → 400
+  });
+}

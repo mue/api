@@ -1,0 +1,30 @@
+meta {
+  name: Get Sponsors
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/v2/sponsors
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has sponsors array", function() {
+    expect(res.body).to.have.property("sponsors");
+    expect(res.body.sponsors).to.be.an("array");
+  });
+
+  test("sponsor items have name and img", function() {
+    if (res.body.sponsors.length > 0) {
+      const first = res.body.sponsors[0];
+      expect(first).to.have.property("name");
+      expect(first).to.have.property("img");
+    }
+  });
+}

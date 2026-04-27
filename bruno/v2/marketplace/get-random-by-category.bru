@@ -1,0 +1,29 @@
+meta {
+  name: Get Random Item by Category
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/random/{{itemCategory}}
+  body: none
+  auth: none
+}
+
+params:query {
+  ~count: 3
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data", function() {
+    expect(res.body).to.have.property("data");
+  });
+
+  test("unknown category returns 404", function() {
+    // Run separately: GET /v2/marketplace/random/invalid_category → 404
+  });
+}

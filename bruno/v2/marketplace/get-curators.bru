@@ -1,0 +1,28 @@
+meta {
+  name: Get Curators
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/curators
+  body: none
+  auth: none
+}
+
+params:query {
+  ~page: 1
+  ~per_page: 20
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data and meta", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body).to.have.property("meta");
+    expect(res.body.data).to.be.an("array");
+  });
+}

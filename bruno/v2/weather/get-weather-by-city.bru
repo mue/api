@@ -1,0 +1,27 @@
+meta {
+  name: Get Weather by City
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/v2/weather
+  body: none
+  auth: none
+}
+
+params:query {
+  city: London
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has weather data", function() {
+    expect(res.body).to.have.property("main");
+    expect(res.body).to.have.property("weather");
+    expect(res.body).to.have.property("name");
+  });
+}

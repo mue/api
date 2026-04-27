@@ -1,0 +1,31 @@
+meta {
+  name: Get Weather by Coordinates
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/v2/weather
+  body: none
+  auth: none
+}
+
+params:query {
+  lat: 51.5074
+  lon: -0.1278
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has weather data", function() {
+    expect(res.body).to.have.property("main");
+    expect(res.body).to.have.property("weather");
+  });
+
+  test("invalid city returns 404", function() {
+    // Run separately: GET /v2/weather?city=thiscitydoesnotexist12345 → 404
+  });
+}

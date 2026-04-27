@@ -1,0 +1,24 @@
+meta {
+  name: Get News
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/news
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has required fields", function() {
+    expect(res.body).to.have.property("date");
+    expect(res.body).to.have.property("description");
+    expect(res.body).to.have.property("link");
+    expect(res.body).to.have.property("title");
+  });
+}

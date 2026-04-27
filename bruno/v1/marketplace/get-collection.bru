@@ -1,0 +1,22 @@
+meta {
+  name: Get Collection
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/marketplace/collection/{{collectionName}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has items", function() {
+    expect(res.body).to.have.property("items");
+    expect(res.body.items).to.be.an("array");
+  });
+}

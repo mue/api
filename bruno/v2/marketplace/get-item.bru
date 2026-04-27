@@ -1,0 +1,27 @@
+meta {
+  name: Get Item (by ID)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/item/{{itemId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data and updated fields", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body).to.have.property("updated");
+  });
+
+  test("item has name fields", function() {
+    expect(res.body.data).to.have.property("name");
+    expect(res.body.data).to.have.property("display_name");
+  });
+}

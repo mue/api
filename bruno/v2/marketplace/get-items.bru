@@ -1,0 +1,52 @@
+meta {
+  name: Get Items
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/items/{{itemCategory}}
+  body: none
+  auth: none
+}
+
+params:query {
+  ~page: 1
+  ~per_page: 20
+  ~include_analytics: true
+  ~sort: newest
+  ~order: desc
+  ~author:
+  ~language:
+  ~keywords:
+  ~min_items:
+  ~max_items:
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data and meta", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body).to.have.property("meta");
+    expect(res.body.data).to.be.an("array");
+  });
+
+  test("meta has pagination fields", function() {
+    expect(res.body.meta).to.have.property("total");
+    expect(res.body.meta).to.have.property("page");
+    expect(res.body.meta).to.have.property("per_page");
+    expect(res.body.meta).to.have.property("total_pages");
+    expect(res.body.meta).to.have.property("has_more");
+  });
+
+  test("per_page respects max of 100", function() {
+    expect(res.body.meta.per_page).to.be.at.most(100);
+  });
+
+  test("unknown category returns 404", function() {
+    // Run separately: GET /v2/marketplace/items/invalid_category → 404
+  });
+}

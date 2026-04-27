@@ -1,0 +1,21 @@
+meta {
+  name: Get Item
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/marketplace/item/{{itemCategory}}/{{itemName}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data", function() {
+    expect(res.body).to.have.property("data");
+  });
+}

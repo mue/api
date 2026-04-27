@@ -1,0 +1,33 @@
+meta {
+  name: Get Item Related
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/item/{{itemId}}/related
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data and meta", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body).to.have.property("meta");
+  });
+
+  test("data has item and related", function() {
+    expect(res.body.data).to.have.property("item");
+    expect(res.body.data).to.have.property("related");
+    expect(res.body.data.related).to.be.an("array");
+  });
+
+  test("meta has total_related", function() {
+    expect(res.body.meta).to.have.property("total_related");
+    expect(res.body.meta.total_related).to.be.a("number");
+  });
+}

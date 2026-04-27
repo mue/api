@@ -1,0 +1,37 @@
+meta {
+  name: Get Recent
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/recent
+  body: none
+  auth: none
+}
+
+params:query {
+  ~limit: 20
+  ~category: photo_packs
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data and meta", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body).to.have.property("meta");
+    expect(res.body.data).to.be.an("array");
+  });
+
+  test("meta has total", function() {
+    expect(res.body.meta).to.have.property("total");
+    expect(res.body.meta.total).to.be.a("number");
+  });
+
+  test("limit respects max of 100", function() {
+    expect(res.body.data.length).to.be.at.most(100);
+  });
+}

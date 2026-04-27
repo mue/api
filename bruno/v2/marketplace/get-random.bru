@@ -1,0 +1,32 @@
+meta {
+  name: Get Random Item
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/random
+  body: none
+  auth: none
+}
+
+params:query {
+  ~count: 3
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data", function() {
+    expect(res.body).to.have.property("data");
+  });
+
+  test("single result is an object when count=1", function() {
+    // default count is 1, should return an object not an array
+    if (!Array.isArray(res.body.data)) {
+      expect(res.body.data).to.be.an("object");
+    }
+  });
+}

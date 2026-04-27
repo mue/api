@@ -1,0 +1,22 @@
+meta {
+  name: Increment Item View
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/marketplace/item/{{itemCategory}}/{{itemName}}/view
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("returns view count", function() {
+    expect(res.body).to.have.property("views");
+    expect(res.body.views).to.be.a("number");
+  });
+}

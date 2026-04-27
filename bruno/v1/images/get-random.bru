@@ -1,0 +1,32 @@
+meta {
+  name: Get Random Image
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/images/random
+  body: none
+  auth: none
+}
+
+params:query {
+  ~quality: normal
+  ~exclude: 1,2,3
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has image fields", function() {
+    expect(res.body).to.have.property("file");
+    expect(res.body).to.have.property("photographer");
+    expect(res.body).to.have.property("category");
+  });
+
+  test("file is a string URL", function() {
+    expect(res.body.file).to.be.a("string");
+  });
+}

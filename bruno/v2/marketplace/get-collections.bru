@@ -1,0 +1,36 @@
+meta {
+  name: Get Collections
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/collections
+  body: none
+  auth: none
+}
+
+params:query {
+  ~page: 1
+  ~per_page: 20
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data and meta", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body).to.have.property("meta");
+    expect(res.body.data).to.be.an("array");
+  });
+
+  test("meta has pagination fields", function() {
+    expect(res.body.meta).to.have.property("total");
+    expect(res.body.meta).to.have.property("page");
+    expect(res.body.meta).to.have.property("per_page");
+    expect(res.body.meta).to.have.property("total_pages");
+    expect(res.body.meta).to.have.property("has_more");
+  });
+}

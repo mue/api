@@ -1,0 +1,22 @@
+meta {
+  name: Get Image Categories
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/images/categories
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("returns an array", function() {
+    expect(res.body).to.be.an("array");
+    expect(res.body.length).to.be.greaterThan(0);
+  });
+}

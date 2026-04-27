@@ -1,0 +1,26 @@
+meta {
+  name: Get Weather Invalid Coordinates
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/v2/weather
+  body: none
+  auth: none
+}
+
+params:query {
+  lat: 999
+  lon: 999
+}
+
+tests {
+  test("status is 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("returns error message", function() {
+    expect(res.body).to.have.property("error");
+  });
+}

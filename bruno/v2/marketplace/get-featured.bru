@@ -1,0 +1,17 @@
+meta {
+  name: Get Featured
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/v2/marketplace/featured
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

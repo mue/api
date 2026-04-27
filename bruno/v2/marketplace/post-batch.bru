@@ -1,0 +1,36 @@
+meta {
+  name: Batch Get Items
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/v2/marketplace/batch
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "ids": ["{{itemId}}"]
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data and meta", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body).to.have.property("meta");
+    expect(res.body.data).to.be.an("array");
+  });
+
+  test("meta has found, errors, requested", function() {
+    expect(res.body.meta).to.have.property("found");
+    expect(res.body.meta).to.have.property("errors");
+    expect(res.body.meta).to.have.property("requested");
+    expect(res.body.meta.requested).to.equal(1);
+  });
+}
