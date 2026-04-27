@@ -4,6 +4,7 @@ import { validator } from 'hono/validator';
 
 import { withWeatherLanguage } from '@/v2/weather/middleware';
 import { OPENWEATHER } from '@/v2/weather/constants';
+import { safeFetchJson } from '@/util/fetch';
 
 const requireCoords = validator('query', (value, c) => {
   if (!value.latitude || !value.longitude) {
@@ -17,7 +18,7 @@ export default new Hono()
   .get('/gps', withWeatherLanguage, requireCoords, async (c) => {
     const { latitude, longitude } = c.req.valid('query');
     const url = `${OPENWEATHER}/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${c.env.OPENWEATHER_TOKEN}&lang=${c.get('language')}`;
-    const data = await (await fetch(url, { signal: AbortSignal.timeout(5000) })).json();
+    const data = await safeFetchJson(url, { signal: AbortSignal.timeout(5000) });
 
     return c.json(data, 200, {
       'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400, immutable',
@@ -35,12 +36,16 @@ export default new Hono()
         return c.json({ error: '`q` must be at least 2 characters' }, 400);
       }
 
+      if (value.q.length > 200) {
+        return c.json({ error: '`q` must be at most 200 characters' }, 400);
+      }
+
       return value;
     }),
     async (c) => {
       const { q, limit = 5 } = c.req.valid('query');
       const url = `${OPENWEATHER}/geo/1.0/direct?q=${encodeURIComponent(q)}&limit=${limit}&appid=${c.env.OPENWEATHER_TOKEN}`;
-      const data = await (await fetch(url, { signal: AbortSignal.timeout(5000) })).json();
+      const data = await safeFetchJson(url, { signal: AbortSignal.timeout(5000) });
 
       const locations = data.map((loc) => ({
         country: loc.country,
@@ -92,7 +97,7 @@ export default new Hono()
           ? `${OPENWEATHER}/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${c.env.OPENWEATHER_TOKEN}&lang=${c.get('language')}`
           : `${OPENWEATHER}/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${c.env.OPENWEATHER_TOKEN}&lang=${c.get('language')}`;
 
-      const data = await (await fetch(url, { signal: AbortSignal.timeout(5000) })).json();
+      const data = await safeFetchJson(url, { signal: AbortSignal.timeout(5000) });
       if (data.cod === '404') {
         return c.json({ error: 'No data. Try another city?' }, 404);
       }

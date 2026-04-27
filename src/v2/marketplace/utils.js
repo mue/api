@@ -1,3 +1,6 @@
+import { HTTPException } from 'hono/http-exception';
+
+import { safeFetchJson } from '@/util/fetch';
 import { MARKETPLACE_DATA } from '@/constants';
 
 const CACHE_CONFIG = {
@@ -24,34 +27,40 @@ export async function getManifest(lite = false) {
     ? `${MARKETPLACE_DATA}/manifest-lite.json`
     : `${MARKETPLACE_DATA}/manifest.json?v=2`;
 
-  const manifest = await (
-    await fetch(url, {
-      cf: lite ? CACHE_CONFIG.lite : CACHE_CONFIG.full,
-      signal: AbortSignal.timeout(5000),
-    })
-  ).json();
+  const manifest = await safeFetchJson(url, {
+    cf: lite ? CACHE_CONFIG.lite : CACHE_CONFIG.full,
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!manifest || typeof manifest !== 'object' || typeof manifest._id_index !== 'object') {
+    throw new HTTPException(503, { message: 'Marketplace data is currently unavailable' });
+  }
 
   return manifest;
 }
 
 export async function getSearchIndex() {
-  const index = await (
-    await fetch(`${MARKETPLACE_DATA}/search-index.json`, {
-      cf: CACHE_CONFIG.search,
-      signal: AbortSignal.timeout(5000),
-    })
-  ).json();
+  const index = await safeFetchJson(`${MARKETPLACE_DATA}/search-index.json`, {
+    cf: CACHE_CONFIG.search,
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!index || !Array.isArray(index.items)) {
+    throw new HTTPException(503, { message: 'Search index is currently unavailable' });
+  }
 
   return index;
 }
 
 export async function getStats() {
-  const stats = await (
-    await fetch(`${MARKETPLACE_DATA}/stats.json`, {
-      cf: CACHE_CONFIG.stats,
-      signal: AbortSignal.timeout(5000),
-    })
-  ).json();
+  const stats = await safeFetchJson(`${MARKETPLACE_DATA}/stats.json`, {
+    cf: CACHE_CONFIG.stats,
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!stats || typeof stats !== 'object') {
+    throw new HTTPException(503, { message: 'Stats data is currently unavailable' });
+  }
 
   return stats;
 }
@@ -139,12 +148,16 @@ export function applyFilters(items, query) {
 
   if (query.min_items) {
     const min = parseInt(query.min_items);
-    filtered = filtered.filter((item) => item.item_count >= min);
+    if (!Number.isNaN(min)) {
+      filtered = filtered.filter((item) => item.item_count >= min);
+    }
   }
 
   if (query.max_items) {
     const max = parseInt(query.max_items);
-    filtered = filtered.filter((item) => item.item_count <= max);
+    if (!Number.isNaN(max)) {
+      filtered = filtered.filter((item) => item.item_count <= max);
+    }
   }
 
   if (query.color_theme === 'dark') {

@@ -1,6 +1,7 @@
 import { inArray } from 'drizzle-orm';
 
 import paginate from '@/util/pagination';
+import { safeFetchJson } from '@/util/fetch';
 import { MARKETPLACE_DATA } from '@/constants';
 
 import { getManifest, resolveIdentifier, applyFilters, applySorting } from '@/v2/marketplace/utils';
@@ -29,12 +30,10 @@ export async function getItem(c) {
     return c.json({ error: 'Item Not Found' }, 404);
   }
 
-  let item = await (
-    await fetch(`${MARKETPLACE_DATA}/${resolvedCategory}/${itemKey}.json`, {
-      cf: { cacheTtl: 3600 },
-      signal: AbortSignal.timeout(5000),
-    })
-  ).json();
+  let item = await safeFetchJson(`${MARKETPLACE_DATA}/${resolvedCategory}/${itemKey}.json`, {
+    cf: { cacheTtl: 3600 },
+    signal: AbortSignal.timeout(5000),
+  });
 
   item.in_collections = manifest[resolvedCategory][itemKey].in_collections.map((name) => {
     const collection = manifest.collections[name];
@@ -122,8 +121,8 @@ export async function getItems(c) {
   data = applySorting(data, query);
 
   const paginatedData = paginate(data, query);
-  const page = parseInt(query.page) || 1;
-  const perPage = parseInt(query.per_page) || 20;
+  const page = Math.max(1, parseInt(query.page) || 1);
+  const perPage = Math.min(100, Math.max(1, parseInt(query.per_page) || 20));
   const totalPages = Math.ceil(data.length / perPage);
 
   return c.json({

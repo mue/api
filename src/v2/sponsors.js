@@ -2,15 +2,16 @@ import { Hono } from 'hono';
 
 import { load } from 'cheerio';
 
+import { safeFetchText } from '@/util/fetch';
+
 const KV_KEY = 'v2_sponsors';
 const KV_TTL = 3600;
 
 async function fetchSponsors(env) {
-  const data = await (
-    await fetch(`https://github.com/sponsors/${env.SPONSORS_NAME}/sponsors_partial?page=1`, {
-      signal: AbortSignal.timeout(5000),
-    })
-  ).text();
+  const data = await safeFetchText(
+    `https://github.com/sponsors/${env.SPONSORS_NAME}/sponsors_partial?page=1`,
+    { signal: AbortSignal.timeout(5000) },
+  );
 
   const $ = load(data);
   const sponsors = [];

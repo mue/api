@@ -123,7 +123,7 @@ export async function getCategoryStats(c) {
 }
 
 export async function getTrending(c) {
-  const limit = parseInt(c.req.query('limit')) || 20;
+  const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit')) || 20));
   const category = c.req.query('category');
   const db = c.get('db');
 
@@ -169,7 +169,7 @@ export async function getTrending(c) {
 
 export async function getRecent(c) {
   const stats = await getStats();
-  const limit = parseInt(c.req.query('limit')) || 20;
+  const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit')) || 20));
   const category = c.req.query('category');
 
   let recentItems = stats.recent_items;

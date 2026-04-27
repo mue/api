@@ -1,3 +1,4 @@
+import { safeFetchJson } from '@/util/fetch';
 import { UNSPLASH_API } from '@/constants';
 
 export const NAMED_COLLECTIONS = {
@@ -20,11 +21,9 @@ export const getUnsplashImage = async (query, quality, env) => {
   const ref = `?utm_source=${env.UNSPLASH_REFERRAL}&utm_medium=referral`;
   const size = sizes[quality];
 
-  const data = await (
-    await fetch(`${UNSPLASH_API}/photos/random?${query.toString()}`, {
-      signal: AbortSignal.timeout(5000),
-    })
-  ).json();
+  const data = await safeFetchJson(`${UNSPLASH_API}/photos/random?${query.toString()}`, {
+    signal: AbortSignal.timeout(5000),
+  });
 
   return {
     blur_hash: data.blur_hash,

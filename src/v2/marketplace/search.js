@@ -43,8 +43,8 @@ export async function search(c) {
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  const page = parseInt(c.req.query('page')) || 1;
-  const perPage = parseInt(c.req.query('per_page')) || 20;
+  const page = Math.max(1, parseInt(c.req.query('page')) || 1);
+  const perPage = Math.min(100, Math.max(1, parseInt(c.req.query('per_page')) || 20));
   const totalPages = Math.ceil(results.length / perPage);
   const start = (page - 1) * perPage;
   const paginatedResults = results.slice(start, start + perPage);

@@ -7,6 +7,7 @@ import { images } from '@/db/schema';
 
 import sizes from '@/util/sizes';
 
+import { safeFetchJson } from '@/util/fetch';
 import { CDN, UNSPLASH_API } from '@/constants';
 
 import { getUnsplashImage, NAMED_COLLECTIONS } from '@/v2/images/unsplash';
@@ -129,12 +130,10 @@ export default new Hono()
     },
   )
   .get('/unsplash/topics', async (c) => {
-    const data = await (
-      await fetch(`${UNSPLASH_API}/topics?client_id=${c.env.UNSPLASH_TOKEN}`, {
-        cf: { cacheTtl: 86400 },
-        signal: AbortSignal.timeout(5000),
-      })
-    ).json();
+    const data = await safeFetchJson(`${UNSPLASH_API}/topics?client_id=${c.env.UNSPLASH_TOKEN}`, {
+      cf: { cacheTtl: 86400 },
+      signal: AbortSignal.timeout(5000),
+    });
 
     return c.json(data, 200, {
       'Cache-Control': 'public, s-max-age=604800, max-age=86400, stale-while-revalidate=86400',

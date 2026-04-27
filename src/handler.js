@@ -44,16 +44,10 @@ app.notFound((c) => c.json({ error: 'Not Found' }, 404));
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
-    return err.getResponse();
+    return c.json({ error: err.message }, err.status);
   }
 
-  return c.json(
-    {
-      error: err?.message,
-      message: 'Internal Serverless Error',
-    },
-    500,
-  );
+  return c.json({ error: 'Internal Server Error' }, 500);
 });
 
 export default app;
