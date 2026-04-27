@@ -1,14 +1,13 @@
-name: Deploy
+name: CI
 
 on:
   push:
-    branches:
-      - main
+  pull_request:
 
 jobs:
-  deploy:
+  ci:
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Lint & Test
     steps:
       - uses: actions/checkout@v4
 
@@ -22,9 +21,3 @@ jobs:
 
       - name: Test
         run: bun run test
-
-      - name: Publish
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
