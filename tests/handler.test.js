@@ -10,6 +10,7 @@ const { getDB } = await import('@/db');
 const mockEnv = {
   OPENWEATHER_TOKEN: 'test-token',
   UNSPLASH_TOKEN: 'test-token',
+  MAPBOX_TOKEN: 'test-token',
   PEXELS_TOKEN: 'test-token',
   SPONSORS_NAME: 'mue',
   UNSPLASH_REFERRAL: 'mue',
