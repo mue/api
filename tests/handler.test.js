@@ -10,7 +10,6 @@ const { getDB } = await import('@/db');
 const mockEnv = {
   OPENWEATHER_TOKEN: 'test-token',
   UNSPLASH_TOKEN: 'test-token',
-  MAPBOX_TOKEN: 'test-token',
   PEXELS_TOKEN: 'test-token',
   SPONSORS_NAME: 'mue',
   UNSPLASH_REFERRAL: 'mue',
@@ -154,6 +153,22 @@ describe('GET /v2/map — validation', () => {
 
   it('returns 400 when only longitude is provided', async () => {
     const res = await app.request('/v2/map?longitude=-0.1278', {}, mockEnv);
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 for non-numeric coordinates', async () => {
+    const res = await app.request('/v2/map?latitude=abc&longitude=xyz', {}, mockEnv);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toHaveProperty('error');
+  });
+
+  it('returns 400 for out-of-range latitude', async () => {
+    const res = await app.request('/v2/map?latitude=91&longitude=0', {}, mockEnv);
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 for out-of-range longitude', async () => {
+    const res = await app.request('/v2/map?latitude=0&longitude=181', {}, mockEnv);
     expect(res.status).toBe(400);
   });
 });
