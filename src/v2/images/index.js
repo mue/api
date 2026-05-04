@@ -110,7 +110,7 @@ export default new Hono()
 
       const format = c.req.header('accept')?.includes('avif') ? 'avif' : 'webp';
       const quality = sizes[c.req.query('quality')] ?? 'fhd';
-      const coordinates = data.locationData?.split(',');
+      const locationData = data.locationData ? JSON.parse(data.locationData) : null;
 
       return c.json(
         {
@@ -121,8 +121,8 @@ export default new Hono()
           file: `${CDN}/img/${quality}/${data.id}.${format}?v=${data.version}`,
           id: data.id,
           location: {
-            latitude: coordinates?.[0] ?? null,
-            longitude: coordinates?.[1] ?? null,
+            latitude: locationData?.latitude ?? null,
+            longitude: locationData?.longitude ?? null,
             name: data.locationName,
           },
           photographer: data.photographer,

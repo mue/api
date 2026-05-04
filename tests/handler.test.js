@@ -5,6 +5,7 @@ vi.mock('@/db', () => ({
 }));
 
 const { default: app } = await import('@/handler');
+const { getDB } = await import('@/db');
 
 const mockEnv = {
   OPENWEATHER_TOKEN: 'test-token',
@@ -166,6 +167,59 @@ describe('GET /v2/images/random — validation', () => {
     const res = await app.request('/v2/images/random?quality=invalid', {}, mockEnv);
     expect(res.status).toBe(400);
     expect(await res.json()).toHaveProperty('error');
+  });
+});
+
+describe('GET /v2/images/random — location parsing', () => {
+  const baseRow = {
+    blurHash: 'abc123',
+    camera: 'Canon EOS R5',
+    category: 'nature',
+    colour: '#123456',
+    id: 'test-id',
+    version: 1,
+    photographer: 'Test Photographer',
+    pun: 1,
+  };
+
+  function mockDbWithRow(row) {
+    const db = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      groupBy: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([row]),
+    };
+    vi.mocked(getDB).mockReturnValueOnce(db);
+    return db;
+  }
+
+  it('parses JSON locationData into numeric latitude and longitude', async () => {
+    mockEnv.cache.get.mockResolvedValueOnce([{ name: 'nature', count: 5 }]);
+    mockDbWithRow({
+      ...baseRow,
+      locationData: '{"latitude":53.739569,"longitude":-0.331025}',
+      locationName: 'Hull, UK',
+    });
+
+    const res = await app.request('/v2/images/random', {}, mockEnv);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.location.latitude).toBe(53.739569);
+    expect(body.location.longitude).toBe(-0.331025);
+    expect(body.location.name).toBe('Hull, UK');
+  });
+
+  it('returns null coordinates when locationData is null', async () => {
+    mockEnv.cache.get.mockResolvedValueOnce([{ name: 'nature', count: 5 }]);
+    mockDbWithRow({ ...baseRow, locationData: null, locationName: null });
+
+    const res = await app.request('/v2/images/random', {}, mockEnv);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.location.latitude).toBeNull();
+    expect(body.location.longitude).toBeNull();
   });
 });
 
