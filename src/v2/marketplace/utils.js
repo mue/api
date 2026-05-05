@@ -4,24 +4,24 @@ import { safeFetchJson } from '@/util/fetch';
 import { MARKETPLACE_DATA } from '@/constants';
 
 const MANIFEST_KV_KEY = 'v2_manifest';
-const MANIFEST_KV_TTL = 3600;
+const MANIFEST_KV_TTL = 300;
 
 const CACHE_CONFIG = {
   full: {
     cacheEverything: true,
-    cacheTtl: 3600,
+    cacheTtl: 300,
   },
   lite: {
     cacheEverything: true,
-    cacheTtl: 1800,
+    cacheTtl: 300,
   },
   search: {
     cacheEverything: true,
-    cacheTtl: 3600,
+    cacheTtl: 300,
   },
   stats: {
     cacheEverything: true,
-    cacheTtl: 1800,
+    cacheTtl: 300,
   },
 };
 
