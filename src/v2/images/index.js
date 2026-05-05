@@ -164,7 +164,7 @@ export default new Hono()
       return value;
     }),
     async (c) => {
-      const { categories, collections, orientation, topics, username } = c.req.query();
+      const { categories, collections, orientation, topics, username, exclude } = c.req.query();
       const unsplash_query = new URLSearchParams({ orientation: orientation ?? 'landscape' });
 
       if (categories && categories.length > 0) {
@@ -187,6 +187,10 @@ export default new Hono()
 
       if (username !== undefined) {
         unsplash_query.set('username', username);
+      }
+
+      if (exclude !== undefined && exclude.trim?.()) {
+        unsplash_query.set('exclude', exclude.trim());
       }
 
       if (!unsplash_query.get('collections')) {

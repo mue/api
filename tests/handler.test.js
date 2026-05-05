@@ -253,6 +253,57 @@ describe('GET /v2/images/unsplash — validation', () => {
   });
 });
 
+describe('GET /v2/images/unsplash — exclude handling', () => {
+  function makeUnsplashPhoto(id, overrides = {}) {
+    return {
+      id,
+      blur_hash: 'abc123',
+      exif: { model: 'Canon EOS R5' },
+      color: '#123456',
+      description: `Photo ${id}`,
+      downloads: 10,
+      likes: 5,
+      views: 100,
+      urls: { raw: `https://images.unsplash.com/${id}` },
+      location: { position: { latitude: 51.5, longitude: -0.12 }, name: 'London' },
+      links: { html: `https://unsplash.com/photos/${id}` },
+      user: { name: 'Alice', links: { html: 'https://unsplash.com/@alice' } },
+      ...overrides,
+    };
+  }
+
+  it('skips excluded IDs when Unsplash returns multiple photos', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue([makeUnsplashPhoto('photo-a'), makeUnsplashPhoto('photo-b')]),
+    });
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const res = await app.request('/v2/images/unsplash?exclude=photo-a', {}, mockEnv);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.id).toBe('photo-b');
+
+    const requestedUrl = fetchSpy.mock.calls[0]?.[0];
+    expect(requestedUrl).toContain('/photos/random?');
+    expect(requestedUrl).toContain('count=');
+    expect(requestedUrl).not.toContain('exclude=');
+  });
+
+  it('falls back to first photo when all returned IDs are excluded', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue([makeUnsplashPhoto('photo-a')]),
+    }));
+
+    const res = await app.request('/v2/images/unsplash?exclude=photo-a', {}, mockEnv);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.id).toBe('photo-a');
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Marketplace items — /v2/marketplace/items/:category
 // ---------------------------------------------------------------------------
