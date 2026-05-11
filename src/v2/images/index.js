@@ -11,7 +11,7 @@ import { safeFetchJson } from '@/util/fetch';
 import { CDN, UNSPLASH_API } from '@/constants';
 
 import { getUnsplashImage, NAMED_COLLECTIONS } from '@/v2/images/unsplash';
-import { incrementImageView, incrementImageDownload, getImageStats, upsertImageView } from '@/v2/images/analytics';
+import { incrementImageView, incrementImageDownload, getImageStats, getImagesTrending, upsertImageView } from '@/v2/images/analytics';
 
 const VALID_QUALITIES = new Set(Object.keys(sizes));
 const VALID_QUALITIES_STR = Object.keys(sizes).join(', ');
@@ -37,6 +37,7 @@ async function getCachedRows(c, kvKey, queryFn) {
 }
 
 export default new Hono()
+  .get('/trending', getImagesTrending)
   .post('/:id/view', incrementImageView)
   .post('/:id/download', incrementImageDownload)
   .get('/:id/stats', getImageStats)
@@ -112,10 +113,12 @@ export default new Hono()
         .limit(1)
         .then((rows) => rows[0]);
 
+      let stats = { downloads: 0, views: 0 };
       try {
-        c.executionCtx.waitUntil(upsertImageView(c.get('db'), data.id));
+        const [statsData] = await upsertImageView(c.get('db'), data.id);
+        if (statsData) stats = { downloads: statsData.downloads || 0, views: statsData.views || 0 };
       } catch {
-        // executionCtx unavailable outside Cloudflare Workers runtime
+        // Non-critical — don't fail the request if analytics write fails
       }
 
       const format = c.req.header('accept')?.includes('avif') ? 'avif' : 'webp';
@@ -128,6 +131,7 @@ export default new Hono()
           camera: data.camera,
           category: data.category,
           colour: data.colour,
+          downloads: stats.downloads,
           file: `${CDN}/img/${quality}/${data.id}.${format}?v=${data.version}`,
           id: data.id,
           location: {
@@ -137,6 +141,7 @@ export default new Hono()
           },
           photographer: data.photographer,
           pun: data.pun,
+          views: stats.views,
         },
         200,
         { 'Cache-Control': 'no-store' },

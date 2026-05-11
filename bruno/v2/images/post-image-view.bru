@@ -1,0 +1,25 @@
+meta {
+  name: Increment Image View
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/v2/images/{{imageId}}/view
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("returns view and download counts", function() {
+    expect(res.body).to.have.property("views");
+    expect(res.body).to.have.property("downloads");
+    expect(res.body.views).to.be.a("number");
+    expect(res.body.downloads).to.be.a("number");
+    expect(res.body.views).to.be.greaterThan(0);
+  });
+}

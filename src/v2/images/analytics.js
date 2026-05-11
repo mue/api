@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm';
+import { desc, eq, inArray, sql } from 'drizzle-orm';
 
 import { imageAnalytics, images } from '@/db/schema';
 
@@ -58,6 +58,45 @@ export async function incrementImageDownload(c) {
 
   return c.json(
     { downloads: data?.downloads || 1 },
+    200,
+    { 'Cache-Control': 'no-store' },
+  );
+}
+
+export async function getImagesTrending(c) {
+  const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit')) || 20));
+  const db = c.get('db');
+
+  const weightedScore = sql`(${imageAnalytics.views} * 0.3 + ${imageAnalytics.downloads} * 0.7)`;
+
+  const analyticsRows = await db
+    .select({
+      downloads: imageAnalytics.downloads,
+      imageId: imageAnalytics.imageId,
+      views: imageAnalytics.views,
+    })
+    .from(imageAnalytics)
+    .orderBy(desc(weightedScore))
+    .limit(limit);
+
+  if (analyticsRows.length === 0) {
+    return c.json({ data: [], meta: { total: 0 } }, 200, { 'Cache-Control': 'no-store' });
+  }
+
+  const ids = analyticsRows.map((r) => r.imageId);
+  const imageRows = await db.select().from(images).where(inArray(images.id, ids));
+  const imageMap = Object.fromEntries(imageRows.map((img) => [img.id, img]));
+
+  const trendingImages = analyticsRows
+    .map((row) => {
+      const img = imageMap[row.imageId];
+      if (!img) return null;
+      return { ...img, downloads: row.downloads || 0, views: row.views || 0 };
+    })
+    .filter(Boolean);
+
+  return c.json(
+    { data: trendingImages, meta: { total: trendingImages.length } },
     200,
     { 'Cache-Control': 'no-store' },
   );

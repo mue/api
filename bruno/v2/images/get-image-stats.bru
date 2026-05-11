@@ -1,0 +1,24 @@
+meta {
+  name: Get Image Stats
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/v2/images/{{imageId}}/stats
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("returns view and download counts", function() {
+    expect(res.body).to.have.property("views");
+    expect(res.body).to.have.property("downloads");
+    expect(res.body.views).to.be.a("number");
+    expect(res.body.downloads).to.be.a("number");
+  });
+}

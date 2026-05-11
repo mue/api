@@ -1,0 +1,37 @@
+meta {
+  name: Get Trending Images
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/v2/images/trending
+  body: none
+  auth: none
+}
+
+params:query {
+  ~limit: 20
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("has data array and meta", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body).to.have.property("meta");
+    expect(res.body.data).to.be.an("array");
+    expect(res.body.meta).to.have.property("total");
+  });
+
+  test("images have views and downloads", function() {
+    res.body.data.forEach(function(img) {
+      expect(img).to.have.property("views");
+      expect(img).to.have.property("downloads");
+      expect(img.views).to.be.a("number");
+      expect(img.downloads).to.be.a("number");
+    });
+  });
+}
