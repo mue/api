@@ -35,11 +35,12 @@ export async function getItem(c) {
     signal: AbortSignal.timeout(5000),
   });
 
-  item.in_collections = manifest[resolvedCategory][itemKey].in_collections.map((name) => {
+  item.in_collections = (manifest[resolvedCategory][itemKey].in_collections ?? []).flatMap((name) => {
     const collection = manifest.collections[name];
+    if (!collection) return [];
     // eslint-disable-next-line no-unused-vars
     const { items, ...collectionWithoutItems } = collection;
-    return collectionWithoutItems;
+    return [collectionWithoutItems];
   });
 
   const version = c.get('version');
@@ -168,7 +169,8 @@ export async function getRelatedItems(c) {
         const [type, name] = collectionItem.split('/');
 
         if (name !== itemKey) {
-          relatedByCollection.add(manifest[type][name].id);
+          const relatedItem = manifest[type]?.[name];
+          if (relatedItem) relatedByCollection.add(relatedItem.id);
         }
       }
     }
