@@ -113,12 +113,10 @@ export default new Hono()
         .limit(1)
         .then((rows) => rows[0]);
 
-      let stats = { downloads: 0, views: 0 };
       try {
-        const [statsData] = await upsertImageView(c.get('db'), data.id);
-        if (statsData) stats = { downloads: statsData.downloads || 0, views: statsData.views || 0 };
+        c.executionCtx.waitUntil(upsertImageView(c.get('db'), data.id));
       } catch {
-        // Non-critical — don't fail the request if analytics write fails
+        // executionCtx unavailable outside Cloudflare Workers runtime
       }
 
       const format = c.req.header('accept')?.includes('avif') ? 'avif' : 'webp';
@@ -131,7 +129,6 @@ export default new Hono()
           camera: data.camera,
           category: data.category,
           colour: data.colour,
-          downloads: stats.downloads,
           file: `${CDN}/img/${quality}/${data.id}.${format}?v=${data.version}`,
           id: data.id,
           location: {
@@ -141,7 +138,6 @@ export default new Hono()
           },
           photographer: data.photographer,
           pun: data.pun,
-          views: stats.views,
         },
         200,
         { 'Cache-Control': 'no-store' },
