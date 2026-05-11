@@ -1,6 +1,7 @@
 import paginate from '@/util/pagination';
 
 import { getManifestCached, resolveIdentifier } from '@/v2/marketplace/utils';
+import { safeFetchJson } from '@/util/fetch';
 
 import { MARKETPLACE_DATA } from '@/constants';
 
@@ -21,7 +22,7 @@ export async function getCollection(c) {
 
   const resolvedItems = collection.items?.map((ref) => {
     const [type, name] = ref.split('/');
-    return { ...manifest[type][name], type };
+    return { ...manifest[type]?.[name], type };
   });
 
   let result = { ...collection, ...(resolvedItems !== undefined && { items: resolvedItems }) };
@@ -57,7 +58,7 @@ export async function getCurator(c) {
   const items = curator.map((item) => {
     const [type, name] = item.split('/');
     return {
-      ...manifest[type][name],
+      ...manifest[type]?.[name],
       type,
     };
   });
@@ -73,12 +74,9 @@ export async function getCurators(c) {
 }
 
 export async function getFeatured(c) {
-  return c.json({
-    data: await (
-      await fetch(`${MARKETPLACE_DATA}/featured.json`, {
-        cf: { cacheTtl: 3600 },
-        signal: AbortSignal.timeout(5000),
-      })
-    ).json(),
+  const data = await safeFetchJson(`${MARKETPLACE_DATA}/featured.json`, {
+    cf: { cacheTtl: 3600 },
+    signal: AbortSignal.timeout(5000),
   });
+  return c.json({ data });
 }

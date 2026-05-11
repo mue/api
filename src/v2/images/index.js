@@ -113,6 +113,10 @@ export default new Hono()
         .limit(1)
         .then((rows) => rows[0]);
 
+      if (!data) {
+        return c.json({ error: 'No image found' }, 404);
+      }
+
       try {
         c.executionCtx.waitUntil(upsertImageView(c.get('db'), data.id));
       } catch {

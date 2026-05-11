@@ -1,3 +1,5 @@
+import { HTTPException } from 'hono/http-exception';
+
 import { safeFetchJson } from '@/util/fetch';
 import { UNSPLASH_API } from '@/constants';
 
@@ -40,7 +42,7 @@ export const getUnsplashImage = async (query, quality, env) => {
     photos.find((photo) => photo?.id && !excludedIds.has(photo.id)) ?? photos[0] ?? null;
 
   if (!selected) {
-    throw new Error('No image returned from Unsplash');
+    throw new HTTPException(503, { message: 'No image returned from Unsplash' });
   }
 
   return {

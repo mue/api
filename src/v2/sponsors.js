@@ -17,8 +17,10 @@ async function fetchSponsors(env) {
   const sponsors = [];
 
   $('.d-inline-block').each((_i, el) => {
+    const href = $(el).attr('href');
+    if (!href) return;
     sponsors.push({
-      img: $(el).attr('href').replace('/', ''),
+      img: href.replace('/', ''),
       name: $(el).find('img').attr('alt'),
     });
   });
@@ -35,9 +37,13 @@ export default new Hono().get('/', async (c) => {
 
   const sponsors = await fetchSponsors(c.env);
 
-  c.executionCtx.waitUntil(
-    c.env.cache.put(KV_KEY, JSON.stringify(sponsors), { expirationTtl: KV_TTL }),
-  );
+  try {
+    c.executionCtx.waitUntil(
+      c.env.cache.put(KV_KEY, JSON.stringify(sponsors), { expirationTtl: KV_TTL }),
+    );
+  } catch {
+    // executionCtx unavailable outside Cloudflare Workers runtime
+  }
 
   return c.json({ sponsors });
 });

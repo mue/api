@@ -163,7 +163,7 @@ export async function getRelatedItems(c) {
   for (const collectionName of item.in_collections) {
     const collection = manifest.collections[collectionName];
 
-    if (collection.items) {
+    if (collection?.items) {
       for (const collectionItem of collection.items) {
         const [type, name] = collectionItem.split('/');
 

@@ -111,6 +111,10 @@ export default new Hono()
         .limit(1)
         .then((rows) => rows[0]);
 
+      if (!data) {
+        return c.json({ error: 'No image found' }, 404);
+      }
+
       const format = c.req.header('accept')?.includes('avif') ? 'avif' : 'webp';
       const quality = sizes[c.req.query('quality')] ?? 'fhd';
 

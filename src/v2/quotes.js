@@ -18,9 +18,13 @@ async function getLanguages(db, c) {
       .groupBy(quotes.language)
       .orderBy(desc(count()));
 
-    c.executionCtx.waitUntil(
-      c.env.cache.put(KV_KEY, JSON.stringify(languages), { expirationTtl: 86400 }),
-    );
+    try {
+      c.executionCtx.waitUntil(
+        c.env.cache.put(KV_KEY, JSON.stringify(languages), { expirationTtl: 86400 }),
+      );
+    } catch {
+      // executionCtx unavailable outside Cloudflare Workers runtime
+    }
   }
 
   return languages;

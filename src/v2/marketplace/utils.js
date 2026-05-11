@@ -160,7 +160,7 @@ export function applyFilters(items, query) {
   }
 
   if (query.author) {
-    filtered = filtered.filter((item) => item.author.toLowerCase() === query.author.toLowerCase());
+    filtered = filtered.filter((item) => item.author?.toLowerCase() === query.author.toLowerCase());
   }
 
   if (query.language) {
@@ -222,7 +222,7 @@ export function applySorting(items, query) {
     let comparison = 0;
     switch (sortField) {
       case 'name':
-        comparison = a.display_name.localeCompare(b.display_name);
+        comparison = (a.display_name ?? '').localeCompare(b.display_name ?? '');
         break;
       case 'item_count':
         comparison = b.item_count - a.item_count;

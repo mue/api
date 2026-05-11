@@ -17,7 +17,7 @@ export async function search(c) {
       let score = 0;
 
       for (const term of searchTerms) {
-        if (item.display_name.toLowerCase().includes(term)) {
+        if (item.display_name?.toLowerCase().includes(term)) {
           score += 10;
         }
 
@@ -29,11 +29,11 @@ export async function search(c) {
           score += 6;
         }
 
-        if (item.author.toLowerCase().includes(term)) {
+        if (item.author?.toLowerCase().includes(term)) {
           score += 5;
         }
 
-        if (item.search_text.includes(term)) {
+        if (item.search_text?.includes(term)) {
           score += 2;
         }
       }
