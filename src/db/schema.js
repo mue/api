@@ -31,6 +31,13 @@ export const oldQuotes = sqliteTable('old_quotes', {
   quote: text('quote'),
 });
 
+export const imageAnalytics = sqliteTable('image_analytics', {
+  downloads: integer('downloads').notNull().default(0),
+  imageId: text('image_id').notNull().primaryKey(),
+  updatedAt: text('updated_at'),
+  views: integer('views').notNull().default(0),
+});
+
 export const marketplaceAnalytics = sqliteTable(
   'marketplace_analytics',
   {
