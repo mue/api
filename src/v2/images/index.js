@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { validator } from 'hono/validator';
 
-import { count, desc, eq, and, notInArray, sql } from 'drizzle-orm';
+import { count, desc, and, inArray, notInArray, sql } from 'drizzle-orm';
 
 import { images } from '@/db/schema';
 
@@ -78,29 +78,25 @@ export default new Hono()
     async (c) => {
       const db = c.get('db');
 
-      const allowed = await getCachedRows(c, CATEGORIES_KV_KEY, () =>
-        db
-          .select({ count: count(), name: images.category })
-          .from(images)
-          .groupBy(images.category)
-          .orderBy(desc(count())),
-      );
+      const excludeList = c.req.query('exclude')?.split(',').map(Number).filter(Boolean) ?? [];
+      const conditions = [];
 
-      const allowedNames = allowed.map((row) => row.name);
-      let categories =
-        c.req
-          .query('categories')
-          ?.split(',')
-          ?.filter((category) => allowedNames.includes(category)) ?? [];
-
-      if (categories.length === 0) {
-        categories = allowedNames;
+      const categoriesParam = c.req.query('categories');
+      if (categoriesParam) {
+        const allowed = await getCachedRows(c, CATEGORIES_KV_KEY, () =>
+          db
+            .select({ count: count(), name: images.category })
+            .from(images)
+            .groupBy(images.category)
+            .orderBy(desc(count())),
+        );
+        const allowedNames = new Set(allowed.map((row) => row.name));
+        const requestedCategories = categoriesParam.split(',').filter((c) => allowedNames.has(c));
+        if (requestedCategories.length > 0) {
+          conditions.push(inArray(images.category, requestedCategories));
+        }
       }
 
-      const category = categories[Math.floor(Math.random() * categories.length)];
-
-      const excludeList = c.req.query('exclude')?.split(',').map(Number).filter(Boolean) ?? [];
-      const conditions = [eq(images.category, category)];
       if (excludeList.length > 0) {
         conditions.push(notInArray(images.pun, excludeList));
       }
@@ -108,7 +104,7 @@ export default new Hono()
       const data = await db
         .select()
         .from(images)
-        .where(and(...conditions))
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(sql`RANDOM()`)
         .limit(1)
         .then((rows) => rows[0]);
