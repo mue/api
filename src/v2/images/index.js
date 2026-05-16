@@ -11,7 +11,7 @@ import { safeFetchJson } from '@/util/fetch';
 import { CDN, UNSPLASH_API } from '@/constants';
 
 import { getUnsplashImage, NAMED_COLLECTIONS } from '@/v2/images/unsplash';
-import { incrementImageView, incrementImageDownload, getImageStats, getImagesTrending, upsertImageView } from '@/v2/images/analytics';
+import { incrementImageView, incrementImageDownload, incrementImageHeart, getImageStats, getImageDailyStats, getImagesTrending, upsertImageView, upsertDailyView } from '@/v2/images/analytics';
 
 const VALID_QUALITIES = new Set(Object.keys(sizes));
 const VALID_QUALITIES_STR = Object.keys(sizes).join(', ');
@@ -40,7 +40,9 @@ export default new Hono()
   .get('/trending', getImagesTrending)
   .post('/:id/view', incrementImageView)
   .post('/:id/download', incrementImageDownload)
+  .post('/:id/heart', incrementImageHeart)
   .get('/:id/stats', getImageStats)
+  .get('/:id/daily-stats', getImageDailyStats)
   .get('/categories', async (c) => {
     const db = c.get('db');
     const data = await getCachedRows(c, CATEGORIES_KV_KEY, () =>
@@ -114,7 +116,9 @@ export default new Hono()
       }
 
       try {
-        c.executionCtx.waitUntil(upsertImageView(c.get('db'), data.id));
+        c.executionCtx.waitUntil(
+          Promise.all([upsertImageView(c.get('db'), data.id), upsertDailyView(c.get('db'), data.id)]),
+        );
       } catch {
         // executionCtx unavailable outside Cloudflare Workers runtime
       }

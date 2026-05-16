@@ -33,10 +33,23 @@ export const oldQuotes = sqliteTable('old_quotes', {
 
 export const imageAnalytics = sqliteTable('image_analytics', {
   downloads: integer('downloads').notNull().default(0),
+  hearts: integer('hearts').notNull().default(0),
   imageId: text('image_id').notNull().primaryKey(),
   updatedAt: text('updated_at'),
   views: integer('views').notNull().default(0),
 });
+
+export const imageAnalyticsDaily = sqliteTable(
+  'image_analytics_daily',
+  {
+    imageId: text('image_id').notNull(),
+    date: text('date').notNull(),
+    views: integer('views').notNull().default(0),
+    downloads: integer('downloads').notNull().default(0),
+    hearts: integer('hearts').notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.imageId, t.date] })],
+);
 
 export const marketplaceAnalytics = sqliteTable(
   'marketplace_analytics',
