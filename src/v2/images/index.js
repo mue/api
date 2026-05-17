@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import { validator } from 'hono/validator';
 
-import { count, desc, and, inArray, notInArray, sql } from 'drizzle-orm';
+import { count, desc, and, eq, inArray, notInArray, sql } from 'drizzle-orm';
 
-import { images } from '@/db/schema';
+import { images, imageAnalytics } from '@/db/schema';
 
 import sizes from '@/util/sizes';
 
@@ -104,8 +104,23 @@ export default new Hono()
       }
 
       const data = await db
-        .select()
+        .select({
+          blurHash: images.blurHash,
+          camera: images.camera,
+          category: images.category,
+          colour: images.colour,
+          id: images.id,
+          locationData: images.locationData,
+          locationName: images.locationName,
+          photographer: images.photographer,
+          pun: images.pun,
+          version: images.version,
+          views: imageAnalytics.views,
+          downloads: imageAnalytics.downloads,
+          hearts: imageAnalytics.hearts,
+        })
         .from(images)
+        .leftJoin(imageAnalytics, eq(images.id, imageAnalytics.imageId))
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(sql`RANDOM()`)
         .limit(1)
@@ -133,7 +148,9 @@ export default new Hono()
           camera: data.camera,
           category: data.category,
           colour: data.colour,
+          downloads: data.downloads ?? 0,
           file: `${CDN}/img/${quality}/${data.id}.${format}?v=${data.version}`,
+          hearts: data.hearts ?? 0,
           id: data.id,
           location: {
             latitude: locationData?.latitude ?? null,
@@ -142,6 +159,7 @@ export default new Hono()
           },
           photographer: data.photographer,
           pun: data.pun,
+          views: data.views ?? 0,
         },
         200,
         { 'Cache-Control': 'no-store' },
